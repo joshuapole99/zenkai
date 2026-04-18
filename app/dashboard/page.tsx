@@ -1,75 +1,112 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifyToken } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { getDailyQuests } from "@/lib/quests";
 import LogoutButton from "./LogoutButton";
+import DashboardClient from "./DashboardClient";
+
+type UserRow = {
+  id: number;
+  username: string;
+  character_name: string | null;
+  character_class: string | null;
+  xp: number | null;
+  streak: number | null;
+  onboarding_complete: boolean | null;
+};
+
+type QuestCompletion = { quest_id: number };
+type FoodLog = { ate_enough: boolean };
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth-token")?.value;
-
   if (!token) redirect("/login");
 
-  let user;
+  let session;
   try {
-    user = await verifyToken(token);
+    session = await verifyToken(token);
   } catch {
     redirect("/login");
   }
 
+  const sql = getDb();
+
+  // Ensure new columns exist (idempotent)
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_class TEXT`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_name TEXT`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_date DATE`;
+
+  const [user] = (await sql`
+    SELECT id, username, character_name, character_class, xp, streak, onboarding_complete
+    FROM users WHERE id = ${session.userId}
+  `) as UserRow[];
+
+  if (!user) redirect("/login");
+  if (!user.onboarding_complete) redirect("/onboarding");
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS quest_completions (
+      id             SERIAL PRIMARY KEY,
+      user_id        INTEGER NOT NULL,
+      quest_id       INTEGER NOT NULL,
+      completed_date DATE NOT NULL DEFAULT CURRENT_DATE,
+      UNIQUE(user_id, quest_id, completed_date)
+    )
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS food_logs (
+      id         SERIAL PRIMARY KEY,
+      user_id    INTEGER NOT NULL,
+      log_date   DATE NOT NULL DEFAULT CURRENT_DATE,
+      ate_enough BOOLEAN NOT NULL,
+      UNIQUE(user_id, log_date)
+    )
+  `;
+
+  const completions = (await sql`
+    SELECT quest_id FROM quest_completions
+    WHERE user_id = ${user.id} AND completed_date = ${today}
+  `) as QuestCompletion[];
+
+  const foodRows = (await sql`
+    SELECT ate_enough FROM food_logs
+    WHERE user_id = ${user.id} AND log_date = ${today}
+  `) as FoodLog[];
+
+  const completedIds = completions.map((r) => r.quest_id);
+  const foodLog = foodRows[0] ?? null;
+  const quests = getDailyQuests(today);
+
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
-
-      {/* Top bar */}
       <header
-        className="flex items-center justify-between px-6 py-4 border-b"
+        className="flex items-center justify-between px-4 py-4 border-b"
         style={{ borderColor: "rgba(255,255,255,0.06)" }}
       >
         <span className="font-black text-lg tracking-tight gradient-text">ZENKAI</span>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-500">{user.username}</span>
+          <span className="text-xs text-gray-600">{user.username}</span>
           <LogoutButton />
         </div>
       </header>
 
-      {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-16">
-        <div className="mb-10">
-          <p className="text-sm font-medium text-gray-500 mb-1">Welcome back</p>
-          <h1 className="text-3xl font-black text-white">{user.username}</h1>
-        </div>
-
-        {/* Stat cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-12">
-          {[
-            { label: "Power Level", value: "0" },
-            { label: "Streak", value: "0 days" },
-            { label: "Quests Done", value: "0" },
-          ].map(({ label, value }) => (
-            <div
-              key={label}
-              className="rounded-xl p-5"
-              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
-            >
-              <p className="text-xs text-gray-500 mb-1">{label}</p>
-              <p className="text-2xl font-black text-white">{value}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Coming soon */}
-        <div
-          className="rounded-2xl px-8 py-12 text-center"
-          style={{ background: "rgba(255,215,0,0.03)", border: "1px solid rgba(255,215,0,0.1)" }}
-        >
-          <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#FFD700" }}>
-            Coming soon
-          </p>
-          <h2 className="text-xl font-black text-white mb-2">Your dashboard is being built</h2>
-          <p className="text-sm text-gray-500 max-w-sm mx-auto">
-            Daily quests, XP, character creation, and your Zenkai Boost are on the way.
-          </p>
-        </div>
-      </main>
+      <DashboardClient
+        characterName={user.character_name ?? user.username}
+        characterClass={user.character_class ?? "saiyan"}
+        xp={user.xp ?? 0}
+        streak={user.streak ?? 0}
+        quests={quests}
+        initialCompletedIds={completedIds}
+        initialFoodLogged={!!foodLog}
+        initialAteEnough={foodLog?.ate_enough ?? null}
+      />
     </div>
   );
 }

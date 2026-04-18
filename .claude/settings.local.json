@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Read(//c/Users/joshu/**)",
+      "Bash(npx create-next-app@latest zenkai-landing --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(cp *)",
+      "Bash(npm install *)",
+      "Bash(cp /c/Users/joshu/zenkai-landing/package.json /c/Users/joshu/Zenkai/package.json)",
+      "Bash(cp /c/Users/joshu/zenkai-landing/package-lock.json /c/Users/joshu/Zenkai/package-lock.json)",
+      "Bash(cp /c/Users/joshu/zenkai-landing/tsconfig.json /c/Users/joshu/Zenkai/tsconfig.json)",
+      "Bash(cp /c/Users/joshu/zenkai-landing/postcss.config.mjs /c/Users/joshu/Zenkai/postcss.config.mjs)",
+      "Bash(cp /c/Users/joshu/zenkai-landing/next-env.d.ts /c/Users/joshu/Zenkai/next-env.d.ts)",
+      "Bash(npm run *)",
+      "Bash(git -C /c/Users/joshu/Zenkai remote -v)",
+      "Bash(git -C /c/Users/joshu/Zenkai status --short)",
+      "Bash(gh auth *)",
+      "Bash(git --version)",
+      "Bash(git *)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -X POST https://api.github.com/user/repos -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -d '{\"name\":\"zenkai-landing\",\"private\":false,\"description\":\"Zenkai — Train. Fall. Come Back Stronger. Anime fitness PWA landing page.\"}')",
+      "Bash(cp /c/Users/joshu/Zenkai/middleware.ts /c/Users/joshu/Zenkai/proxy.ts)",
+      "Bash(rm /c/Users/joshu/Zenkai/middleware.ts)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)"
+    ]
+  }
+}

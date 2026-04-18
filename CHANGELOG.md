@@ -3,6 +3,33 @@
 ## [Unreleased]
 
 ### Added
+- **Onboarding** (`/onboarding`) — 4-step client-side character creation flow
+  - Step 1: Character class (Saiyan Warrior / Shadow Assassin / Iron Guardian)
+  - Step 2: Goal (Get Stronger / Lose Weight / Be Consistent)
+  - Step 3: Fitness level (Beginner / Intermediate / Advanced)
+  - Step 4: Character name (max 20 chars)
+  - `POST /api/onboarding` — saves to `users` table; auto-migrates new columns via `ALTER TABLE ADD COLUMN IF NOT EXISTS`
+  - Redirects to `/dashboard` on success; orange + purple accent design
+- **Dashboard** (`/dashboard`) — fully functional, replaces placeholder
+  - Character header: name, class badge, power level, total XP, streak counter
+  - Daily quests: 3 exercises per day, deterministic by date, no equipment needed
+  - Per-quest "Complete" button with optimistic UI; all 3 done = +100 XP banner
+  - XP progress bar animated toward next level
+  - Daily food check (Yes/No), locks after first answer
+  - `POST /api/quest/complete` — marks quest in `quest_completions`; awards +100 XP + streak update when all 3 done
+  - `POST /api/food-check` — upserts into `food_logs`
+- `lib/quests.ts` — 12-exercise quest pool, `getDailyQuests(date)` (deterministic seed), `calcLevel(xp)`, `xpProgress(xp)`
+- New DB tables (auto-created): `quest_completions`, `food_logs`
+- New `users` columns: `character_class`, `goal`, `fitness_level`, `character_name`, `xp`, `onboarding_complete`, `last_streak_date`
+- `--purple: #7C3AED` CSS variable added to globals
+
+### Changed
+- `/signup` now redirects to `/onboarding` (was `/dashboard`)
+- `/dashboard` redirects unauthenticated users to `/login`, non-onboarded users to `/onboarding`
+
+---
+
+### Added
 - `app/sitemap.ts` — Next.js built-in sitemap route, serves `/sitemap.xml`; includes `/`, `/login`, `/signup` with priorities and weekly/monthly change frequencies; reads `NEXT_PUBLIC_BASE_URL` env var (falls back to `https://zenkai.app`)
 - Auth system — JWT-based (jose + bcryptjs), HTTP-only cookie session, 7-day expiry
   - `POST /api/auth/signup` — creates user, returns set-cookie; validates email, username (3–20 chars, alphanumeric/underscore), password (min 8)

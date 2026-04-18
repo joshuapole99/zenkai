@@ -33,7 +33,7 @@ export default function SignupPage() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push("/onboarding");
     } catch {
       setError("No connection. Try again.");
     } finally {
