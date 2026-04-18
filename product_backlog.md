@@ -6,8 +6,8 @@
 - [x] PWA manifest
 - [x] English copy
 
-## In Progress
-- [ ] Auth system (signup/login)
+## Done (continued)
+- [x] Auth system (signup/login)
 
 ## Todo
 - [ ] Character creation

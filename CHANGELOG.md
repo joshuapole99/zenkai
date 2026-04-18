@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Added
+- Auth system — JWT-based (jose + bcryptjs), HTTP-only cookie session, 7-day expiry
+  - `POST /api/auth/signup` — creates user, returns set-cookie; validates email, username (3–20 chars, alphanumeric/underscore), password (min 8)
+  - `POST /api/auth/login` — verifies credentials, returns set-cookie
+  - `POST /api/auth/logout` — clears cookie
+  - `proxy.ts` — route protection: unauthenticated → /login, authenticated on /login|/signup → /dashboard
+- `/signup` page — Linear-inspired dark form, no emojis, gold focus rings, inline validation errors
+- `/login` page — same design, "Welcome back. Your arc continues."
+- `/dashboard` page — server component; shows username, placeholder stat cards (Power Level, Streak, Quests Done), coming-soon block
+- `lib/auth.ts` — `signToken`, `verifyToken`, `hashPassword`, `comparePasswords`, `COOKIE_NAME`
+- `lib/db.ts` — `getDb()` lazy Neon SQL factory
+- `users` table (auto-created on first signup): `id, email, username, password_hash, created_at, power_level (default 0), streak (default 0)`
+- `JWT_SECRET` env var required in production (falls back to dev placeholder locally)
+
 ### Changed
 - Translated entire landing page from Dutch to English — bold shonen anime protagonist tone throughout
   - Hero: "Every setback makes you stronger." / "That's when your Zenkai Boost begins."
