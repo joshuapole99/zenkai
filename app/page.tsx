@@ -214,6 +214,110 @@ function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
   return <div style={style} />;
 }
 
+// ── HeroCards ─────────────────────────────────────────────────────────────────
+
+function HeroCards() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 400);
+    return () => clearTimeout(t);
+  }, []);
+
+  const cards = [
+    {
+      label: "Level",
+      value: "Lv. 12",
+      valueSize: "22px",
+      valueColor: "#FF6B35",
+      desc: "Saiyan Warrior",
+      barColor: "#FF6B35",
+      barTarget: 68,
+      bottom: "680 / 1000 XP",
+    },
+    {
+      label: "Power",
+      value: "Zenkai Boost",
+      valueSize: "13px",
+      valueColor: "#a78bfa",
+      desc: "Active after comeback",
+      barColor: "#7C3AED",
+      barTarget: 45,
+      bottom: "+300 XP bonus",
+    },
+    {
+      label: "Streak",
+      value: "14",
+      valueSize: "22px",
+      valueColor: "#fff",
+      desc: "Day streak",
+      barColor: "rgba(255,255,255,0.35)",
+      barTarget: 82,
+      bottom: "Personal best",
+    },
+  ];
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: "10px",
+        maxWidth: "520px",
+        margin: "0 auto",
+        animation: "bootIn 0.6s ease 1.1s both",
+      }}
+    >
+      {cards.map((card) => (
+        <div
+          key={card.label}
+          style={{
+            flex: 1,
+            background: "rgba(255,255,255,0.035)",
+            border: "1px solid rgba(255,255,255,0.07)",
+            borderRadius: "12px",
+            padding: "14px 12px",
+            textAlign: "left",
+            minWidth: 0,
+          }}
+        >
+          {/* Label */}
+          <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.3)", marginBottom: "6px" }}>
+            {card.label}
+          </p>
+
+          {/* Value */}
+          <p style={{ fontSize: card.valueSize, fontWeight: 900, color: card.valueColor, lineHeight: 1.1, marginBottom: "4px", wordBreak: "break-word" }}>
+            {card.value}
+          </p>
+
+          {/* Description */}
+          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginBottom: "10px" }}>
+            {card.desc}
+          </p>
+
+          {/* XP bar track */}
+          <div style={{ height: "3px", borderRadius: "2px", background: "rgba(255,255,255,0.07)", overflow: "hidden", marginBottom: "6px" }}>
+            <div
+              style={{
+                height: "100%",
+                borderRadius: "2px",
+                background: card.barColor,
+                width: mounted ? `${card.barTarget}%` : "0%",
+                transition: "width 1s cubic-bezier(0.22, 1, 0.36, 1)",
+              }}
+            />
+          </div>
+
+          {/* Bottom label */}
+          <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.18)" }}>
+            {card.bottom}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── HeroBackground ────────────────────────────────────────────────────────────
 
 function HeroBackground() {
@@ -417,6 +521,11 @@ export default function Home() {
               style={{ background: "rgba(255,255,255,0.08)" }}
             />
             <span>Free to start</span>
+          </div>
+
+          {/* Stat cards */}
+          <div className="mt-8">
+            <HeroCards />
           </div>
         </div>
       </section>

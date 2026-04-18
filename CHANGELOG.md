@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Added
+- **Hero stat cards** — 3 animated preview cards below the waitlist form in the hero section
+  - Level card: "Lv. 12", Saiyan Warrior, orange XP bar animates to 68%, "680 / 1000 XP"
+  - Power card: "Zenkai Boost", purple bar animates to 45%, "+300 XP bonus"
+  - Streak card: "14", white/muted bar animates to 82%, "Personal best"
+  - Cards boot in with `bootIn` animation (1.1s delay, after rest of hero)
+  - Bars animate from 0 → target width on mount via CSS transition (1s ease-out, triggered 400ms after load)
+  - Exact spec: `rgba(255,255,255,0.035)` background, `rgba(255,255,255,0.07)` border, 12px radius, 14px/12px padding, 3px bar height
+
 ### Changed
 - **Hero section — anime game aesthetic redesign**
   - `HeroBackground`: 4 animated energy orbs (CSS `energyPulse` keyframes), subtle orange grid overlay (80px cells), scanline CRT overlay, radial vignette — all pure CSS, no JS
