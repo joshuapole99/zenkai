@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Docs
+- **Backlog restructured** — added Bugs section (3 known issues), expanded Core product with body stats, protein calculator, custom workouts, full food log, story mode, boss quests, character evolution; added Build Priority order (13 items); added Instagram / social media item
+- **ai_context.md** — added character design rules (no licensed anime IP, original-inspired only) and social media section (@zenkai_app Instagram, 1-platform focus)
+
 ### Added
 - **Hero stat cards** — 3 animated preview cards below the waitlist form in the hero section
   - Level card: "Lv. 12", Saiyan Warrior, orange XP bar animates to 68%, "680 / 1000 XP"

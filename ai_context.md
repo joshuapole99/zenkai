@@ -28,6 +28,16 @@ fitness routine.
 - Mobile first
 - No emojis in UI
 
+## Character design rules
+- No licensed anime IP (no Goku, Naruto, etc.) — copyright/trademark risk
+- All characters are original designs, anime-inspired in style only
+- Class names and lore can reference anime tropes (Saiyan Warrior, Shadow Assassin) 
+  as genre conventions, not as character likenesses
+
+## Social media
+- Instagram: @zenkai_app (primary platform, 1-platform focus)
+- Strategy: consistent posts, no spreading thin across multiple platforms
+
 ## Development Rules
 - Always push to GitHub after every task:
   git add .
