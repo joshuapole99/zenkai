@@ -36,18 +36,13 @@ export function getDailyQuests(date: string): Quest[] {
 }
 
 export function calcLevel(xp: number): number {
-  let level = 1;
-  let threshold = 0;
-  while (xp >= threshold + level * 100) {
-    threshold += level * 100;
-    level++;
-  }
-  return level;
+  return Math.floor(xp / 100) + 1;
 }
 
 export function xpProgress(xp: number): { xpIntoLevel: number; xpRequired: number; level: number } {
-  const level = calcLevel(xp);
-  let base = 0;
-  for (let l = 1; l < level; l++) base += l * 100;
-  return { xpIntoLevel: xp - base, xpRequired: level * 100, level };
+  return {
+    level: Math.floor(xp / 100) + 1,
+    xpIntoLevel: xp % 100,
+    xpRequired: 100,
+  };
 }

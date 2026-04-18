@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+- **Level display** (`lib/quests.ts`): switched from increasing-difficulty formula (`level * 100` XP per level) to flat 100 XP per level — `level = floor(xp / 100) + 1`, `xpIntoLevel = xp % 100`, `xpRequired = 100` always. Predictable and consistent.
+- **Quest "Done" on first load** (`app/dashboard/page.tsx`, `app/api/quest/complete/route.ts`): added `Number()` coercion when mapping `quest_id` from Neon results (driver can return integers as strings, breaking `Array.includes()` comparison); added `::date` cast in SQL WHERE clauses; added `export const dynamic = "force-dynamic"` to dashboard to prevent stale route cache.
+- **Streak increment** (`app/api/quest/complete/route.ts`): replaced JS `new Date(Date.now() - 86400000)` "yesterday" calculation (UTC, timezone-sensitive) with PostgreSQL `${today}::date - INTERVAL '1 day'` — the DB now computes yesterday consistently relative to the same reference date.
+
 ### Docs
 - **Backlog restructured** — added Bugs section (3 known issues), expanded Core product with body stats, protein calculator, custom workouts, full food log, story mode, boss quests, character evolution; added Build Priority order (13 items); added Instagram / social media item
 - **ai_context.md** — added character design rules (no licensed anime IP, original-inspired only) and social media section (@zenkai_app Instagram, 1-platform focus)

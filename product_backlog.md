@@ -1,9 +1,9 @@
 # Product Backlog
 
 ## Bugs
-- [ ] "Level 10 / 100 XP" shows incorrect level number — fix XP→level calculation display
-- [ ] Plank quest shows "Done" incorrectly on first load — fix initial quest state hydration
-- [ ] Streak not updating correctly — fix streak increment logic
+- [x] "Level 10 / 100 XP" shows incorrect level number — fixed: flat 100 XP/level formula
+- [x] Plank quest shows "Done" incorrectly on first load — fixed: Number() coercion + force-dynamic + DATE cast
+- [x] Streak not updating correctly — fixed: PostgreSQL interval math instead of JS date arithmetic
 
 ## Done
 - [x] Landing page

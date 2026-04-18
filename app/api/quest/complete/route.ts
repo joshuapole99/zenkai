@@ -53,23 +53,23 @@ export async function POST(req: NextRequest) {
 
   const completions = (await sql`
     SELECT quest_id FROM quest_completions
-    WHERE user_id = ${user.userId} AND completed_date = ${today}
+    WHERE user_id = ${user.userId} AND completed_date = ${today}::date
   `) as { quest_id: number }[];
 
-  const completedIds = completions.map((r) => r.quest_id);
+  // Coerce to number — Neon can return integer columns as strings
+  const completedIds = completions.map((r) => Number(r.quest_id));
   const allDone = dailyQuestIds.every((id) => completedIds.includes(id));
 
   let newXp: number | null = null;
   let newStreak: number | null = null;
 
   if (allDone) {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-
     const [updated] = (await sql`
       UPDATE users
       SET xp = COALESCE(xp, 0) + 100,
           streak = CASE
-            WHEN last_streak_date = ${yesterday}::date THEN COALESCE(streak, 0) + 1
+            WHEN last_streak_date = (${today}::date - INTERVAL '1 day')
+            THEN COALESCE(streak, 0) + 1
             ELSE 1
           END,
           last_streak_date = ${today}::date

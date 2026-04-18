@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -73,15 +75,16 @@ export default async function DashboardPage() {
 
   const completions = (await sql`
     SELECT quest_id FROM quest_completions
-    WHERE user_id = ${user.id} AND completed_date = ${today}
+    WHERE user_id = ${user.id} AND completed_date = ${today}::date
   `) as QuestCompletion[];
 
   const foodRows = (await sql`
     SELECT ate_enough FROM food_logs
-    WHERE user_id = ${user.id} AND log_date = ${today}
+    WHERE user_id = ${user.id} AND log_date = ${today}::date
   `) as FoodLog[];
 
-  const completedIds = completions.map((r) => r.quest_id);
+  // Coerce to number — Neon can return integer columns as strings
+  const completedIds = completions.map((r) => Number(r.quest_id));
   const foodLog = foodRows[0] ?? null;
   const quests = getDailyQuests(today);
 
