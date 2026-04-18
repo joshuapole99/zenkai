@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- `app/sitemap.ts` — Next.js built-in sitemap route, serves `/sitemap.xml`; includes `/`, `/login`, `/signup` with priorities and weekly/monthly change frequencies; reads `NEXT_PUBLIC_BASE_URL` env var (falls back to `https://zenkai.app`)
 - Auth system — JWT-based (jose + bcryptjs), HTTP-only cookie session, 7-day expiry
   - `POST /api/auth/signup` — creates user, returns set-cookie; validates email, username (3–20 chars, alphanumeric/underscore), password (min 8)
   - `POST /api/auth/login` — verifies credentials, returns set-cookie
