@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Changed
+- **Hero section — anime game aesthetic redesign**
+  - `HeroBackground`: 4 animated energy orbs (CSS `energyPulse` keyframes), subtle orange grid overlay (80px cells), scanline CRT overlay, radial vignette — all pure CSS, no JS
+  - `PowerScouter`: replaces old `PowerBar`; Dragon Ball scouter panel with HUD corner brackets, glowing animated border (`borderPulse`), sweeping scan line (`scanSweep`), monospace display; 3-phase sequence: "SCANNING\_" (blinking cursor) → count from 0 to 9,700 with ease-out → "SCAN COMPLETE" status; number glows continuously when done (`numberGlow`)
+  - Hero fills full viewport height (`min-h-screen`, vertically centered)
+  - All hero elements boot in with staggered `bootIn` animation (0.1s – 1.0s delays) — feels like powering up a game
+  - System badge: `ANIME FITNESS RPG // SYSTEM INITIALIZED` with live orange dot
+  - Title: uppercase, `clamp(2.8rem, 9vw, 6.5rem)` — game-title scale, `leading-none tracking-tighter`
+  - Nav: tightened backdrop blur, reduced border opacity
+  - `globals.css`: added `energyPulse`, `energyPulse2`, `scanSweep`, `bootIn`, `cursorBlink`, `numberGlow`, `borderPulse` keyframes; `.energy-orb-*`, `.scouter-border`, `.cursor-blink`, `.number-glow` utility classes
+
 ### Added
 - **Privacy page** (`/privacy`) — full privacy policy covering data collection, storage, cookies, user rights, third-party services, GDPR contact
 - **Terms page** (`/terms`) — terms of service covering service description, health disclaimer, account rules, subscription/payment terms, liability

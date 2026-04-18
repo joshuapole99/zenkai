@@ -1,55 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
-function PowerBar() {
-  const [started, setStarted] = useState(false);
-  const [level, setLevel] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setStarted(true); },
-      { threshold: 0.3 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!started) return;
-    const timer = setInterval(() => {
-      setLevel((prev) => {
-        if (prev >= 9700) { clearInterval(timer); return 9700; }
-        return prev + Math.floor(Math.random() * 120) + 40;
-      });
-    }, 30);
-    return () => clearInterval(timer);
-  }, [started]);
-
-  return (
-    <div ref={ref} className="w-full max-w-sm mx-auto mt-8">
-      <div className="flex justify-between text-xs mb-2">
-        <span className="font-bold tracking-widest uppercase text-gray-500">Power Level</span>
-        <span className="font-mono font-bold" style={{ color: "#FF6B35" }}>{level.toLocaleString("en-US")}</span>
-      </div>
-      <div
-        className="h-2 rounded-full overflow-hidden"
-        style={{ background: "rgba(255,255,255,0.06)" }}
-      >
-        <div
-          className="h-full rounded-full transition-all duration-75"
-          style={{
-            width: `${Math.min((level / 9700) * 100, 97)}%`,
-            background: "linear-gradient(90deg, #FF6B35, #7C3AED)",
-            boxShadow: "0 0 8px rgba(255,107,53,0.5)",
-          }}
-        />
-      </div>
-    </div>
-  );
-}
+// ── WaitlistForm ──────────────────────────────────────────────────────────────
 
 function WaitlistForm({ compact = false }: { compact?: boolean }) {
   const [email, setEmail] = useState("");
@@ -124,24 +78,250 @@ function WaitlistForm({ compact = false }: { compact?: boolean }) {
   );
 }
 
+// ── PowerScouter ──────────────────────────────────────────────────────────────
+
+function PowerScouter() {
+  const TARGET = 9700;
+  const [phase, setPhase] = useState<"scanning" | "counting" | "done">("scanning");
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const t = setTimeout(() => setPhase("counting"), 1000);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (phase !== "counting") return;
+    const steps = 90;
+    const duration = 1800;
+    const interval = duration / steps;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      // Ease-out: slower near the end
+      const progress = 1 - Math.pow(1 - step / steps, 2);
+      const current = Math.floor(progress * TARGET);
+      setCount(current);
+      if (step >= steps) {
+        setCount(TARGET);
+        setPhase("done");
+        clearInterval(timer);
+      }
+    }, interval);
+    return () => clearInterval(timer);
+  }, [phase]);
+
+  return (
+    <div
+      className="relative inline-block mx-auto px-8 py-5 scouter-border"
+      style={{
+        border: "1px solid rgba(255,107,53,0.4)",
+        background: "rgba(255,107,53,0.03)",
+        minWidth: "280px",
+      }}
+    >
+      {/* Corner brackets */}
+      <Corner pos="tl" />
+      <Corner pos="tr" />
+      <Corner pos="bl" />
+      <Corner pos="br" />
+
+      {/* Scan line — only visible during counting */}
+      {phase === "counting" && (
+        <div
+          className="absolute left-0 right-0 h-px pointer-events-none"
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(255,107,53,0.6), transparent)",
+            animation: "scanSweep 0.9s linear forwards",
+            zIndex: 2,
+          }}
+        />
+      )}
+
+      {/* Label */}
+      <p
+        className="text-xs font-bold tracking-[0.3em] uppercase mb-3 text-center"
+        style={{ color: "rgba(255,107,53,0.6)", fontFamily: "monospace" }}
+      >
+        POWER LEVEL
+      </p>
+
+      {/* Number / Scanning state */}
+      <div className="text-center" style={{ minHeight: "80px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {phase === "scanning" ? (
+          <div
+            className="font-bold tracking-[0.2em] text-xl"
+            style={{ color: "rgba(255,107,53,0.5)", fontFamily: "monospace" }}
+          >
+            SCANNING<span className="cursor-blink">_</span>
+          </div>
+        ) : (
+          <div
+            className={phase === "done" ? "number-glow" : ""}
+            style={{
+              fontSize: "clamp(2.5rem, 8vw, 5rem)",
+              fontWeight: 900,
+              fontFamily: "monospace",
+              letterSpacing: "-0.02em",
+              color: "#FF6B35",
+              lineHeight: 1,
+            }}
+          >
+            {count.toLocaleString("en-US")}
+          </div>
+        )}
+      </div>
+
+      {/* Status line */}
+      <div
+        className="mt-3 flex items-center justify-between gap-4"
+        style={{ borderTop: "1px solid rgba(255,107,53,0.1)", paddingTop: "10px" }}
+      >
+        <span
+          className="text-xs tracking-[0.2em] uppercase"
+          style={{ color: "rgba(255,107,53,0.4)", fontFamily: "monospace" }}
+        >
+          ZENKAI
+        </span>
+        <span
+          className="text-xs tracking-[0.2em] uppercase"
+          style={{
+            color: phase === "done" ? "rgba(255,107,53,0.7)" : "rgba(255,255,255,0.2)",
+            fontFamily: "monospace",
+            transition: "color 0.5s",
+          }}
+        >
+          {phase === "done" ? "SCAN COMPLETE" : "..."}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
+  const style: React.CSSProperties = {
+    position: "absolute",
+    width: "12px",
+    height: "12px",
+    borderColor: "#FF6B35",
+    borderStyle: "solid",
+    borderWidth: "0",
+  };
+  if (pos === "tl") { style.top = -1; style.left = -1; style.borderTopWidth = "2px"; style.borderLeftWidth = "2px"; }
+  if (pos === "tr") { style.top = -1; style.right = -1; style.borderTopWidth = "2px"; style.borderRightWidth = "2px"; }
+  if (pos === "bl") { style.bottom = -1; style.left = -1; style.borderBottomWidth = "2px"; style.borderLeftWidth = "2px"; }
+  if (pos === "br") { style.bottom = -1; style.right = -1; style.borderBottomWidth = "2px"; style.borderRightWidth = "2px"; }
+  return <div style={style} />;
+}
+
+// ── HeroBackground ────────────────────────────────────────────────────────────
+
+function HeroBackground() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
+      {/* Energy orb — center */}
+      <div
+        className="energy-orb-1 absolute rounded-full"
+        style={{
+          top: "-10%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "700px",
+          height: "500px",
+          background: "radial-gradient(ellipse, rgba(255,107,53,0.09) 0%, transparent 65%)",
+        }}
+      />
+      {/* Energy orb — left */}
+      <div
+        className="energy-orb-2 absolute rounded-full"
+        style={{
+          top: "20%",
+          left: "-10%",
+          width: "400px",
+          height: "400px",
+          background: "radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 65%)",
+        }}
+      />
+      {/* Energy orb — right */}
+      <div
+        className="energy-orb-3 absolute rounded-full"
+        style={{
+          top: "10%",
+          right: "-8%",
+          width: "350px",
+          height: "350px",
+          background: "radial-gradient(circle, rgba(255,107,53,0.07) 0%, transparent 65%)",
+        }}
+      />
+      {/* Bottom purple glow */}
+      <div
+        className="energy-orb-2 absolute rounded-full"
+        style={{
+          bottom: "-5%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "600px",
+          height: "200px",
+          background: "radial-gradient(ellipse, rgba(124,58,237,0.07) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* Grid overlay */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,107,53,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,107,53,0.03) 1px, transparent 1px)",
+          backgroundSize: "80px 80px",
+        }}
+      />
+
+      {/* Scanline overlay */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px)",
+        }}
+      />
+
+      {/* Vignette */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%)",
+        }}
+      />
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function Home() {
   return (
     <main className="min-h-screen" style={{ background: "#0a0a0a" }}>
 
-      {/* NAV */}
+      {/* ── NAV ── */}
       <nav
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
         style={{
-          background: "rgba(10,10,10,0.9)",
-          backdropFilter: "blur(16px)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(10,10,10,0.85)",
+          backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(255,255,255,0.05)",
         }}
       >
-        <span className="font-black text-xl tracking-tight gradient-text">ZENKAI</span>
+        <span
+          className="font-black text-xl tracking-tight gradient-text"
+          style={{ letterSpacing: "-0.02em" }}
+        >
+          ZENKAI
+        </span>
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block"
+            className="text-sm text-gray-500 hover:text-white transition-colors hidden sm:block"
           >
             Sign in
           </Link>
@@ -156,52 +336,86 @@ export default function Home() {
       </nav>
 
       {/* ── HERO ── */}
-      <section className="relative pt-36 pb-28 px-6 overflow-hidden">
-        {/* Ambient glows */}
-        <div
-          className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[400px] pointer-events-none"
-          style={{ background: "radial-gradient(ellipse, rgba(255,107,53,0.07) 0%, transparent 70%)" }}
-        />
-        <div
-          className="absolute top-40 right-0 w-72 h-72 pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%)" }}
-        />
+      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden px-6 pt-20 pb-16">
+        <HeroBackground />
 
-        <div className="relative max-w-3xl mx-auto text-center">
+        <div
+          className="relative z-10 max-w-4xl mx-auto w-full text-center"
+          style={{ animation: "bootIn 0.8s ease both" }}
+        >
+
+          {/* System badge */}
           <div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase mb-8"
+            className="inline-flex items-center gap-3 px-4 py-2 mb-10"
             style={{
-              background: "rgba(255,107,53,0.08)",
-              border: "1px solid rgba(255,107,53,0.2)",
-              color: "#FF6B35",
+              border: "1px solid rgba(255,107,53,0.25)",
+              background: "rgba(255,107,53,0.04)",
+              animation: "bootIn 0.6s ease 0.1s both",
             }}
           >
-            Anime Fitness RPG
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ background: "#FF6B35", boxShadow: "0 0 6px #FF6B35" }}
+            />
+            <span
+              className="text-xs font-bold tracking-[0.25em] uppercase"
+              style={{ color: "rgba(255,107,53,0.8)", fontFamily: "monospace" }}
+            >
+              ANIME FITNESS RPG // SYSTEM INITIALIZED
+            </span>
           </div>
 
-          <h1 className="text-5xl sm:text-7xl font-black leading-[1.05] tracking-tight mb-6">
+          {/* Power Scouter — centerpiece */}
+          <div
+            className="flex justify-center mb-10"
+            style={{ animation: "bootIn 0.6s ease 0.2s both" }}
+          >
+            <PowerScouter />
+          </div>
+
+          {/* Hero title */}
+          <h1
+            className="font-black uppercase text-white mb-6 leading-none tracking-tighter"
+            style={{
+              fontSize: "clamp(2.8rem, 9vw, 6.5rem)",
+              animation: "bootIn 0.6s ease 0.5s both",
+            }}
+          >
             <span className="gradient-text">Every setback</span>
             <br />
-            <span className="text-white">makes you stronger.</span>
+            <span style={{ color: "#fff" }}>makes you stronger.</span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed">
+          {/* Subtitle */}
+          <p
+            className="text-lg text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed"
+            style={{ animation: "bootIn 0.6s ease 0.7s both" }}
+          >
             Train in real life. Level up like an anime character.{" "}
             <span className="text-white font-medium">Miss a week?</span>{" "}
             That&apos;s when your{" "}
             <span style={{ color: "#FF6B35" }} className="font-bold">Zenkai Boost</span> begins.
           </p>
 
-          <div className="max-w-md mx-auto mb-4">
+          {/* Waitlist form */}
+          <div
+            className="max-w-md mx-auto"
+            style={{ animation: "bootIn 0.6s ease 0.85s both" }}
+          >
             <WaitlistForm compact />
-            <p className="text-xs text-gray-600 mt-3">No spam. No credit card. 7 days free.</p>
+            <p className="text-xs text-gray-700 mt-3">No spam. No credit card. 7 days free.</p>
           </div>
 
-          <PowerBar />
-
-          <div className="mt-12 flex items-center justify-center gap-6 text-sm text-gray-600">
+          {/* Social proof */}
+          <div
+            className="mt-10 flex items-center justify-center gap-6 text-sm text-gray-600"
+            style={{ animation: "bootIn 0.6s ease 1s both" }}
+          >
             <span>1,200+ on the waitlist</span>
-            <span className="w-px h-4" style={{ background: "rgba(255,255,255,0.1)" }} />
+            <span
+              className="w-px h-4"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+            />
             <span>Free to start</span>
           </div>
         </div>
@@ -294,10 +508,7 @@ export default function Home() {
                   border: "1px solid rgba(255,255,255,0.06)",
                 }}
               >
-                <span
-                  className="text-xs font-black tracking-widest"
-                  style={{ color: accent }}
-                >
+                <span className="text-xs font-black tracking-widest" style={{ color: accent }}>
                   {label}
                 </span>
                 <h3 className="text-lg font-black text-white">{title}</h3>
@@ -375,7 +586,6 @@ export default function Home() {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
-            {/* Free */}
             <div
               className="p-8 rounded-2xl flex flex-col gap-5"
               style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
@@ -386,12 +596,7 @@ export default function Home() {
                 <p className="text-sm text-gray-600 mt-1">7 days, full access</p>
               </div>
               <ul className="space-y-2.5 flex-1 text-sm text-gray-400">
-                {[
-                  "Create your character",
-                  "7 days of daily quests",
-                  "Basic workout library",
-                  "Progress tracker",
-                ].map((item) => (
+                {["Create your character", "7 days of daily quests", "Basic workout library", "Progress tracker"].map((item) => (
                   <li key={item} className="flex items-center gap-2.5">
                     <span style={{ color: "#FF6B35" }}>—</span> {item}
                   </li>
@@ -406,13 +611,9 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Pro */}
             <div
               className="p-8 rounded-2xl flex flex-col gap-5 relative overflow-hidden"
-              style={{
-                background: "rgba(124,58,237,0.06)",
-                border: "1px solid rgba(124,58,237,0.3)",
-              }}
+              style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.3)" }}
             >
               <div
                 className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-black"
@@ -421,9 +622,7 @@ export default function Home() {
                 POPULAR
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#7C3AED" }}>
-                  Full Power
-                </p>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#7C3AED" }}>Full Power</p>
                 <div className="flex items-baseline gap-1">
                   <p className="text-4xl font-black text-white">€4.99</p>
                   <p className="text-gray-500 text-sm">/month</p>
@@ -431,14 +630,7 @@ export default function Home() {
                 <p className="text-sm text-gray-600 mt-1">Billed monthly, cancel anytime</p>
               </div>
               <ul className="space-y-2.5 flex-1 text-sm text-gray-300">
-                {[
-                  "Everything in Free",
-                  "Full character system",
-                  "Zenkai Boost quests",
-                  "Unlimited workout history",
-                  "Exclusive character skins",
-                  "Priority new features",
-                ].map((item) => (
+                {["Everything in Free", "Full character system", "Zenkai Boost quests", "Unlimited workout history", "Exclusive character skins", "Priority new features"].map((item) => (
                   <li key={item} className="flex items-center gap-2.5">
                     <span style={{ color: "#7C3AED" }}>—</span> {item}
                   </li>
@@ -462,21 +654,15 @@ export default function Home() {
           <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#FF6B35" }}>
             Join the waitlist
           </p>
-          <h2 className="text-3xl sm:text-5xl font-black text-white mb-4">
-            Be first in line
-          </h2>
+          <h2 className="text-3xl sm:text-5xl font-black text-white mb-4">Be first in line</h2>
           <p className="text-gray-500 mb-10 leading-relaxed">
             Zenkai is coming. Get early access — including an exclusive{" "}
             <span style={{ color: "#FF6B35" }} className="font-bold">Founding Member skin</span>{" "}
             for those who show up early.
           </p>
-
           <div
             className="p-7 rounded-2xl"
-            style={{
-              background: "rgba(255,107,53,0.03)",
-              border: "1px solid rgba(255,107,53,0.12)",
-            }}
+            style={{ background: "rgba(255,107,53,0.03)", border: "1px solid rgba(255,107,53,0.12)" }}
           >
             <WaitlistForm />
             <div className="mt-5 flex items-center justify-center gap-5 text-xs text-gray-600 flex-wrap">
@@ -494,9 +680,7 @@ export default function Home() {
       <footer className="py-10 px-6 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="font-black gradient-text tracking-tight">ZENKAI</span>
-          <p className="text-xs text-gray-700 text-center">
-            © 2026 Zenkai. Every setback makes you stronger.
-          </p>
+          <p className="text-xs text-gray-700 text-center">© 2026 Zenkai. Every setback makes you stronger.</p>
           <div className="flex gap-5 text-xs text-gray-600">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
