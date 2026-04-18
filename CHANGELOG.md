@@ -3,6 +3,29 @@
 ## [Unreleased]
 
 ### Added
+- **Privacy page** (`/privacy`) — full privacy policy covering data collection, storage, cookies, user rights, third-party services, GDPR contact
+- **Terms page** (`/terms`) — terms of service covering service description, health disclaimer, account rules, subscription/payment terms, liability
+- Both pages share the dark design with Privacy/Terms footer links
+- Privacy + Terms links added to landing page footer and dashboard footer
+
+### Changed
+- **Landing page** — full UI polish
+  - All emojis removed; replaced with numbered labels, CSS border accents, and text markers
+  - `gradient-text` updated from gold/orange to orange/purple (`#FF6B35 → #7C3AED`)
+  - Problem section: numbered left-border cards instead of emoji cards
+  - Why Zenkai: numbered `01/02/03` labels, subtle hover lift, orange/purple accents
+  - How it works: step circles use orange→purple gradient instead of gold
+  - Pricing: dash list markers, purple accent on Full Power tier
+  - Waitlist section: no floating emoji, tighter card
+  - Nav: `⚡` emoji removed; added Sign in + Get started links to auth pages
+  - Footer: `Privacy` and `Terms` are now real `<Link>` components
+  - WaitlistForm: removed emoji from button and success state; orange focus rings
+  - PowerBar: updated to orange→purple gradient
+- **Login + Signup** — orange focus rings (`#FF6B35`) replace gold; gradient button uses orange→purple; `font-black` heading; `Field`/`ErrorMessage` components extracted
+- **Dashboard** — footer added with Privacy/Terms links
+- **globals.css** — gold variable removed; gradient-text updated to orange/purple; `float-anim`, `glow-btn`, `flicker-text`, `neon-border`, `power-bar` classes removed (unused); `font-family` uses Geist variable with system-ui fallback
+
+### Added
 - **Onboarding** (`/onboarding`) — 4-step client-side character creation flow
   - Step 1: Character class (Saiyan Warrior / Shadow Assassin / Iron Guardian)
   - Step 2: Goal (Get Stronger / Lose Weight / Be Consistent)

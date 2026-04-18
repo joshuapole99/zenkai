@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { verifyToken } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { getDailyQuests } from "@/lib/quests";
@@ -107,6 +108,19 @@ export default async function DashboardPage() {
         initialFoodLogged={!!foodLog}
         initialAteEnough={foodLog?.ate_enough ?? null}
       />
+
+      <footer
+        className="border-t py-6 px-4 mt-4"
+        style={{ borderColor: "rgba(255,255,255,0.04)" }}
+      >
+        <div className="max-w-lg mx-auto flex items-center justify-between">
+          <p className="text-xs text-gray-800">© 2026 Zenkai</p>
+          <div className="flex gap-4 text-xs text-gray-700">
+            <Link href="/privacy" className="hover:text-gray-400 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-gray-400 transition-colors">Terms</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 
 function PowerBar() {
   const [started, setStarted] = useState(false);
@@ -28,21 +29,21 @@ function PowerBar() {
   }, [started]);
 
   return (
-    <div ref={ref} className="w-full max-w-md mx-auto mt-8">
-      <div className="flex justify-between text-xs mb-2" style={{ color: "#FFD700" }}>
-        <span className="font-bold tracking-widest uppercase">Power Level</span>
-        <span className="font-mono font-bold">{level.toLocaleString("en-US")}</span>
+    <div ref={ref} className="w-full max-w-sm mx-auto mt-8">
+      <div className="flex justify-between text-xs mb-2">
+        <span className="font-bold tracking-widest uppercase text-gray-500">Power Level</span>
+        <span className="font-mono font-bold" style={{ color: "#FF6B35" }}>{level.toLocaleString("en-US")}</span>
       </div>
       <div
-        className="h-3 rounded-full overflow-hidden"
-        style={{ background: "rgba(255,215,0,0.15)", border: "1px solid rgba(255,215,0,0.3)" }}
+        className="h-2 rounded-full overflow-hidden"
+        style={{ background: "rgba(255,255,255,0.06)" }}
       >
         <div
           className="h-full rounded-full transition-all duration-75"
           style={{
             width: `${Math.min((level / 9700) * 100, 97)}%`,
-            background: "linear-gradient(90deg, #FF6B35, #FFD700)",
-            boxShadow: "0 0 10px rgba(255,215,0,0.7)",
+            background: "linear-gradient(90deg, #FF6B35, #7C3AED)",
+            boxShadow: "0 0 8px rgba(255,107,53,0.5)",
           }}
         />
       </div>
@@ -82,10 +83,12 @@ function WaitlistForm({ compact = false }: { compact?: boolean }) {
 
   if (status === "success") {
     return (
-      <div className="text-center py-4">
-        <div className="text-4xl mb-2">⚡</div>
-        <p className="font-bold text-lg" style={{ color: "#FFD700" }}>{message}</p>
-        <p className="text-sm text-gray-400 mt-1">We'll hit you up the moment Zenkai goes live.</p>
+      <div
+        className="text-center py-6 rounded-xl"
+        style={{ background: "rgba(255,107,53,0.06)", border: "1px solid rgba(255,107,53,0.2)" }}
+      >
+        <p className="font-black text-lg" style={{ color: "#FF6B35" }}>{message}</p>
+        <p className="text-sm text-gray-500 mt-1">We&apos;ll reach out when Zenkai goes live.</p>
       </div>
     );
   }
@@ -98,19 +101,24 @@ function WaitlistForm({ compact = false }: { compact?: boolean }) {
         onChange={(e) => setEmail(e.target.value)}
         placeholder="your@email.com"
         required
-        className={`flex-1 px-4 py-3 rounded-xl text-white placeholder-gray-500 focus:outline-none transition-colors ${compact ? "text-sm" : "text-base"}`}
-        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+        className={`flex-1 px-4 py-3 rounded-xl text-white placeholder-gray-600 focus:outline-none transition-all ${compact ? "text-sm" : "text-base"}`}
+        style={{
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+        onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,107,53,0.5)")}
+        onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
       />
       <button
         type="submit"
         disabled={status === "loading"}
-        className="glow-btn px-6 py-3 rounded-xl font-bold text-black transition-all hover:scale-105 active:scale-95 disabled:opacity-60 whitespace-nowrap"
-        style={{ background: "linear-gradient(135deg, #FFD700, #FF6B35)" }}
+        className="px-6 py-3 rounded-xl font-black text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60 whitespace-nowrap text-sm"
+        style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
       >
-        {status === "loading" ? "⚡ Loading..." : "Start Your Zenkai →"}
+        {status === "loading" ? "Joining..." : "Start Your Zenkai"}
       </button>
       {status === "error" && (
-        <p className="text-red-400 text-sm mt-1">{message}</p>
+        <p className="text-xs text-red-400 mt-1">{message}</p>
       )}
     </form>
   );
@@ -124,45 +132,51 @@ export default function Home() {
       <nav
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
         style={{
-          background: "rgba(10,10,10,0.85)",
-          backdropFilter: "blur(12px)",
-          borderBottom: "1px solid rgba(255,215,0,0.1)",
+          background: "rgba(10,10,10,0.9)",
+          backdropFilter: "blur(16px)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
         }}
       >
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">⚡</span>
-          <span className="font-black text-xl tracking-tight gradient-text">ZENKAI</span>
+        <span className="font-black text-xl tracking-tight gradient-text">ZENKAI</span>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/login"
+            className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/signup"
+            className="px-4 py-2 rounded-lg text-sm font-bold text-white transition-all hover:opacity-90"
+            style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
+          >
+            Get started
+          </Link>
         </div>
-        <a
-          href="#waitlist"
-          className="px-4 py-2 rounded-lg text-sm font-bold text-black transition-all hover:scale-105"
-          style={{ background: "linear-gradient(135deg, #FFD700, #FF6B35)" }}
-        >
-          Join Now
-        </a>
       </nav>
 
       {/* ── HERO ── */}
-      <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+      <section className="relative pt-36 pb-28 px-6 overflow-hidden">
+        {/* Ambient glows */}
         <div
-          className="absolute top-20 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(255,215,0,0.08) 0%, transparent 70%)" }}
+          className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[400px] pointer-events-none"
+          style={{ background: "radial-gradient(ellipse, rgba(255,107,53,0.07) 0%, transparent 70%)" }}
         />
         <div
-          className="absolute top-40 right-10 w-64 h-64 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(255,107,53,0.06) 0%, transparent 70%)" }}
+          className="absolute top-40 right-0 w-72 h-72 pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%)" }}
         />
 
         <div className="relative max-w-3xl mx-auto text-center">
           <div
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase mb-8"
             style={{
-              background: "rgba(255,215,0,0.1)",
-              border: "1px solid rgba(255,215,0,0.3)",
-              color: "#FFD700",
+              background: "rgba(255,107,53,0.08)",
+              border: "1px solid rgba(255,107,53,0.2)",
+              color: "#FF6B35",
             }}
           >
-            <span>⚡</span> Dragon Ball × Fitness
+            Anime Fitness RPG
           </div>
 
           <h1 className="text-5xl sm:text-7xl font-black leading-[1.05] tracking-tight mb-6">
@@ -175,7 +189,7 @@ export default function Home() {
             Train in real life. Level up like an anime character.{" "}
             <span className="text-white font-medium">Miss a week?</span>{" "}
             That&apos;s when your{" "}
-            <span style={{ color: "#FFD700" }} className="font-bold">Zenkai Boost</span> begins.
+            <span style={{ color: "#FF6B35" }} className="font-bold">Zenkai Boost</span> begins.
           </p>
 
           <div className="max-w-md mx-auto mb-4">
@@ -185,18 +199,10 @@ export default function Home() {
 
           <PowerBar />
 
-          <div className="float-anim mt-12 text-7xl sm:text-8xl select-none">🔥</div>
-
-          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-500">
-            <div className="flex items-center gap-1">
-              <span>👥</span>
-              <span>1,200+ on the waitlist</span>
-            </div>
-            <div className="w-px h-4 bg-gray-700" />
-            <div className="flex items-center gap-1">
-              <span>⭐</span>
-              <span>Free to start</span>
-            </div>
+          <div className="mt-12 flex items-center justify-center gap-6 text-sm text-gray-600">
+            <span>1,200+ on the waitlist</span>
+            <span className="w-px h-4" style={{ background: "rgba(255,255,255,0.1)" }} />
+            <span>Free to start</span>
           </div>
         </div>
       </section>
@@ -205,34 +211,34 @@ export default function Home() {
       <section className="py-24 px-6" style={{ background: "rgba(255,255,255,0.02)" }}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: "#FF6B35" }}>
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#FF6B35" }}>
               The problem
             </p>
             <h2 className="text-3xl sm:text-5xl font-black text-white">Sound familiar?</h2>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             {[
-              {
-                emoji: "😤",
-                text: "You start fired up — then life gets in the way. You miss a day. Then a week. And somehow that's your fault?",
-              },
-              {
-                emoji: "😞",
-                text: "Other apps punish you for stopping. Streak gone. Badges wiped. Like you already lost.",
-              },
-              {
-                emoji: "🚫",
-                text: "You feel guilty, quit completely — and the app collects dust.",
-              },
-            ].map(({ emoji, text }) => (
+              "You start fired up — then life gets in the way. You miss a day. Then a week. Somehow that becomes your fault.",
+              "Other apps punish you for stopping. Streak gone. Badges wiped. Progress erased. Like you already lost.",
+              "You feel guilty, quit completely — and the app collects dust. The cycle repeats.",
+            ].map((text, i) => (
               <div
-                key={emoji}
-                className="flex gap-4 items-start p-6 rounded-2xl"
-                style={{ background: "rgba(255,107,53,0.06)", border: "1px solid rgba(255,107,53,0.15)" }}
+                key={i}
+                className="flex gap-5 items-start p-5 rounded-xl"
+                style={{
+                  background: "rgba(255,107,53,0.04)",
+                  border: "1px solid rgba(255,107,53,0.1)",
+                  borderLeft: "3px solid rgba(255,107,53,0.4)",
+                }}
               >
-                <span className="text-3xl flex-shrink-0">{emoji}</span>
-                <p className="text-gray-300 text-lg leading-relaxed">{text}</p>
+                <span
+                  className="text-xs font-black mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(255,107,53,0.15)", color: "#FF6B35" }}
+                >
+                  {i + 1}
+                </span>
+                <p className="text-gray-300 leading-relaxed">{text}</p>
               </div>
             ))}
           </div>
@@ -250,44 +256,52 @@ export default function Home() {
       <section className="py-24 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: "#FFD700" }}>
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#7C3AED" }}>
               Why Zenkai
             </p>
             <h2 className="text-3xl sm:text-5xl font-black text-white">
               Built for real people
             </h2>
-            <p className="text-gray-400 mt-4 text-lg">Who know that life gets in the way.</p>
+            <p className="text-gray-500 mt-4">Who know that life gets in the way.</p>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-3 gap-4">
             {[
               {
-                emoji: "⚡",
+                label: "01",
                 title: "Zenkai Boost",
-                desc: "Miss a few days? You get a special comeback quest — just like Saiyans after every defeat. Your setback is your power.",
-                color: "#FFD700",
+                desc: "Miss a few days? You get a special comeback quest — just like Saiyans after every defeat. Your setback becomes your power.",
+                accent: "#FF6B35",
               },
               {
-                emoji: "🏠",
+                label: "02",
                 title: "Home workouts",
-                desc: "No gym needed. Your room is your dojo. Built for small spaces, zero equipment.",
-                color: "#FF6B35",
+                desc: "No gym needed. Your room is your dojo. Built for small spaces, zero equipment, any schedule.",
+                accent: "#7C3AED",
               },
               {
-                emoji: "🎭",
+                label: "03",
                 title: "You are the main character",
-                desc: "Your own anime character levels up with your real progress. Every workout = XP. Every comeback = power-up.",
-                color: "#FFD700",
+                desc: "Your anime character levels up with your real progress. Every workout is XP. Every comeback is a power-up.",
+                accent: "#FF6B35",
               },
-            ].map(({ emoji, title, desc, color }) => (
+            ].map(({ label, title, desc, accent }) => (
               <div
                 key={title}
-                className="neon-border p-8 rounded-2xl flex flex-col gap-4 hover:scale-[1.02] transition-transform cursor-default"
-                style={{ background: "rgba(255,255,255,0.02)" }}
+                className="p-7 rounded-2xl flex flex-col gap-4 transition-all duration-200 hover:translate-y-[-2px]"
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                }}
               >
-                <div className="text-5xl">{emoji}</div>
-                <h3 className="text-xl font-black" style={{ color }}>{title}</h3>
-                <p className="text-gray-400 leading-relaxed">{desc}</p>
+                <span
+                  className="text-xs font-black tracking-widest"
+                  style={{ color: accent }}
+                >
+                  {label}
+                </span>
+                <h3 className="text-lg font-black text-white">{title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -298,7 +312,7 @@ export default function Home() {
       <section className="py-24 px-6" style={{ background: "rgba(255,255,255,0.02)" }}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: "#FF6B35" }}>
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#FF6B35" }}>
               How it works
             </p>
             <h2 className="text-3xl sm:text-5xl font-black text-white">
@@ -310,40 +324,36 @@ export default function Home() {
             {[
               {
                 step: "01",
-                emoji: "🧬",
                 title: "Create your character",
-                desc: "Pick your style, name your character, set your starting level. You decide who you become.",
+                desc: "Pick your class, name your character, set your starting level. You decide who you become.",
               },
               {
                 step: "02",
-                emoji: "⚔️",
                 title: "Complete daily quests",
-                desc: "Home workouts — no equipment needed. New challenges every day, scaled to your level.",
+                desc: "Home workouts — no equipment needed. 3 new challenges every day, scaled to your level.",
               },
               {
                 step: "03",
-                emoji: "📈",
                 title: "Watch your character grow",
                 desc: "As you train, your character evolves. Fall off? No punishment — your Zenkai Boost gives you bonus XP when you return.",
               },
-            ].map(({ step, emoji, title, desc }, i) => (
+            ].map(({ step, title, desc }, i) => (
               <div key={step} className="flex gap-6 items-start relative">
                 {i < 2 && (
                   <div
-                    className="absolute left-6 top-16 bottom-0 w-px"
-                    style={{ background: "linear-gradient(to bottom, rgba(255,215,0,0.3), transparent)" }}
+                    className="absolute left-[22px] top-14 bottom-0 w-px"
+                    style={{ background: "linear-gradient(to bottom, rgba(255,107,53,0.3), transparent)" }}
                   />
                 )}
                 <div
-                  className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-black text-sm z-10"
-                  style={{ background: "linear-gradient(135deg, #FFD700, #FF6B35)", color: "#0a0a0a" }}
+                  className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center font-black text-xs z-10"
+                  style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)", color: "#fff" }}
                 >
                   {step}
                 </div>
                 <div className="pb-12">
-                  <div className="text-3xl mb-2">{emoji}</div>
-                  <h3 className="text-xl font-black text-white mb-2">{title}</h3>
-                  <p className="text-gray-400 leading-relaxed">{desc}</p>
+                  <h3 className="text-lg font-black text-white mb-2">{title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
                 </div>
               </div>
             ))}
@@ -355,41 +365,42 @@ export default function Home() {
       <section className="py-24 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: "#FFD700" }}>
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#7C3AED" }}>
               Pricing
             </p>
             <h2 className="text-3xl sm:text-5xl font-black text-white">
               Simple. Fair. Affordable.
             </h2>
-            <p className="text-gray-400 mt-4 text-lg">&ldquo;Less than a cup of coffee a week.&rdquo;</p>
+            <p className="text-gray-500 mt-4">Less than a cup of coffee a week.</p>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+          <div className="grid sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
             {/* Free */}
             <div
-              className="p-8 rounded-2xl flex flex-col gap-4"
-              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+              className="p-8 rounded-2xl flex flex-col gap-5"
+              style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
             >
               <div>
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Free</p>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Free trial</p>
                 <p className="text-4xl font-black text-white">€0</p>
-                <p className="text-gray-500 text-sm mt-1">7 days, full access</p>
+                <p className="text-sm text-gray-600 mt-1">7 days, full access</p>
               </div>
-              <ul className="space-y-3 flex-1">
+              <ul className="space-y-2.5 flex-1 text-sm text-gray-400">
                 {[
                   "Create your character",
-                  "7 days of quests",
+                  "7 days of daily quests",
                   "Basic workout library",
                   "Progress tracker",
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-gray-300 text-sm">
-                    <span style={{ color: "#FFD700" }}>✓</span> {item}
+                  <li key={item} className="flex items-center gap-2.5">
+                    <span style={{ color: "#FF6B35" }}>—</span> {item}
                   </li>
                 ))}
               </ul>
               <a
                 href="#waitlist"
-                className="block text-center py-3 px-6 rounded-xl font-bold text-white border border-white/20 hover:border-white/40 transition-colors text-sm"
+                className="block text-center py-3 px-6 rounded-xl font-bold text-white text-sm transition-all hover:bg-white/5"
+                style={{ border: "1px solid rgba(255,255,255,0.1)" }}
               >
                 Start for free
               </a>
@@ -397,29 +408,29 @@ export default function Home() {
 
             {/* Pro */}
             <div
-              className="p-8 rounded-2xl flex flex-col gap-4 relative overflow-hidden"
+              className="p-8 rounded-2xl flex flex-col gap-5 relative overflow-hidden"
               style={{
-                background: "linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,107,53,0.08))",
-                border: "1px solid rgba(255,215,0,0.3)",
+                background: "rgba(124,58,237,0.06)",
+                border: "1px solid rgba(124,58,237,0.3)",
               }}
             >
               <div
                 className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-black"
-                style={{ background: "linear-gradient(135deg, #FFD700, #FF6B35)", color: "#0a0a0a" }}
+                style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)", color: "#fff" }}
               >
                 POPULAR
               </div>
               <div>
-                <p className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: "#FFD700" }}>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#7C3AED" }}>
                   Full Power
                 </p>
                 <div className="flex items-baseline gap-1">
                   <p className="text-4xl font-black text-white">€4.99</p>
-                  <p className="text-gray-400 text-sm">/month</p>
+                  <p className="text-gray-500 text-sm">/month</p>
                 </div>
-                <p className="text-gray-500 text-sm mt-1">Less than a cup of coffee a week</p>
+                <p className="text-sm text-gray-600 mt-1">Billed monthly, cancel anytime</p>
               </div>
-              <ul className="space-y-3 flex-1">
+              <ul className="space-y-2.5 flex-1 text-sm text-gray-300">
                 {[
                   "Everything in Free",
                   "Full character system",
@@ -428,17 +439,17 @@ export default function Home() {
                   "Exclusive character skins",
                   "Priority new features",
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-gray-200 text-sm">
-                    <span style={{ color: "#FFD700" }}>⚡</span> {item}
+                  <li key={item} className="flex items-center gap-2.5">
+                    <span style={{ color: "#7C3AED" }}>—</span> {item}
                   </li>
                 ))}
               </ul>
               <a
                 href="#waitlist"
-                className="block text-center py-3 px-6 rounded-xl font-black text-black transition-all hover:scale-105 text-sm"
-                style={{ background: "linear-gradient(135deg, #FFD700, #FF6B35)" }}
+                className="block text-center py-3 px-6 rounded-xl font-black text-white transition-all hover:opacity-90 text-sm"
+                style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
               >
-                Start Your Zenkai →
+                Start Your Zenkai
               </a>
             </div>
           </div>
@@ -448,48 +459,48 @@ export default function Home() {
       {/* ── WAITLIST ── */}
       <section id="waitlist" className="py-24 px-6" style={{ background: "rgba(255,255,255,0.02)" }}>
         <div className="max-w-xl mx-auto text-center">
-          <div className="text-6xl mb-6 float-anim">⚡</div>
-          <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: "#FFD700" }}>
-            Waitlist
+          <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#FF6B35" }}>
+            Join the waitlist
           </p>
           <h2 className="text-3xl sm:text-5xl font-black text-white mb-4">
             Be first in line
           </h2>
-          <p className="text-gray-400 text-lg mb-10 leading-relaxed">
-            Zenkai is coming. Get early access now — including an exclusive{" "}
-            <span style={{ color: "#FFD700" }} className="font-bold">Founding Member skin</span>{" "}
-            for believers who show up early.
+          <p className="text-gray-500 mb-10 leading-relaxed">
+            Zenkai is coming. Get early access — including an exclusive{" "}
+            <span style={{ color: "#FF6B35" }} className="font-bold">Founding Member skin</span>{" "}
+            for those who show up early.
           </p>
 
           <div
-            className="neon-border p-8 rounded-2xl"
-            style={{ background: "rgba(255,215,0,0.03)" }}
+            className="p-7 rounded-2xl"
+            style={{
+              background: "rgba(255,107,53,0.03)",
+              border: "1px solid rgba(255,107,53,0.12)",
+            }}
           >
             <WaitlistForm />
-            <div className="mt-6 flex items-center justify-center gap-4 text-xs text-gray-600 flex-wrap">
-              <span>🔒 No spam</span>
-              <span>•</span>
-              <span>✓ Free 7 days</span>
-              <span>•</span>
-              <span>❌ No credit card</span>
+            <div className="mt-5 flex items-center justify-center gap-5 text-xs text-gray-600 flex-wrap">
+              <span>No spam</span>
+              <span style={{ color: "rgba(255,255,255,0.1)" }}>|</span>
+              <span>7 days free</span>
+              <span style={{ color: "rgba(255,255,255,0.1)" }}>|</span>
+              <span>No credit card</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="py-10 px-6 border-t border-white/5">
+      <footer className="py-10 px-6 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">⚡</span>
-            <span className="font-black gradient-text tracking-tight">ZENKAI</span>
-          </div>
-          <p className="text-xs text-gray-600 text-center">
+          <span className="font-black gradient-text tracking-tight">ZENKAI</span>
+          <p className="text-xs text-gray-700 text-center">
             © 2026 Zenkai. Every setback makes you stronger.
           </p>
-          <div className="flex gap-4 text-xs text-gray-600">
-            <span className="hover:text-gray-400 cursor-pointer transition-colors">Privacy</span>
-            <span className="hover:text-gray-400 cursor-pointer transition-colors">Contact</span>
+          <div className="flex gap-5 text-xs text-gray-600">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <a href="mailto:support@zenkai.app" className="hover:text-white transition-colors">Contact</a>
           </div>
         </div>
       </footer>
