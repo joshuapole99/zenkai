@@ -5,13 +5,13 @@ export async function POST(req: NextRequest) {
   const { email } = await req.json();
 
   if (!email || typeof email !== "string" || !email.includes("@")) {
-    return NextResponse.json({ error: "Ongeldig e-mailadres." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid email address." }, { status: 400 });
   }
 
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     return NextResponse.json(
-      { error: "Database niet geconfigureerd. Voeg DATABASE_URL toe aan .env.local." },
+      { error: "Database not configured. Add DATABASE_URL to .env.local." },
       { status: 503 }
     );
   }
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     `;
 
     return NextResponse.json(
-      { message: "Je staat op de lijst! Je Zenkai Boost wacht op je. 🔥" },
+      { message: "You're on the list. Your Zenkai Boost is waiting. 🔥" },
       { status: 201 }
     );
   } catch (err: unknown) {
@@ -43,11 +43,11 @@ export async function POST(req: NextRequest) {
       (err as { code: string }).code === "23505"
     ) {
       return NextResponse.json(
-        { error: "Dit e-mailadres staat al op de wachtlijst." },
+        { error: "This email is already on the waitlist." },
         { status: 409 }
       );
     }
     console.error("Waitlist error:", err);
-    return NextResponse.json({ error: "Er ging iets mis. Probeer opnieuw." }, { status: 500 });
+    return NextResponse.json({ error: "Something went wrong. Try again." }, { status: 500 });
   }
 }

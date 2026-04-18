@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+### Changed
+- Translated entire landing page from Dutch to English — bold shonen anime protagonist tone throughout
+  - Hero: "Every setback makes you stronger." / "That's when your Zenkai Boost begins."
+  - Problem section: punchy, second-person copy ("You start fired up…")
+  - Why Zenkai, How it works, Pricing, Waitlist, Footer — all English
+  - Nav CTA: "Aanmelden" → "Join Now"
+  - Form: placeholder, button, success/error messages all translated
+  - Power level bar locale: `nl-NL` → `en-US`
+  - Pro tier renamed from "Volledig" → "Full Power"; badge "POPULAIR" → "POPULAR"
+- `layout.tsx`: `lang="nl"` → `lang="en"`
+- `api/waitlist/route.ts`: all Dutch error/success strings translated to English
+
+---
+
+
 ### Added
 - Initial landing page with 6 sections: Hero, Het Probleem, Jouw Onderscheid, Hoe Het Werkt, Pricing, Waitlist
 - Animated power level bar (0 → 9.700) triggered by IntersectionObserver on scroll
