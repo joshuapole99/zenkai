@@ -417,7 +417,14 @@ export default function Home() {
           borderBottom: "1px solid rgba(255,255,255,0.05)",
         }}
       >
-        <Image src="/logo.png" alt="Zenkai" width={120} height={40} className="h-8 w-auto" />
+        <Image
+          src="/logo.png"
+          alt="Zenkai"
+          width={144}
+          height={48}
+          className="w-auto"
+          style={{ height: "48px", animation: "logoGlow 2s ease-in-out infinite" }}
+        />
         <div className="flex items-center gap-3">
           <Link
             href="/login"
