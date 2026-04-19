@@ -3,6 +3,16 @@
 ## [Unreleased]
 
 ### Added
+- **Story engine** — daily narrative RPG flow using data from `lib/story.ts`
+  - `story_day` + `last_story_date` columns added to users table (lazy migration)
+  - On dashboard load: if story not read today → `StoryScreen` overlay renders first (full-screen)
+  - `StoryScreen`: chapter badge, chapter title, RPG dialogue box with "Master Kael" speaker chip, typewriter text reveal (22ms/char), tap-to-reveal-all, "Accept Quest" button, skip option; orange/purple theme; gold theme for Zenkai Boost
+  - On "Accept Quest": POST `/api/story/read` saves `last_story_date = today`, transitions to workout view
+  - After all quests complete: `CompletionScreen` overlay fades in (700ms delay)
+  - `CompletionScreen`: animated XP counter (counts up to 100), power level badge, Master Kael completion quote (italic), next chapter teaser with chapter title, "Continue" button
+  - On "Continue": POST `/api/story/advance` increments `story_day` (1→7, clamps at 7); Zenkai Boost does not advance story day
+  - **Zenkai Boost**: triggered when `story_day > 1` AND `last_streak_date` is 7+ days ago; shows golden screen design with special intro/completion text; resumes normal arc afterward
+  - `GET /api/story/read` + `GET /api/story/advance` API routes
 - **Founding Member system** — on signup, email is cross-checked against `waitlist_zenkai`; if match, `is_founding_member = true` and `founding_member_since = NOW()` set automatically
   - Dashboard: gold character name, gold "Founding Member" badge, "Founding Member — Origin Arc" line, "Exclusive skin unlocks at official launch" note
   - Onboarding: special full-screen "Founding Member Detected" interstitial with perks list and "Claim your spot" CTA before character creation; onboarding is now a server component wrapping `OnboardingClient`

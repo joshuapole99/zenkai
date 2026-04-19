@@ -23,14 +23,12 @@
 - [x] Exercise library — 27 exercises in Neon DB (push/pull/legs/core/cardio × beginner/intermediate/advanced)
 - [x] Exercise swap feature — inline picker, saves per day, resets next day
 - [x] Founding Member system — auto-detected on signup via waitlist cross-check; gold badge + name in dashboard; special onboarding screen; open beta messaging on signup + landing page
+- [x] Story engine — daily RPG narrative flow: story screen → workout → completion screen; typewriter text; Zenkai Boost trigger; next chapter teaser; story_day progression saved per user
 
 ## Todo
 
 ### Core product
-- [ ] Story engine: show daily story intro before workout
-- [ ] Story flow: intro → workout → completion → next day teaser
-- [ ] Story progress saved per user in database
-- [ ] Zenkai Boost arc: triggered after 7+ missed days
+- [ ] Zenkai Boost arc: expand with more story arcs beyond day 7
 - [ ] Side quests: unlocked after main quest complete
 - [ ] Arc system: week 1 Origin Arc, week 2 Saiyan Warrior Arc
 - [ ] Zenkai Boost mechanic (comeback quest when streak breaks)

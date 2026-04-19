@@ -6,6 +6,7 @@ import Link from "next/link";
 import { verifyToken } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { getDailyQuests } from "@/lib/quests";
+import { story } from "@/lib/story";
 import LogoutButton from "./LogoutButton";
 import DashboardClient from "./DashboardClient";
 
@@ -19,6 +20,18 @@ type UserRow = {
   streak: number | null;
   onboarding_complete: boolean | null;
   is_founding_member: boolean | null;
+  story_day: number | null;
+  last_story_date: string | null;
+  last_streak_date: string | null;
+};
+
+export type StoryData = {
+  day: number;
+  title: string;
+  intro: string;
+  completion: string;
+  isZenkaiBoost: boolean;
+  nextChapterTitle: string | null;
 };
 
 type QuestCompletion = { quest_id: number };
@@ -61,9 +74,12 @@ export default async function DashboardPage() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fitness_level TEXT`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_founding_member BOOLEAN DEFAULT FALSE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS founding_member_since TIMESTAMPTZ`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS story_day INTEGER DEFAULT 1`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_story_date DATE`;
 
   const [user] = (await sql`
-    SELECT id, username, character_name, character_class, fitness_level, xp, streak, onboarding_complete, is_founding_member
+    SELECT id, username, character_name, character_class, fitness_level, xp, streak, onboarding_complete,
+           is_founding_member, story_day, last_story_date, last_streak_date
     FROM users WHERE id = ${session.userId}
   `) as UserRow[];
 
@@ -179,6 +195,37 @@ export default async function DashboardPage() {
 
   const quests = getDailyQuests(today);
 
+  // Story engine
+  const storyDay = Math.min(Math.max(user.story_day ?? 1, 1), 7);
+  const lastStoryDate = user.last_story_date
+    ? String(user.last_story_date).slice(0, 10)
+    : null;
+  const storyNotReadToday = lastStoryDate !== today;
+
+  // Zenkai Boost: user has trained before AND missed 7+ consecutive days
+  let isZenkaiBoost = false;
+  if (storyDay > 1 && user.last_streak_date) {
+    const diffMs = new Date(today).getTime() - new Date(String(user.last_streak_date).slice(0, 10)).getTime();
+    if (Math.floor(diffMs / 86400000) >= 7) isZenkaiBoost = true;
+  }
+
+  const dayEntry = story.days.find((d) => d.day === storyDay) ?? story.days[0];
+  const nextDayNum = storyDay < 7 ? storyDay + 1 : null;
+  const nextEntry = nextDayNum ? story.days.find((d) => d.day === nextDayNum) : null;
+
+  const storyData: StoryData = {
+    day: isZenkaiBoost ? 0 : storyDay,
+    title: isZenkaiBoost ? story.zenkaiBoost.title : dayEntry.title,
+    intro: isZenkaiBoost ? story.zenkaiBoost.intro : dayEntry.intro,
+    completion: isZenkaiBoost ? story.zenkaiBoost.completion : dayEntry.completion,
+    isZenkaiBoost,
+    nextChapterTitle: isZenkaiBoost
+      ? `Day ${storyDay} — ${dayEntry.title}`
+      : nextEntry
+      ? `Day ${nextDayNum} — ${nextEntry.title}`
+      : null,
+  };
+
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
       <header
@@ -205,6 +252,8 @@ export default async function DashboardPage() {
         initialAteEnough={foodLog?.ate_enough ?? null}
         initialSwaps={swaps}
         isFoundingMember={user.is_founding_member ?? false}
+        storyNotReadToday={storyNotReadToday}
+        storyData={storyData}
       />
 
       <footer
