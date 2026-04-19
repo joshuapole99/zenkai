@@ -26,6 +26,7 @@ type UserRow = {
   story_day: number | null;
   last_story_date: string | null;
   last_streak_date: string | null;
+  last_story_day_seen: number | null;
   avatar_config: AvatarConfig | null;
 };
 
@@ -118,6 +119,7 @@ export default async function DashboardPage() {
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS protein_goal INTEGER`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_config JSONB`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_story_day_seen INTEGER DEFAULT 0`;
   } catch (e) {
     console.error("[dashboard] users migration error:", e);
   }
@@ -126,7 +128,8 @@ export default async function DashboardPage() {
   try {
     const rows = (await sql`
       SELECT id, username, character_name, character_class, fitness_level, xp, streak, hp, protein_goal,
-             onboarding_complete, is_founding_member, story_day, last_story_date, last_streak_date, avatar_config
+             onboarding_complete, is_founding_member, story_day, last_story_date, last_streak_date,
+             last_story_day_seen, avatar_config
       FROM users WHERE id = ${session.userId}
     `) as UserRow[];
     if (!rows[0]) redirect("/login");
@@ -291,7 +294,7 @@ export default async function DashboardPage() {
   const lastStoryDate = user.last_story_date
     ? String(user.last_story_date).slice(0, 10)
     : null;
-  const storyNotReadToday = lastStoryDate !== today;
+  const lastStoryDaySeen = Number(user.last_story_day_seen ?? 0);
 
   // Zenkai Boost: user has trained before AND missed 7+ consecutive days
   let isZenkaiBoost = false;
@@ -299,6 +302,11 @@ export default async function DashboardPage() {
     const diffMs = new Date(today).getTime() - new Date(String(user.last_streak_date).slice(0, 10)).getTime();
     if (Math.floor(diffMs / 86400000) >= 7) isZenkaiBoost = true;
   }
+
+  // Story not seen: normal arc = haven't seen this story_day yet; boost = haven't seen today
+  const storyNotReadToday = isZenkaiBoost
+    ? lastStoryDate !== today
+    : lastStoryDaySeen < storyDay;
 
   const dayEntry = story.days.find((d) => d.day === storyDay) ?? story.days[0];
   const nextDayNum = storyDay < 7 ? storyDay + 1 : null;

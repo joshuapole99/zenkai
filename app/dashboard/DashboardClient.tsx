@@ -202,6 +202,7 @@ export default function DashboardClient({
           isZenkaiBoost={storyData.isZenkaiBoost}
           background={storyData.background}
           npc={storyData.npc}
+          storyDay={storyData.day}
           onAccept={() => setView("workout")}
         />
       )}

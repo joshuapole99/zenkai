@@ -11,10 +11,11 @@ type Props = {
   isZenkaiBoost: boolean;
   background: string;
   npc: string;
+  storyDay: number;
   onAccept: () => void;
 };
 
-export default function StoryScreen({ day, title, intro, isZenkaiBoost, background, npc, onAccept }: Props) {
+export default function StoryScreen({ day, title, intro, isZenkaiBoost, background, npc, storyDay, onAccept }: Props) {
   const [typedText, setTypedText] = useState("");
   const [typingDone, setTypingDone] = useState(false);
   const [accepting, setAccepting] = useState(false);
@@ -44,7 +45,11 @@ export default function StoryScreen({ day, title, intro, isZenkaiBoost, backgrou
   async function handleAccept() {
     if (accepting) return;
     setAccepting(true);
-    await fetch("/api/story/read", { method: "POST" });
+    await fetch("/api/story/read", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isZenkaiBoost, storyDay }),
+    });
     onAccept();
   }
 
