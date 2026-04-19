@@ -3,6 +3,24 @@
 ## [Unreleased]
 
 ### Added
+- **Visual structure** — asset inventory + placeholder system for all future art
+  - `lib/visuals.ts` — typed registry for all image paths: characters (saiyan/assassin/guardian × 3 levels), NPCs (Kael, Ryo + variants), backgrounds (7 scenes), enemies (5 grunts + 3 bosses)
+  - Helper exports: `NPC_NAMES`, `NPC_COLORS`, `CLASS_COLORS`, `getCharacterImage(class, level)`
+  - `/public/images/` folders created: `characters/`, `npc/`, `bg/`, `enemies/`
+  - Placeholder logic in components: `onError` hides broken img, colored div + label shows instead
+- **Story screen — background + NPC** — each day now has a scene and character
+  - `lib/story.ts`: `background` + `npc` fields on every day and `zenkaiBoost`; day 3 uses Ryo, day 7 uses kaelProud, Zenkai Boost uses zenkai bg
+  - `StoryScreen`: background image fills screen at 35% opacity (fades in on load); dark overlay for readability; NPC placeholder box bottom-left of dialogue box; speaker chip name driven by NPC key; dialogue box gets `pl-16` padding to clear NPC image
+  - `StoryData` type updated in dashboard page to include `background` + `npc`
+- **Character image on dashboard** — character card shows class-colored placeholder (orange/purple/gray) sized 72×96px; image path comes from `getCharacterImage(class, level)`; `onError` hides broken `<img>` so placeholder text shows; stage label (Lv.1/2/3) shown inside placeholder
+
+### Added (backlog)
+- **Enemies & Combat** section: daily enemy defeated by completing workout, enemy HP per exercise, grunt types
+- **Weekly Boss** section: The Shadow General → Ryo → Dark Self progression
+- **Friends & Co-op** section: search, requests, co-op story arcs, shared power boost
+- **Leaderboard** section: global XP, streak, power level, friends-only, always-visible rank
+
+### Added
 - **Story engine** — daily narrative RPG flow using data from `lib/story.ts`
   - `story_day` + `last_story_date` columns added to users table (lazy migration)
   - On dashboard load: if story not read today → `StoryScreen` overlay renders first (full-screen)

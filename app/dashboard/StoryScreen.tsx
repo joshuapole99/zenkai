@@ -1,19 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { visuals, NPC_NAMES, NPC_COLORS } from "@/lib/visuals";
+import type { NpcKey, BackgroundKey } from "@/lib/visuals";
 
 type Props = {
   day: number;
   title: string;
   intro: string;
   isZenkaiBoost: boolean;
+  background: string;
+  npc: string;
   onAccept: () => void;
 };
 
-export default function StoryScreen({ day, title, intro, isZenkaiBoost, onAccept }: Props) {
+export default function StoryScreen({ day, title, intro, isZenkaiBoost, background, npc, onAccept }: Props) {
   const [typedText, setTypedText] = useState("");
   const [typingDone, setTypingDone] = useState(false);
   const [accepting, setAccepting] = useState(false);
+  const [bgLoaded, setBgLoaded] = useState(false);
 
   useEffect(() => {
     let i = 0;
@@ -44,17 +49,50 @@ export default function StoryScreen({ day, title, intro, isZenkaiBoost, onAccept
   }
 
   const accent = isZenkaiBoost ? "#FFD700" : "#FF6B35";
-  const gradientBg = isZenkaiBoost
-    ? "linear-gradient(180deg, rgba(255,215,0,0.15) 0%, transparent 55%)"
-    : "linear-gradient(180deg, rgba(255,107,53,0.15) 0%, transparent 55%)";
   const borderColor = isZenkaiBoost ? "rgba(255,215,0,0.2)" : "rgba(255,107,53,0.2)";
   const chipBg = isZenkaiBoost ? "rgba(255,215,0,0.08)" : "rgba(255,107,53,0.08)";
   const chapterLabel = isZenkaiBoost ? "Zenkai Boost" : `Day ${day}`;
 
+  const bgPath = visuals.backgrounds[background as BackgroundKey] ?? "";
+  const npcKey = npc as NpcKey;
+  const npcPath = visuals.npc[npcKey] ?? "";
+  const npcName = NPC_NAMES[npcKey] ?? "Master Kael";
+  const npcColor = NPC_COLORS[npcKey] ?? "#7C3AED";
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#0a0a0a" }}>
-      {/* Top gradient */}
-      <div className="absolute inset-0 pointer-events-none" style={{ background: gradientBg }} />
+
+      {/* Background image layer */}
+      {bgPath && (
+        <img
+          src={bgPath}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          style={{ opacity: bgLoaded ? 0.35 : 0, transition: "opacity 0.8s" }}
+          onLoad={() => setBgLoaded(true)}
+          onError={() => {}}
+        />
+      )}
+      {/* Background placeholder (always visible until image loads) */}
+      {!bgLoaded && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "linear-gradient(180deg, #1a1a2e 0%, #0a0a0a 100%)" }}
+        />
+      )}
+
+      {/* Dark overlay */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "rgba(0,0,0,0.6)" }} />
+
+      {/* Accent gradient */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: isZenkaiBoost
+            ? "linear-gradient(180deg, rgba(255,215,0,0.12) 0%, transparent 55%)"
+            : "linear-gradient(180deg, rgba(255,107,53,0.12) 0%, transparent 55%)",
+        }}
+      />
 
       {/* Top area — chapter info */}
       <div className="relative flex-1 flex flex-col items-center justify-center px-6 text-center">
@@ -74,16 +112,37 @@ export default function StoryScreen({ day, title, intro, isZenkaiBoost, onAccept
 
       {/* RPG dialogue box */}
       <div className="relative mx-4 mb-6">
+
+        {/* NPC character — bottom-left, peeking above dialogue */}
         <div
-          className="rounded-2xl p-5"
-          style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${borderColor}` }}
+          className="absolute -left-1 -top-20 w-14 h-20 rounded-xl overflow-hidden flex items-end justify-center z-10"
+          style={{ background: `${npcColor}20`, border: `1px solid ${npcColor}40` }}
+        >
+          <img
+            src={npcPath}
+            alt={npcName}
+            className="w-full h-full object-cover"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+          />
+          {/* NPC placeholder text (shows when no image) */}
+          <span
+            className="absolute text-[8px] font-bold text-center px-1 leading-tight"
+            style={{ color: npcColor, bottom: "4px" }}
+          >
+            {npcName.split(" ").pop()}
+          </span>
+        </div>
+
+        <div
+          className="rounded-2xl p-5 pl-16"
+          style={{ background: "rgba(10,10,10,0.85)", border: `1px solid ${borderColor}` }}
         >
           {/* Speaker chip */}
           <div
-            className="absolute -top-3.5 left-5 px-3 py-1 rounded-full text-xs font-black"
+            className="absolute -top-3.5 left-14 px-3 py-1 rounded-full text-xs font-black"
             style={{ background: "#0a0a0a", border: `1px solid ${borderColor}`, color: accent }}
           >
-            Master Kael
+            {npcName}
           </div>
 
           {/* Typewriter text */}

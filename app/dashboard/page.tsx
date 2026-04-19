@@ -33,6 +33,8 @@ export type StoryData = {
   completion: string;
   isZenkaiBoost: boolean;
   nextChapterTitle: string | null;
+  background: string;
+  npc: string;
 };
 
 type QuestCompletion = { quest_id: number };
@@ -288,6 +290,8 @@ export default async function DashboardPage() {
       : nextEntry
       ? `Day ${nextDayNum} — ${nextEntry.title}`
       : null,
+    background: isZenkaiBoost ? story.zenkaiBoost.background : dayEntry.background,
+    npc: isZenkaiBoost ? story.zenkaiBoost.npc : dayEntry.npc,
   };
 
   return (

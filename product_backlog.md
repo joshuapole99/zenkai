@@ -24,6 +24,7 @@
 - [x] Exercise swap feature — inline picker, saves per day, resets next day
 - [x] Founding Member system — auto-detected on signup via waitlist cross-check; gold badge + name in dashboard; special onboarding screen; open beta messaging on signup + landing page
 - [x] Story engine — daily RPG narrative flow: story screen → workout → completion screen; typewriter text; Zenkai Boost trigger; next chapter teaser; story_day progression saved per user
+- [x] Visual structure — lib/visuals.ts asset registry; placeholder system; story screen background + NPC per day; character image on dashboard
 
 ## Todo
 
@@ -46,10 +47,35 @@
 - [ ] Lemon Squeezy payments (7-day trial → €4.99/month)
 - [ ] Resend email integration (RESEND_API_KEY in Vercel) — transactional emails
 
+### Enemies & Combat
+- [ ] Daily enemies: each story day has a weak enemy defeated by completing the workout
+- [ ] Enemy HP bar goes down as each exercise is completed
+- [ ] Enemy types: grunt fighters, shadow warriors, corrupt monks (original designs, no IP)
+- [ ] Enemy defeated animation when all quests done
+
+### Weekly Boss
+- [ ] Every 7 days: a boss fight requiring all quests + side quest
+- [ ] Boss defeated = arc complete + special XP reward
+- [ ] Week 1 boss: The Shadow General
+- [ ] Week 2 boss: Ryo (rival becomes boss)
+- [ ] Week 3 boss: A corrupted version of yourself
+
+### Friends & Co-op
+- [ ] Friends system: search by username, send/accept/decline requests
+- [ ] View friends' power level and streak
+- [ ] Co-op story: two players share a story arc
+- [ ] Co-op quests: both must complete workout for it to count
+- [ ] Shared power level boost when both players train on the same day
+
+### Leaderboard
+- [ ] Global XP ranking (top 100 visible)
+- [ ] Weekly streak ranking
+- [ ] Power level ranking
+- [ ] Friends-only leaderboard
+- [ ] Your own rank always visible regardless of position
+
 ### Social / Growth
 - [ ] Instagram content strategy — @zenkai_app (1 platform focus, consistent posting)
-- [ ] Leaderboard: global XP ranking between users
-- [ ] Co-op mode: train together with a friend, shared story arc
 
 ### Depth
 - [ ] Custom character creator: users design their own original anime-inspired character (no licensed IP)
@@ -65,9 +91,11 @@
 6. Full food tracking
 7. Lemon Squeezy payments
 8. Resend emails
-9. Anime story mode arc system
-10. Character visual evolution
-11. Push notifications
-12. Leaderboard
-13. Co-op mode
-14. Custom character creator
+9. Anime story mode arc system + enemies
+10. Weekly boss fights
+11. Character visual evolution
+12. Push notifications
+13. Leaderboard
+14. Friends system
+15. Co-op mode
+16. Custom character creator

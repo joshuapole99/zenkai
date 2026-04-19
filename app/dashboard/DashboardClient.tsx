@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Quest, xpProgress, calcLevel } from "@/lib/quests";
+import { getCharacterImage, CLASS_COLORS } from "@/lib/visuals";
 import type { SwapEntry } from "./page";
 import type { StoryData } from "./page";
 import StoryScreen from "./StoryScreen";
@@ -150,6 +151,8 @@ export default function DashboardClient({
           title={storyData.title}
           intro={storyData.intro}
           isZenkaiBoost={storyData.isZenkaiBoost}
+          background={storyData.background}
+          npc={storyData.npc}
           onAccept={() => setView("workout")}
         />
       )}
@@ -174,6 +177,8 @@ export default function DashboardClient({
           className="rounded-2xl p-6"
           style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
         >
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
           <p className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: "#FF6B35" }}>
             {CLASS_LABELS[characterClass] ?? characterClass}
           </p>
@@ -205,6 +210,11 @@ export default function DashboardClient({
             <Stat label="Power Level" value={`${level}`} />
             <Stat label="XP Total" value={`${xp}`} />
             <Stat label="Streak" value={`${streak}d`} accent={streak > 0} />
+          </div>
+            </div>
+
+            {/* Character image */}
+            <CharacterImage characterClass={characterClass} level={level} />
           </div>
         </div>
 
@@ -363,6 +373,30 @@ export default function DashboardClient({
         />
       </div>
     </>
+  );
+}
+
+function CharacterImage({ characterClass, level }: { characterClass: string; level: number }) {
+  const color = CLASS_COLORS[characterClass] ?? "#FF6B35";
+  const imagePath = getCharacterImage(characterClass, level);
+  const stage = level >= 16 ? 3 : level >= 6 ? 2 : 1;
+
+  return (
+    <div
+      className="relative flex-shrink-0 rounded-xl overflow-hidden flex items-center justify-center"
+      style={{ width: "72px", height: "96px", background: `${color}18`, border: `1px solid ${color}30` }}
+    >
+      <img
+        src={imagePath}
+        alt=""
+        className="w-full h-full object-cover"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+      />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 pointer-events-none">
+        <span className="text-xs font-black" style={{ color }}>Lv.{stage}</span>
+        <span className="text-[9px] text-gray-600 text-center px-1 leading-tight">{characterClass}</span>
+      </div>
+    </div>
   );
 }
 
