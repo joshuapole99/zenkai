@@ -10,6 +10,8 @@ import StoryScreen from "./StoryScreen";
 import CompletionScreen from "./CompletionScreen";
 import NutritionLog, { type FoodLogData } from "./NutritionLog";
 import { AvatarSVG, type AvatarConfig, DEFAULT_AVATAR } from "@/components/AvatarSVG";
+import EnemyCard from "./EnemyCard";
+import { getEnemy } from "@/lib/enemies";
 
 type Alternative = { id: number; name: string; detail: string };
 type SideQuest = { id: number; name: string; detail: string };
@@ -313,6 +315,13 @@ export default function DashboardClient({
             </p>
           )}
         </div>
+
+        {/* Enemy */}
+        <EnemyCard
+          enemy={getEnemy(storyData.day, storyData.isZenkaiBoost)}
+          questsTotal={quests.length}
+          questsDone={completedIds.length}
+        />
 
         {/* Daily quests */}
         <div>
