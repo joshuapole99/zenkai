@@ -407,10 +407,24 @@ export default function Home() {
   return (
     <main className="min-h-screen" style={{ background: "#0a0a0a" }}>
 
+      {/* ── BETA BANNER ── */}
+      <div
+        className="fixed top-0 left-0 right-0 z-[60] text-center py-1.5 px-4"
+        style={{
+          background: "rgba(124,58,237,0.3)",
+          borderBottom: "1px solid rgba(124,58,237,0.4)",
+          fontSize: "12px",
+          color: "rgba(255,255,255,0.7)",
+        }}
+      >
+        Open Beta — Help us build Zenkai. Free during beta.
+      </div>
+
       {/* ── NAV ── */}
       <nav
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
+        className="fixed left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
         style={{
+          top: "30px",
           background: "rgba(10,10,10,0.85)",
           backdropFilter: "blur(20px)",
           borderBottom: "1px solid rgba(255,255,255,0.05)",
@@ -440,7 +454,7 @@ export default function Home() {
       </nav>
 
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden px-6 pt-20 pb-16">
+      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden px-6 pt-28 pb-16">
         <HeroBackground />
 
         <div
@@ -465,7 +479,7 @@ export default function Home() {
               className="text-xs font-bold tracking-[0.25em] uppercase"
               style={{ color: "rgba(255,107,53,0.8)", fontFamily: "monospace" }}
             >
-              ANIME FITNESS RPG // SYSTEM INITIALIZED
+              OPEN BETA — FREE DURING BETA
             </span>
           </div>
 
@@ -693,6 +707,11 @@ export default function Home() {
             </h2>
             <p className="text-gray-500 mt-4">Less than a cup of coffee a week.</p>
           </div>
+
+          <p className="text-center text-sm text-gray-600 italic mb-8">
+            During open beta, all features are free.{" "}
+            Paid plans activate at official launch.
+          </p>
 
           <div className="grid sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
             <div
