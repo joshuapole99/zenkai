@@ -61,6 +61,24 @@ export type SwapEntry = {
   exercise_detail: string;
 };
 
+function DashboardError() {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#0a0a0a" }}>
+      <div className="text-center max-w-sm">
+        <p className="text-lg font-black text-white mb-2">Something went wrong.</p>
+        <p className="text-sm text-gray-500 mb-6">We&apos;re fixing it. Try again in a moment.</p>
+        <a
+          href="/dashboard"
+          className="inline-block px-6 py-3 rounded-xl text-sm font-bold text-white"
+          style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
+        >
+          Retry
+        </a>
+      </div>
+    </div>
+  );
+}
+
 export default async function DashboardPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth-token")?.value;
@@ -75,30 +93,44 @@ export default async function DashboardPage() {
 
   const sql = getDb();
 
-  // Ensure new columns exist (idempotent)
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_class TEXT`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_name TEXT`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_date DATE`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fitness_level TEXT`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_founding_member BOOLEAN DEFAULT FALSE`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS founding_member_since TIMESTAMPTZ`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS story_day INTEGER DEFAULT 1`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_story_date DATE`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS hp INTEGER DEFAULT 100`;
+  try {
+    // Ensure all users columns exist (idempotent)
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_class TEXT`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_name TEXT`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS streak INTEGER DEFAULT 0`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_date DATE`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fitness_level TEXT`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_founding_member BOOLEAN DEFAULT FALSE`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS founding_member_since TIMESTAMPTZ`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS story_day INTEGER DEFAULT 1`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_story_date DATE`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS hp INTEGER DEFAULT 100`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active DATE`;
+  } catch (e) {
+    console.error("[dashboard] users migration error:", e);
+  }
 
-  const [user] = (await sql`
-    SELECT id, username, character_name, character_class, fitness_level, xp, streak, hp, onboarding_complete,
-           is_founding_member, story_day, last_story_date, last_streak_date
-    FROM users WHERE id = ${session.userId}
-  `) as UserRow[];
+  let user: UserRow;
+  try {
+    const rows = (await sql`
+      SELECT id, username, character_name, character_class, fitness_level, xp, streak, hp, onboarding_complete,
+             is_founding_member, story_day, last_story_date, last_streak_date
+      FROM users WHERE id = ${session.userId}
+    `) as UserRow[];
+    if (!rows[0]) redirect("/login");
+    user = rows[0];
+  } catch (e) {
+    console.error("[dashboard] user fetch error:", e);
+    return <DashboardError />;
+  }
 
-  if (!user) redirect("/login");
   if (!user.onboarding_complete) redirect("/onboarding");
 
   const today = new Date().toISOString().slice(0, 10);
 
+  try {
   // Core tables
   await sql`
     CREATE TABLE IF NOT EXISTS quest_completions (
@@ -302,4 +334,8 @@ export default async function DashboardPage() {
       </footer>
     </div>
   );
+  } catch (e) {
+    console.error("[dashboard] render error:", e);
+    return <DashboardError />;
+  }
 }
