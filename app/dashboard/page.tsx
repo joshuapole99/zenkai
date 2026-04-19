@@ -115,10 +115,18 @@ export default async function DashboardPage() {
       id         SERIAL PRIMARY KEY,
       user_id    INTEGER NOT NULL,
       log_date   DATE NOT NULL DEFAULT CURRENT_DATE,
-      ate_enough BOOLEAN NOT NULL,
+      ate_enough BOOLEAN DEFAULT FALSE,
       UNIQUE(user_id, log_date)
     )
   `;
+  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS protein BOOLEAN DEFAULT FALSE`;
+  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS vegetables BOOLEAN DEFAULT FALSE`;
+  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS carbs BOOLEAN DEFAULT FALSE`;
+  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS fruits BOOLEAN DEFAULT FALSE`;
+  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS water BOOLEAN DEFAULT FALSE`;
+  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS meals_count INTEGER DEFAULT 0`;
+  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS custom_input TEXT`;
+  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS hp_gained INTEGER DEFAULT 0`;
 
   // Exercise library
   await sql`

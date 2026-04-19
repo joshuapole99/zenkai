@@ -1,23 +1,23 @@
 {
-  "name": "Zenkai — Elke terugval maakt je sterker",
+  "name": "Zenkai — Train. Fall. Come Back Stronger.",
   "short_name": "Zenkai",
-  "description": "Train in real life. Groei als een anime karakter. Val je af? Dan begint je Zenkai Boost.",
+  "description": "The anime fitness app where every setback makes you stronger. Daily quests, XP system, and Zenkai Boost for when you fall off track.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
   "categories": ["fitness", "health", "lifestyle"],
-  "lang": "nl",
+  "lang": "en",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/api/icon-192",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/api/icon-512",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
