@@ -77,18 +77,13 @@ export default function NutritionLog({ initialFoodLog, initialHp, onHpChange }: 
   }
 
   if (logged) {
-    const hpColor = hpGained >= 60 ? "#22c55e" : hpGained >= 30 ? "#FF6B35" : "#6b7280";
     const activePills = (Object.keys(PILL_LABELS) as FoodKey[]).filter((k) => toggles[k][0]);
     return (
       <div
         className="rounded-2xl p-5"
         style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
       >
-        <h2 className="text-xs font-bold tracking-widest uppercase text-gray-500 mb-4">Food Log</h2>
-        <div className="flex items-end justify-between mb-2">
-          <span className="text-2xl font-black" style={{ color: hpColor }}>{hpGained} HP</span>
-          <span className="text-xs text-gray-600">/ 100</span>
-        </div>
+        <h2 className="text-xs font-bold tracking-widest uppercase text-gray-500 mb-3">Food Log</h2>
         <div className="w-full h-1.5 rounded-full overflow-hidden mb-4" style={{ background: "rgba(255,255,255,0.06)" }}>
           <div
             className="h-full rounded-full transition-all duration-1000"

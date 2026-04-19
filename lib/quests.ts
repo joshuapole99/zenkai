@@ -40,9 +40,10 @@ export function calcLevel(xp: number): number {
 }
 
 export function xpProgress(xp: number): { xpIntoLevel: number; xpRequired: number; level: number } {
+  const level = Math.floor(xp / 100) + 1;
   return {
-    level: Math.floor(xp / 100) + 1,
-    xpIntoLevel: xp % 100,
-    xpRequired: 100,
+    level,
+    xpIntoLevel: xp,
+    xpRequired: level * 100,
   };
 }
