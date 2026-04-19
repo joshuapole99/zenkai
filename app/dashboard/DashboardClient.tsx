@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Quest, xpProgress, calcLevel } from "@/lib/quests";
 import { getCharacterImage, CLASS_COLORS } from "@/lib/visuals";
 import type { SwapEntry } from "./page";
@@ -10,7 +10,7 @@ import CompletionScreen from "./CompletionScreen";
 import NutritionLog, { type FoodLogData } from "./NutritionLog";
 
 type Alternative = { id: number; name: string; detail: string };
-type View = "story" | "workout" | "complete";
+type View = "story" | "workout" | "complete" | "done";
 
 type Props = {
   characterName: string;
@@ -71,9 +71,13 @@ export default function DashboardClient({
   const allDone = quests.every((q) => completedIds.includes(q.id));
   const barPercent = Math.min(100, (xpIntoLevel / xpRequired) * 100);
 
-  // Transition to completion screen when all quests done
+  // Guard: don't show completion screen if quests were already done on load
+  const completionShownRef = useRef(initialCompletedIds.length === quests.length);
+
+  // Transition to completion screen when all quests done (once per session)
   useEffect(() => {
-    if (allDone && view === "workout") {
+    if (allDone && view === "workout" && !completionShownRef.current) {
+      completionShownRef.current = true;
       const t = setTimeout(() => setView("complete"), 700);
       return () => clearTimeout(t);
     }
@@ -167,7 +171,7 @@ export default function DashboardClient({
           newLevel={calcLevel(xp)}
           nextChapterTitle={storyData.nextChapterTitle}
           isZenkaiBoost={storyData.isZenkaiBoost}
-          onContinue={() => setView("workout")}
+          onContinue={() => setView("done")}
         />
       )}
 
