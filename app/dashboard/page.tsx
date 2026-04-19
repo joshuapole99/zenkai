@@ -18,6 +18,7 @@ type UserRow = {
   fitness_level: string | null;
   xp: number | null;
   streak: number | null;
+  hp: number | null;
   onboarding_complete: boolean | null;
   is_founding_member: boolean | null;
   story_day: number | null;
@@ -35,7 +36,16 @@ export type StoryData = {
 };
 
 type QuestCompletion = { quest_id: number };
-type FoodLog = { ate_enough: boolean };
+type FoodLog = {
+  protein: boolean | null;
+  vegetables: boolean | null;
+  carbs: boolean | null;
+  fruits: boolean | null;
+  water: boolean | null;
+  meals_count: number | null;
+  custom_input: string | null;
+  hp_gained: number | null;
+};
 type SwapRow = {
   original_quest_id: number;
   exercise_id: number;
@@ -76,9 +86,10 @@ export default async function DashboardPage() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS founding_member_since TIMESTAMPTZ`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS story_day INTEGER DEFAULT 1`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_story_date DATE`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS hp INTEGER DEFAULT 100`;
 
   const [user] = (await sql`
-    SELECT id, username, character_name, character_class, fitness_level, xp, streak, onboarding_complete,
+    SELECT id, username, character_name, character_class, fitness_level, xp, streak, hp, onboarding_complete,
            is_founding_member, story_day, last_story_date, last_streak_date
     FROM users WHERE id = ${session.userId}
   `) as UserRow[];
@@ -173,7 +184,8 @@ export default async function DashboardPage() {
   `) as QuestCompletion[];
 
   const foodRows = (await sql`
-    SELECT ate_enough FROM food_logs
+    SELECT protein, vegetables, carbs, fruits, water, meals_count, custom_input, hp_gained
+    FROM food_logs
     WHERE user_id = ${user.id} AND log_date = ${today}::date
   `) as FoodLog[];
 
@@ -185,7 +197,19 @@ export default async function DashboardPage() {
   `) as SwapRow[];
 
   const completedIds = completions.map((r) => Number(r.quest_id));
-  const foodLog = foodRows[0] ?? null;
+  const rawFoodLog = foodRows[0] ?? null;
+  const foodLog = rawFoodLog
+    ? {
+        protein: !!rawFoodLog.protein,
+        vegetables: !!rawFoodLog.vegetables,
+        carbs: !!rawFoodLog.carbs,
+        fruits: !!rawFoodLog.fruits,
+        water: !!rawFoodLog.water,
+        meals_count: Number(rawFoodLog.meals_count) || 0,
+        custom_input: rawFoodLog.custom_input ?? null,
+        hp_gained: Number(rawFoodLog.hp_gained) || 0,
+      }
+    : null;
   const swaps: SwapEntry[] = swapRows.map((r) => ({
     original_quest_id: Number(r.original_quest_id),
     exercise_id: Number(r.exercise_id),
@@ -248,8 +272,8 @@ export default async function DashboardPage() {
         quests={quests}
         today={today}
         initialCompletedIds={completedIds}
-        initialFoodLogged={!!foodLog}
-        initialAteEnough={foodLog?.ate_enough ?? null}
+        initialFoodLog={foodLog}
+        initialHp={Number(user.hp) || 100}
         initialSwaps={swaps}
         isFoundingMember={user.is_founding_member ?? false}
         storyNotReadToday={storyNotReadToday}

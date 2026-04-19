@@ -6,6 +6,7 @@ import type { SwapEntry } from "./page";
 import type { StoryData } from "./page";
 import StoryScreen from "./StoryScreen";
 import CompletionScreen from "./CompletionScreen";
+import NutritionLog, { type FoodLogData } from "./NutritionLog";
 
 type Alternative = { id: number; name: string; detail: string };
 type View = "story" | "workout" | "complete";
@@ -19,8 +20,8 @@ type Props = {
   quests: Quest[];
   today: string;
   initialCompletedIds: number[];
-  initialFoodLogged: boolean;
-  initialAteEnough: boolean | null;
+  initialFoodLog: FoodLogData | null;
+  initialHp: number;
   initialSwaps: SwapEntry[];
   isFoundingMember: boolean;
   storyNotReadToday: boolean;
@@ -42,8 +43,8 @@ export default function DashboardClient({
   quests,
   today,
   initialCompletedIds,
-  initialFoodLogged,
-  initialAteEnough,
+  initialFoodLog,
+  initialHp,
   initialSwaps,
   isFoundingMember,
   storyNotReadToday,
@@ -53,8 +54,7 @@ export default function DashboardClient({
   const [completedIds, setCompletedIds] = useState<number[]>(initialCompletedIds);
   const [xp, setXp] = useState(initialXp);
   const [streak, setStreak] = useState(initialStreak);
-  const [foodLogged, setFoodLogged] = useState(initialFoodLogged);
-  const [ateEnough, setAteEnough] = useState<boolean | null>(initialAteEnough);
+  const [hp, setHp] = useState(initialHp);
   const [completingId, setCompletingId] = useState<number | null>(null);
 
   // Swap state
@@ -141,17 +141,6 @@ export default function DashboardClient({
     }
   }
 
-  async function logFood(ate: boolean) {
-    if (foodLogged) return;
-    setAteEnough(ate);
-    setFoodLogged(true);
-    await fetch("/api/food-check", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ateEnough: ate }),
-    });
-  }
-
   return (
     <>
       {/* Story overlay */}
@@ -232,6 +221,20 @@ export default function DashboardClient({
             />
           </div>
           <p className="text-xs text-gray-700 mt-1">{xpRequired - xpIntoLevel} XP to Level {level + 1}</p>
+        </div>
+
+        {/* HP bar */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs font-medium text-gray-500">HP — Today&apos;s Nutrition</span>
+            <span className="text-xs text-gray-600">{hp} / 100</span>
+          </div>
+          <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+            <div
+              className="h-full rounded-full transition-all duration-1000"
+              style={{ width: `${hp}%`, background: "#22c55e" }}
+            />
+          </div>
         </div>
 
         {/* Daily quests */}
@@ -353,40 +356,11 @@ export default function DashboardClient({
           </div>
         </div>
 
-        {/* Food check */}
-        <div
-          className="rounded-2xl p-5"
-          style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-        >
-          <h2 className="text-xs font-bold tracking-widest uppercase text-gray-500 mb-3">Daily Food Check</h2>
-          {foodLogged ? (
-            <div className="text-center py-2">
-              <p className="text-sm font-bold" style={{ color: ateEnough ? "#FF6B35" : "#6b7280" }}>
-                {ateEnough ? "Fueled up. HP maintained." : "Logged. Eat better tomorrow."}
-              </p>
-            </div>
-          ) : (
-            <>
-              <p className="text-sm text-gray-400 mb-4">Did you eat enough today?</p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => logFood(true)}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98]"
-                  style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)", color: "#fff" }}
-                >
-                  Yes
-                </button>
-                <button
-                  onClick={() => logFood(false)}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98]"
-                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#9ca3af" }}
-                >
-                  No
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        <NutritionLog
+          initialFoodLog={initialFoodLog}
+          initialHp={initialHp}
+          onHpChange={(newHp) => setHp(newHp)}
+        />
       </div>
     </>
   );
