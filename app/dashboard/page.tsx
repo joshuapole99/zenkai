@@ -18,6 +18,7 @@ type UserRow = {
   xp: number | null;
   streak: number | null;
   onboarding_complete: boolean | null;
+  is_founding_member: boolean | null;
 };
 
 type QuestCompletion = { quest_id: number };
@@ -58,9 +59,11 @@ export default async function DashboardPage() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_date DATE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fitness_level TEXT`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_founding_member BOOLEAN DEFAULT FALSE`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS founding_member_since TIMESTAMPTZ`;
 
   const [user] = (await sql`
-    SELECT id, username, character_name, character_class, fitness_level, xp, streak, onboarding_complete
+    SELECT id, username, character_name, character_class, fitness_level, xp, streak, onboarding_complete, is_founding_member
     FROM users WHERE id = ${session.userId}
   `) as UserRow[];
 
@@ -201,6 +204,7 @@ export default async function DashboardPage() {
         initialFoodLogged={!!foodLog}
         initialAteEnough={foodLog?.ate_enough ?? null}
         initialSwaps={swaps}
+        isFoundingMember={user.is_founding_member ?? false}
       />
 
       <footer

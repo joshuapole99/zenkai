@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Added
+- **Founding Member system** — on signup, email is cross-checked against `waitlist_zenkai`; if match, `is_founding_member = true` and `founding_member_since = NOW()` set automatically
+  - Dashboard: gold character name, gold "Founding Member" badge, "Founding Member — Origin Arc" line, "Exclusive skin unlocks at official launch" note
+  - Onboarding: special full-screen "Founding Member Detected" interstitial with perks list and "Claim your spot" CTA before character creation; onboarding is now a server component wrapping `OnboardingClient`
+  - Signup page: subtle open beta banner ("Open Beta — You are one of the first...")
+  - Landing page waitlist section: disclaimer text about open beta and skin delivery at launch
 - **Story data** (`lib/story.ts`) — full 7-day Origin Arc with Master Kael and rival Ryo; Zenkai Boost arc for comeback after missed days; each day has intro, quest, completion text, XP reward; day 7 triggers arc complete
 - **Exercise library** (`exercises` table) — 27 exercises across 5 categories (push, pull, legs, core, cardio) × 3 difficulties (beginner, intermediate, advanced); auto-created and seeded on first dashboard load
 - **Quest swap feature** — "Swap" button on each uncompleted quest card opens inline alternative picker; fetches 3 exercises matching user's fitness level from the exercise library; user picks one → replaces quest display for that day; saved in `quest_swaps` table; resets next day; "swapped" badge on replaced quests

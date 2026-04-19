@@ -18,6 +18,7 @@ type Props = {
   initialFoodLogged: boolean;
   initialAteEnough: boolean | null;
   initialSwaps: SwapEntry[];
+  isFoundingMember: boolean;
 };
 
 const CLASS_LABELS: Record<string, string> = {
@@ -38,6 +39,7 @@ export default function DashboardClient({
   initialFoodLogged,
   initialAteEnough,
   initialSwaps,
+  isFoundingMember,
 }: Props) {
   const [completedIds, setCompletedIds] = useState<number[]>(initialCompletedIds);
   const [xp, setXp] = useState(initialXp);
@@ -160,7 +162,35 @@ export default function DashboardClient({
         <p className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: "#FF6B35" }}>
           {CLASS_LABELS[characterClass] ?? characterClass}
         </p>
-        <h1 className="text-3xl font-black text-white leading-none mb-4">{characterName}</h1>
+        <div className="flex items-center gap-3 flex-wrap mb-1">
+          <h1
+            className="text-3xl font-black leading-none"
+            style={{ color: isFoundingMember ? "#FFD700" : "#fff" }}
+          >
+            {characterName}
+          </h1>
+          {isFoundingMember && (
+            <span
+              className="text-xs font-bold px-2.5 py-1 rounded-full"
+              style={{
+                background: "rgba(255,215,0,0.1)",
+                color: "#FFD700",
+                border: "1px solid rgba(255,215,0,0.25)",
+              }}
+            >
+              Founding Member
+            </span>
+          )}
+        </div>
+        {isFoundingMember && (
+          <div className="mb-3">
+            <p className="text-xs font-bold" style={{ color: "rgba(255,215,0,0.7)" }}>
+              Founding Member — Origin Arc
+            </p>
+            <p className="text-xs text-gray-600 mt-0.5">Exclusive skin unlocks at official launch</p>
+          </div>
+        )}
+        {!isFoundingMember && <div className="mb-4" />}
 
         <div className="grid grid-cols-3 gap-3">
           <Stat label="Power Level" value={`${level}`} />

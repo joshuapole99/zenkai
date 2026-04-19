@@ -42,8 +42,16 @@ export default function SignupPage() {
     >
       <div className="w-full max-w-sm">
 
-        <div className="mb-10 text-center">
+        <div className="mb-8 text-center">
           <Link href="/" className="font-black text-2xl tracking-tight gradient-text">ZENKAI</Link>
+        </div>
+
+        <div
+          className="mb-6 px-4 py-3 rounded-xl text-center text-xs"
+          style={{ background: "rgba(255,107,53,0.06)", border: "1px solid rgba(255,107,53,0.15)" }}
+        >
+          <span className="font-bold" style={{ color: "rgba(255,107,53,0.9)" }}>Open Beta</span>
+          <span className="text-gray-600"> — You are one of the first. Help us build Zenkai by testing and sharing feedback.</span>
         </div>
 
         <div

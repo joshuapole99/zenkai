@@ -781,6 +781,10 @@ export default function Home() {
               <span style={{ color: "rgba(255,255,255,0.1)" }}>|</span>
               <span>No credit card</span>
             </div>
+            <p className="text-xs text-gray-700 mt-4 leading-relaxed">
+              Zenkai is currently in open beta. The Founding Member skin will be delivered at official launch.{" "}
+              Early access users help shape the app.
+            </p>
           </div>
         </div>
       </section>

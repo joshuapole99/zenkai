@@ -36,13 +36,28 @@ export async function POST(req: NextRequest) {
       )
     `;
 
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_founding_member BOOLEAN DEFAULT FALSE`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS founding_member_since TIMESTAMPTZ`;
+
     const passwordHash = await hashPassword(password);
+    const normalizedEmail = email.toLowerCase().trim();
 
     const [user] = await sql`
       INSERT INTO users (email, username, password_hash)
-      VALUES (${email.toLowerCase().trim()}, ${username.trim()}, ${passwordHash})
+      VALUES (${normalizedEmail}, ${username.trim()}, ${passwordHash})
       RETURNING id, email, username
     `;
+
+    // Auto-detect founding member: email on waitlist gets the status immediately
+    const waitlistRows = await sql`
+      SELECT 1 FROM waitlist_zenkai WHERE email = ${normalizedEmail} LIMIT 1
+    `;
+    if (waitlistRows.length > 0) {
+      await sql`
+        UPDATE users SET is_founding_member = true, founding_member_since = NOW()
+        WHERE id = ${user.id}
+      `;
+    }
 
     const token = await signToken({
       userId: user.id,

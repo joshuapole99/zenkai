@@ -22,6 +22,7 @@
 - [x] Story data — 7-day Origin Arc + Zenkai Boost arc (lib/story.ts)
 - [x] Exercise library — 27 exercises in Neon DB (push/pull/legs/core/cardio × beginner/intermediate/advanced)
 - [x] Exercise swap feature — inline picker, saves per day, resets next day
+- [x] Founding Member system — auto-detected on signup via waitlist cross-check; gold badge + name in dashboard; special onboarding screen; open beta messaging on signup + landing page
 
 ## Todo
 
