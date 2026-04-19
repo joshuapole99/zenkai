@@ -99,30 +99,27 @@ export default async function DashboardPage() {
 
   const sql = getDb();
 
-  try {
-    // Ensure all users columns exist (idempotent)
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_class TEXT`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_name TEXT`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS streak INTEGER DEFAULT 0`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_date DATE`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fitness_level TEXT`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_founding_member BOOLEAN DEFAULT FALSE`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS founding_member_since TIMESTAMPTZ`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS story_day INTEGER DEFAULT 1`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_story_date DATE`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS hp INTEGER DEFAULT 100`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active DATE`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS weight_kg NUMERIC(5,1)`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS height_cm INTEGER`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS protein_goal INTEGER`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_config JSONB`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_story_day_seen INTEGER DEFAULT 0`;
-  } catch (e) {
-    console.error("[dashboard] users migration error:", e);
-  }
+  await Promise.all([
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_class TEXT`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_name TEXT`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS streak INTEGER DEFAULT 0`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_date DATE`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fitness_level TEXT`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_founding_member BOOLEAN DEFAULT FALSE`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS founding_member_since TIMESTAMPTZ`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS story_day INTEGER DEFAULT 1`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_story_date DATE`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS hp INTEGER DEFAULT 100`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active DATE`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS weight_kg NUMERIC(5,1)`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS height_cm INTEGER`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS protein_goal INTEGER`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_config JSONB`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_story_day_seen INTEGER DEFAULT 0`,
+  ]).catch(e => console.error("[dashboard] users migration error:", e));
 
   let user: UserRow;
   try {
@@ -144,46 +141,54 @@ export default async function DashboardPage() {
   const today = new Date().toISOString().slice(0, 10);
 
   try {
-  // Core tables
-  await sql`
-    CREATE TABLE IF NOT EXISTS quest_completions (
+  // All table creations + food_logs columns in parallel
+  await Promise.all([
+    sql`CREATE TABLE IF NOT EXISTS quest_completions (
       id             SERIAL PRIMARY KEY,
       user_id        INTEGER NOT NULL,
       quest_id       INTEGER NOT NULL,
       completed_date DATE NOT NULL DEFAULT CURRENT_DATE,
       UNIQUE(user_id, quest_id, completed_date)
-    )
-  `;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS food_logs (
+    )`,
+    sql`CREATE TABLE IF NOT EXISTS food_logs (
       id         SERIAL PRIMARY KEY,
       user_id    INTEGER NOT NULL,
       log_date   DATE NOT NULL DEFAULT CURRENT_DATE,
       ate_enough BOOLEAN DEFAULT FALSE,
       UNIQUE(user_id, log_date)
-    )
-  `;
-  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS protein BOOLEAN DEFAULT FALSE`;
-  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS vegetables BOOLEAN DEFAULT FALSE`;
-  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS carbs BOOLEAN DEFAULT FALSE`;
-  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS fruits BOOLEAN DEFAULT FALSE`;
-  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS water BOOLEAN DEFAULT FALSE`;
-  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS meals_count INTEGER DEFAULT 0`;
-  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS custom_input TEXT`;
-  await sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS hp_gained INTEGER DEFAULT 0`;
-
-  // Exercise library
-  await sql`
-    CREATE TABLE IF NOT EXISTS exercises (
+    )`,
+    sql`CREATE TABLE IF NOT EXISTS exercises (
       id         SERIAL PRIMARY KEY,
       name       TEXT NOT NULL UNIQUE,
       sets_reps  TEXT,
       duration   TEXT,
       difficulty TEXT NOT NULL,
       category   TEXT NOT NULL
-    )
-  `;
+    )`,
+    sql`CREATE TABLE IF NOT EXISTS quest_swaps (
+      id                SERIAL PRIMARY KEY,
+      user_id           INTEGER NOT NULL,
+      date              DATE NOT NULL,
+      original_quest_id INTEGER NOT NULL,
+      exercise_id       INTEGER NOT NULL,
+      UNIQUE(user_id, date, original_quest_id)
+    )`,
+    sql`CREATE TABLE IF NOT EXISTS side_quest_completions (
+      id             SERIAL PRIMARY KEY,
+      user_id        INTEGER NOT NULL,
+      exercise_id    INTEGER NOT NULL,
+      completed_date DATE NOT NULL DEFAULT CURRENT_DATE,
+      UNIQUE(user_id, exercise_id, completed_date)
+    )`,
+    sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS protein BOOLEAN DEFAULT FALSE`,
+    sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS vegetables BOOLEAN DEFAULT FALSE`,
+    sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS carbs BOOLEAN DEFAULT FALSE`,
+    sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS fruits BOOLEAN DEFAULT FALSE`,
+    sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS water BOOLEAN DEFAULT FALSE`,
+    sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS meals_count INTEGER DEFAULT 0`,
+    sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS custom_input TEXT`,
+    sql`ALTER TABLE food_logs ADD COLUMN IF NOT EXISTS hp_gained INTEGER DEFAULT 0`,
+  ]);
 
   const [{ count }] = (await sql`SELECT COUNT(*)::int AS count FROM exercises`) as { count: number }[];
 
@@ -219,51 +224,22 @@ export default async function DashboardPage() {
     ]);
   }
 
-  // Quest swaps table
-  await sql`
-    CREATE TABLE IF NOT EXISTS quest_swaps (
-      id                SERIAL PRIMARY KEY,
-      user_id           INTEGER NOT NULL,
-      date              DATE NOT NULL,
-      original_quest_id INTEGER NOT NULL,
-      exercise_id       INTEGER NOT NULL,
-      UNIQUE(user_id, date, original_quest_id)
-    )
-  `;
-
-  // Side quest completions
-  await sql`
-    CREATE TABLE IF NOT EXISTS side_quest_completions (
-      id             SERIAL PRIMARY KEY,
-      user_id        INTEGER NOT NULL,
-      exercise_id    INTEGER NOT NULL,
-      completed_date DATE NOT NULL DEFAULT CURRENT_DATE,
-      UNIQUE(user_id, exercise_id, completed_date)
-    )
-  `;
-
-  const completions = (await sql`
-    SELECT quest_id FROM quest_completions
-    WHERE user_id = ${user.id} AND completed_date = ${today}::date
-  `) as QuestCompletion[];
-
-  const sideCompletions = (await sql`
-    SELECT exercise_id FROM side_quest_completions
-    WHERE user_id = ${user.id} AND completed_date = ${today}::date
-  `) as { exercise_id: number }[];
-
-  const foodRows = (await sql`
-    SELECT protein, vegetables, carbs, fruits, water, meals_count, custom_input, hp_gained
-    FROM food_logs
-    WHERE user_id = ${user.id} AND log_date = ${today}::date
-  `) as FoodLog[];
-
-  const swapRows = (await sql`
-    SELECT qs.original_quest_id, qs.exercise_id, e.name AS exercise_name, e.sets_reps, e.duration
-    FROM quest_swaps qs
-    JOIN exercises e ON e.id = qs.exercise_id
-    WHERE qs.user_id = ${user.id} AND qs.date = ${today}::date
-  `) as SwapRow[];
+  // All data queries in parallel
+  const dataResults = await Promise.all([
+    sql`SELECT quest_id FROM quest_completions
+        WHERE user_id = ${user.id} AND completed_date = ${today}::date`,
+    sql`SELECT exercise_id FROM side_quest_completions
+        WHERE user_id = ${user.id} AND completed_date = ${today}::date`,
+    sql`SELECT protein, vegetables, carbs, fruits, water, meals_count, custom_input, hp_gained
+        FROM food_logs WHERE user_id = ${user.id} AND log_date = ${today}::date`,
+    sql`SELECT qs.original_quest_id, qs.exercise_id, e.name AS exercise_name, e.sets_reps, e.duration
+        FROM quest_swaps qs JOIN exercises e ON e.id = qs.exercise_id
+        WHERE qs.user_id = ${user.id} AND qs.date = ${today}::date`,
+  ]);
+  const completions = dataResults[0] as QuestCompletion[];
+  const sideCompletions = dataResults[1] as { exercise_id: number }[];
+  const foodRows = dataResults[2] as FoodLog[];
+  const swapRows = dataResults[3] as SwapRow[];
 
   const completedIds = completions.map((r) => Number(r.quest_id));
   const sideCompletedIds = sideCompletions.map((r) => Number(r.exercise_id));
