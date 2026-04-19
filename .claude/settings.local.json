@@ -21,7 +21,10 @@
       "Bash(cp /c/Users/joshu/Zenkai/middleware.ts /c/Users/joshu/Zenkai/proxy.ts)",
       "Bash(rm /c/Users/joshu/Zenkai/middleware.ts)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:api.github.com)"
+      "WebFetch(domain:api.github.com)",
+      "Bash(node -e \"require\\('next/og'\\); console.log\\('ok'\\)\")",
+      "Bash(grep -E \"^sharp$|^canvas$|^jimp$\")",
+      "Bash(node -e \"const s = require\\('sharp'\\); console.log\\('sharp ok', s.versions\\)\")"
     ]
   }
 }

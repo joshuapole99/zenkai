@@ -106,7 +106,13 @@ export default function NutritionLog({ initialFoodLog, initialHp, onHpChange }: 
         {customInput && (
           <p className="text-xs text-gray-600 italic mb-2">&ldquo;{customInput}&rdquo;</p>
         )}
-        <p className="text-xs text-gray-700">Logged. Come back tomorrow.</p>
+        <button
+          onClick={() => setLogged(false)}
+          className="text-xs font-bold mt-1 transition-colors"
+          style={{ color: "rgba(255,107,53,0.5)" }}
+        >
+          Update
+        </button>
       </div>
     );
   }

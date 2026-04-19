@@ -1,15 +1,18 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { Quest, xpProgress, calcLevel } from "@/lib/quests";
-import { getCharacterImage, CLASS_COLORS } from "@/lib/visuals";
+import { CLASS_COLORS } from "@/lib/visuals";
 import type { SwapEntry } from "./page";
 import type { StoryData } from "./page";
 import StoryScreen from "./StoryScreen";
 import CompletionScreen from "./CompletionScreen";
 import NutritionLog, { type FoodLogData } from "./NutritionLog";
+import { AvatarSVG, type AvatarConfig, DEFAULT_AVATAR } from "@/components/AvatarSVG";
 
 type Alternative = { id: number; name: string; detail: string };
+type SideQuest = { id: number; name: string; detail: string };
 type View = "story" | "workout" | "complete" | "done";
 
 type Props = {
@@ -25,6 +28,8 @@ type Props = {
   initialHp: number;
   proteinGoal: number | null;
   initialSwaps: SwapEntry[];
+  initialSideCompletedIds: number[];
+  avatarConfig: AvatarConfig | null;
   isFoundingMember: boolean;
   storyNotReadToday: boolean;
   storyData: StoryData;
@@ -49,6 +54,8 @@ export default function DashboardClient({
   initialHp,
   proteinGoal,
   initialSwaps,
+  initialSideCompletedIds,
+  avatarConfig,
   isFoundingMember,
   storyNotReadToday,
   storyData,
@@ -59,6 +66,12 @@ export default function DashboardClient({
   const [streak, setStreak] = useState(initialStreak);
   const [hp, setHp] = useState(initialHp);
   const [completingId, setCompletingId] = useState<number | null>(null);
+
+  // Side quest state
+  const [sideQuests, setSideQuests] = useState<SideQuest[]>([]);
+  const [sideCompletedIds, setSideCompletedIds] = useState<number[]>(initialSideCompletedIds);
+  const [sideCompletingId, setSideCompletingId] = useState<number | null>(null);
+  const sideQuestsFetchedRef = useRef(false);
 
   // Swap state
   const [swaps, setSwaps] = useState<SwapEntry[]>(initialSwaps);
@@ -82,6 +95,36 @@ export default function DashboardClient({
       return () => clearTimeout(t);
     }
   }, [allDone, view]);
+
+  // Load side quests once allDone
+  useEffect(() => {
+    if (!allDone || sideQuestsFetchedRef.current) return;
+    sideQuestsFetchedRef.current = true;
+    const mainNames = quests.map((q) => q.name).join(",");
+    fetch(`/api/quest/side?fitnessLevel=${fitnessLevel}&excludeNames=${encodeURIComponent(mainNames)}`)
+      .then((r) => r.json())
+      .then((data) => { if (data.quests) setSideQuests(data.quests); })
+      .catch(() => {});
+  }, [allDone]);
+
+  async function completeSideQuest(exerciseId: number) {
+    if (sideCompletedIds.includes(exerciseId) || sideCompletingId !== null) return;
+    setSideCompletingId(exerciseId);
+    try {
+      const res = await fetch("/api/quest/side/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ exerciseId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSideCompletedIds((prev) => [...prev, exerciseId]);
+        if (data.newXp !== null) setXp(data.newXp);
+      }
+    } finally {
+      setSideCompletingId(null);
+    }
+  }
 
   function getDisplayed(quest: Quest): { name: string; detail: string } {
     const swap = swaps.find((s) => s.original_quest_id === quest.id);
@@ -219,8 +262,20 @@ export default function DashboardClient({
           </div>
             </div>
 
-            {/* Character image */}
-            <CharacterImage characterClass={characterClass} level={level} />
+            {/* Avatar */}
+            <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+              <Link href="/character">
+                <div
+                  className="rounded-xl overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                  style={{ width: "72px", height: "96px", background: `${CLASS_COLORS[characterClass] ?? "#FF6B35"}18`, border: `1px solid ${CLASS_COLORS[characterClass] ?? "#FF6B35"}30` }}
+                >
+                  <AvatarSVG config={avatarConfig ?? DEFAULT_AVATAR} characterClass={characterClass} />
+                </div>
+              </Link>
+              <Link href="/character" className="text-[9px] font-bold transition-colors" style={{ color: "rgba(255,255,255,0.2)" }}>
+                Edit
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -377,6 +432,53 @@ export default function DashboardClient({
           </div>
         </div>
 
+        {/* Side quests — unlocked after all main quests done */}
+        {allDone && sideQuests.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-bold tracking-widest uppercase text-gray-500">Side Quests</h2>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>
+                +25 XP each
+              </span>
+            </div>
+            <div className="space-y-3">
+              {sideQuests.map((sq) => {
+                const done = sideCompletedIds.includes(sq.id);
+                const loading = sideCompletingId === sq.id;
+                return (
+                  <div
+                    key={sq.id}
+                    className="rounded-xl p-4"
+                    style={{
+                      background: done ? "rgba(34,197,94,0.04)" : "rgba(255,255,255,0.02)",
+                      border: done ? "1px solid rgba(34,197,94,0.15)" : "1px solid rgba(255,255,255,0.06)",
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold" style={{ color: done ? "#22c55e" : "#fff" }}>{sq.name}</p>
+                        <p className="text-xs text-gray-600 mt-0.5">{sq.detail}</p>
+                      </div>
+                      <button
+                        onClick={() => completeSideQuest(sq.id)}
+                        disabled={done || loading}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 disabled:cursor-default shrink-0"
+                        style={
+                          done
+                            ? { background: "rgba(34,197,94,0.1)", color: "#22c55e" }
+                            : { background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff", opacity: loading ? 0.6 : 1 }
+                        }
+                      >
+                        {done ? "Done" : loading ? "..." : "Complete"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <NutritionLog
           initialFoodLog={initialFoodLog}
           initialHp={initialHp}
@@ -387,29 +489,6 @@ export default function DashboardClient({
   );
 }
 
-function CharacterImage({ characterClass, level }: { characterClass: string; level: number }) {
-  const color = CLASS_COLORS[characterClass] ?? "#FF6B35";
-  const imagePath = getCharacterImage(characterClass, level);
-  const stage = level >= 16 ? 3 : level >= 6 ? 2 : 1;
-
-  return (
-    <div
-      className="relative flex-shrink-0 rounded-xl overflow-hidden flex items-center justify-center"
-      style={{ width: "72px", height: "96px", background: `${color}18`, border: `1px solid ${color}30` }}
-    >
-      <img
-        src={imagePath}
-        alt=""
-        className="w-full h-full object-cover"
-        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-      />
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 pointer-events-none">
-        <span className="text-xs font-black" style={{ color }}>Lv.{stage}</span>
-        <span className="text-[9px] text-gray-600 text-center px-1 leading-tight">{characterClass}</span>
-      </div>
-    </div>
-  );
-}
 
 function Stat({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
   return (

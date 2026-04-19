@@ -9,6 +9,7 @@ import { getDailyQuests } from "@/lib/quests";
 import { story } from "@/lib/story";
 import LogoutButton from "./LogoutButton";
 import DashboardClient from "./DashboardClient";
+import { type AvatarConfig, DEFAULT_AVATAR } from "@/components/AvatarSVG";
 
 type UserRow = {
   id: number;
@@ -25,6 +26,7 @@ type UserRow = {
   story_day: number | null;
   last_story_date: string | null;
   last_streak_date: string | null;
+  avatar_config: AvatarConfig | null;
 };
 
 export type StoryData = {
@@ -115,6 +117,7 @@ export default async function DashboardPage() {
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS height_cm INTEGER`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS protein_goal INTEGER`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_config JSONB`;
   } catch (e) {
     console.error("[dashboard] users migration error:", e);
   }
@@ -123,7 +126,7 @@ export default async function DashboardPage() {
   try {
     const rows = (await sql`
       SELECT id, username, character_name, character_class, fitness_level, xp, streak, hp, protein_goal,
-             onboarding_complete, is_founding_member, story_day, last_story_date, last_streak_date
+             onboarding_complete, is_founding_member, story_day, last_story_date, last_streak_date, avatar_config
       FROM users WHERE id = ${session.userId}
     `) as UserRow[];
     if (!rows[0]) redirect("/login");
@@ -225,10 +228,26 @@ export default async function DashboardPage() {
     )
   `;
 
+  // Side quest completions
+  await sql`
+    CREATE TABLE IF NOT EXISTS side_quest_completions (
+      id             SERIAL PRIMARY KEY,
+      user_id        INTEGER NOT NULL,
+      exercise_id    INTEGER NOT NULL,
+      completed_date DATE NOT NULL DEFAULT CURRENT_DATE,
+      UNIQUE(user_id, exercise_id, completed_date)
+    )
+  `;
+
   const completions = (await sql`
     SELECT quest_id FROM quest_completions
     WHERE user_id = ${user.id} AND completed_date = ${today}::date
   `) as QuestCompletion[];
+
+  const sideCompletions = (await sql`
+    SELECT exercise_id FROM side_quest_completions
+    WHERE user_id = ${user.id} AND completed_date = ${today}::date
+  `) as { exercise_id: number }[];
 
   const foodRows = (await sql`
     SELECT protein, vegetables, carbs, fruits, water, meals_count, custom_input, hp_gained
@@ -244,6 +263,7 @@ export default async function DashboardPage() {
   `) as SwapRow[];
 
   const completedIds = completions.map((r) => Number(r.quest_id));
+  const sideCompletedIds = sideCompletions.map((r) => Number(r.exercise_id));
   const rawFoodLog = foodRows[0] ?? null;
   const foodLog = rawFoodLog
     ? {
@@ -325,6 +345,8 @@ export default async function DashboardPage() {
         initialHp={Number(user.hp) || 100}
         proteinGoal={user.protein_goal ? Number(user.protein_goal) : null}
         initialSwaps={swaps}
+        initialSideCompletedIds={sideCompletedIds}
+        avatarConfig={user.avatar_config ? { ...DEFAULT_AVATAR, ...(user.avatar_config as object) } : null}
         isFoundingMember={user.is_founding_member ?? false}
         storyNotReadToday={storyNotReadToday}
         storyData={storyData}
