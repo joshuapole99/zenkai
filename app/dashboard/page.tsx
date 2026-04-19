@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { verifyToken } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { getDailyQuests } from "@/lib/quests";
@@ -94,7 +95,7 @@ export default async function DashboardPage() {
         className="flex items-center justify-between px-4 py-4 border-b"
         style={{ borderColor: "rgba(255,255,255,0.06)" }}
       >
-        <span className="font-black text-lg tracking-tight gradient-text">ZENKAI</span>
+        <Image src="/logo.png" alt="Zenkai" width={120} height={40} className="h-8 w-auto" />
         <div className="flex items-center gap-4">
           <span className="text-xs text-gray-600">{user.username}</span>
           <LogoutButton />

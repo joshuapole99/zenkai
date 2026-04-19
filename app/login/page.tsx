@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
 
         <div className="mb-10 text-center">
-          <Link href="/" className="font-black text-2xl tracking-tight gradient-text">ZENKAI</Link>
+          <Link href="/"><Image src="/logo.png" alt="Zenkai" width={150} height={50} className="h-10 w-auto mx-auto" /></Link>
         </div>
 
         <div
