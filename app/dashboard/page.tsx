@@ -14,6 +14,7 @@ type UserRow = {
   username: string;
   character_name: string | null;
   character_class: string | null;
+  fitness_level: string | null;
   xp: number | null;
   streak: number | null;
   onboarding_complete: boolean | null;
@@ -21,6 +22,20 @@ type UserRow = {
 
 type QuestCompletion = { quest_id: number };
 type FoodLog = { ate_enough: boolean };
+type SwapRow = {
+  original_quest_id: number;
+  exercise_id: number;
+  exercise_name: string;
+  sets_reps: string | null;
+  duration: string | null;
+};
+
+export type SwapEntry = {
+  original_quest_id: number;
+  exercise_id: number;
+  exercise_name: string;
+  exercise_detail: string;
+};
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
@@ -42,9 +57,10 @@ export default async function DashboardPage() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_date DATE`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fitness_level TEXT`;
 
   const [user] = (await sql`
-    SELECT id, username, character_name, character_class, xp, streak, onboarding_complete
+    SELECT id, username, character_name, character_class, fitness_level, xp, streak, onboarding_complete
     FROM users WHERE id = ${session.userId}
   `) as UserRow[];
 
@@ -53,6 +69,7 @@ export default async function DashboardPage() {
 
   const today = new Date().toISOString().slice(0, 10);
 
+  // Core tables
   await sql`
     CREATE TABLE IF NOT EXISTS quest_completions (
       id             SERIAL PRIMARY KEY,
@@ -73,6 +90,64 @@ export default async function DashboardPage() {
     )
   `;
 
+  // Exercise library
+  await sql`
+    CREATE TABLE IF NOT EXISTS exercises (
+      id         SERIAL PRIMARY KEY,
+      name       TEXT NOT NULL UNIQUE,
+      sets_reps  TEXT,
+      duration   TEXT,
+      difficulty TEXT NOT NULL,
+      category   TEXT NOT NULL
+    )
+  `;
+
+  const [{ count }] = (await sql`SELECT COUNT(*)::int AS count FROM exercises`) as { count: number }[];
+
+  if (Number(count) === 0) {
+    await Promise.all([
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Push-ups', '3 × 15 reps', null, 'beginner', 'push') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Wide Push-ups', '3 × 12 reps', null, 'beginner', 'push') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Diamond Push-ups', '3 × 10 reps', null, 'intermediate', 'push') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Decline Push-ups', '3 × 12 reps', null, 'intermediate', 'push') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Pike Push-ups', '3 × 10 reps', null, 'intermediate', 'push') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Tricep Dips', '3 × 15 reps', null, 'intermediate', 'push') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Archer Push-ups', '3 × 8 reps each side', null, 'advanced', 'push') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Squats', '3 × 20 reps', null, 'beginner', 'legs') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Lunges', '3 × 15 reps each leg', null, 'beginner', 'legs') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Glute Bridges', '3 × 20 reps', null, 'beginner', 'legs') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Wall Sit', null, '3 × 45 seconds', 'beginner', 'legs') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Jump Squats', '3 × 15 reps', null, 'intermediate', 'legs') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Bulgarian Split Squats', '3 × 10 reps each leg', null, 'intermediate', 'legs') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Reverse Lunges', '3 × 12 reps each leg', null, 'intermediate', 'legs') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Pistol Squat Assist', '3 × 6 reps each leg', null, 'advanced', 'legs') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Plank', null, '3 × 45 seconds', 'beginner', 'core') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Sit-ups', '3 × 20 reps', null, 'beginner', 'core') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Bicycle Crunches', '3 × 20 reps', null, 'beginner', 'core') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Mountain Climbers', null, '3 × 30 seconds', 'intermediate', 'core') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Leg Raises', '3 × 15 reps', null, 'intermediate', 'core') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Hollow Body Hold', null, '3 × 30 seconds', 'intermediate', 'core') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Ab Wheel Rollout', '3 × 8 reps', null, 'advanced', 'core') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('High Knees', null, '3 × 30 seconds', 'beginner', 'cardio') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Star Jumps', '3 × 20 reps', null, 'beginner', 'cardio') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Burpees', '3 × 10 reps', null, 'intermediate', 'cardio') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Box Jumps', '3 × 10 reps', null, 'intermediate', 'cardio') ON CONFLICT (name) DO NOTHING`,
+      sql`INSERT INTO exercises (name, sets_reps, duration, difficulty, category) VALUES ('Sprint Intervals', null, '6 × 20 seconds on / 10 off', 'advanced', 'cardio') ON CONFLICT (name) DO NOTHING`,
+    ]);
+  }
+
+  // Quest swaps table
+  await sql`
+    CREATE TABLE IF NOT EXISTS quest_swaps (
+      id                SERIAL PRIMARY KEY,
+      user_id           INTEGER NOT NULL,
+      date              DATE NOT NULL,
+      original_quest_id INTEGER NOT NULL,
+      exercise_id       INTEGER NOT NULL,
+      UNIQUE(user_id, date, original_quest_id)
+    )
+  `;
+
   const completions = (await sql`
     SELECT quest_id FROM quest_completions
     WHERE user_id = ${user.id} AND completed_date = ${today}::date
@@ -83,9 +158,22 @@ export default async function DashboardPage() {
     WHERE user_id = ${user.id} AND log_date = ${today}::date
   `) as FoodLog[];
 
-  // Coerce to number — Neon can return integer columns as strings
+  const swapRows = (await sql`
+    SELECT qs.original_quest_id, qs.exercise_id, e.name AS exercise_name, e.sets_reps, e.duration
+    FROM quest_swaps qs
+    JOIN exercises e ON e.id = qs.exercise_id
+    WHERE qs.user_id = ${user.id} AND qs.date = ${today}::date
+  `) as SwapRow[];
+
   const completedIds = completions.map((r) => Number(r.quest_id));
   const foodLog = foodRows[0] ?? null;
+  const swaps: SwapEntry[] = swapRows.map((r) => ({
+    original_quest_id: Number(r.original_quest_id),
+    exercise_id: Number(r.exercise_id),
+    exercise_name: r.exercise_name,
+    exercise_detail: r.sets_reps ?? r.duration ?? "",
+  }));
+
   const quests = getDailyQuests(today);
 
   return (
@@ -104,12 +192,15 @@ export default async function DashboardPage() {
       <DashboardClient
         characterName={user.character_name ?? user.username}
         characterClass={user.character_class ?? "saiyan"}
+        fitnessLevel={user.fitness_level ?? "beginner"}
         xp={user.xp ?? 0}
         streak={user.streak ?? 0}
         quests={quests}
+        today={today}
         initialCompletedIds={completedIds}
         initialFoodLogged={!!foodLog}
         initialAteEnough={foodLog?.ate_enough ?? null}
+        initialSwaps={swaps}
       />
 
       <footer

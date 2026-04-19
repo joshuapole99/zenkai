@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+- **Story data** (`lib/story.ts`) — full 7-day Origin Arc with Master Kael and rival Ryo; Zenkai Boost arc for comeback after missed days; each day has intro, quest, completion text, XP reward; day 7 triggers arc complete
+- **Exercise library** (`exercises` table) — 27 exercises across 5 categories (push, pull, legs, core, cardio) × 3 difficulties (beginner, intermediate, advanced); auto-created and seeded on first dashboard load
+- **Quest swap feature** — "Swap" button on each uncompleted quest card opens inline alternative picker; fetches 3 exercises matching user's fitness level from the exercise library; user picks one → replaces quest display for that day; saved in `quest_swaps` table; resets next day; "swapped" badge on replaced quests
+- `app/api/quest/alternatives` — GET route, returns 3 random exercises by difficulty, excludes current quest names
+- `app/api/quest/swap` — POST route, upserts swap into `quest_swaps` table, returns exercise details
+
 ### Fixed
 - **Level display** (`lib/quests.ts`): switched from increasing-difficulty formula (`level * 100` XP per level) to flat 100 XP per level — `level = floor(xp / 100) + 1`, `xpIntoLevel = xp % 100`, `xpRequired = 100` always. Predictable and consistent.
 - **Quest "Done" on first load** (`app/dashboard/page.tsx`, `app/api/quest/complete/route.ts`): added `Number()` coercion when mapping `quest_id` from Neon results (driver can return integers as strings, breaking `Array.includes()` comparison); added `::date` cast in SQL WHERE clauses; added `export const dynamic = "force-dynamic"` to dashboard to prevent stale route cache.

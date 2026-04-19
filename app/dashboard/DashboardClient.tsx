@@ -1,17 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Quest, xpProgress } from "@/lib/quests";
+import type { SwapEntry } from "./page";
+
+type Alternative = { id: number; name: string; detail: string };
 
 type Props = {
   characterName: string;
   characterClass: string;
+  fitnessLevel: string;
   xp: number;
   streak: number;
   quests: Quest[];
+  today: string;
   initialCompletedIds: number[];
   initialFoodLogged: boolean;
   initialAteEnough: boolean | null;
+  initialSwaps: SwapEntry[];
 };
 
 const CLASS_LABELS: Record<string, string> = {
@@ -23,12 +29,15 @@ const CLASS_LABELS: Record<string, string> = {
 export default function DashboardClient({
   characterName,
   characterClass,
+  fitnessLevel,
   xp: initialXp,
   streak: initialStreak,
   quests,
+  today,
   initialCompletedIds,
   initialFoodLogged,
   initialAteEnough,
+  initialSwaps,
 }: Props) {
   const [completedIds, setCompletedIds] = useState<number[]>(initialCompletedIds);
   const [xp, setXp] = useState(initialXp);
@@ -38,17 +47,23 @@ export default function DashboardClient({
   const [completingId, setCompletingId] = useState<number | null>(null);
   const [justFinished, setJustFinished] = useState(false);
 
+  // Swap state
+  const [swaps, setSwaps] = useState<SwapEntry[]>(initialSwaps);
+  const [swappingQuestId, setSwappingQuestId] = useState<number | null>(null);
+  const [alternatives, setAlternatives] = useState<Alternative[]>([]);
+  const [loadingAlts, setLoadingAlts] = useState(false);
+  const [confirmingAltId, setConfirmingAltId] = useState<number | null>(null);
+
   const { xpIntoLevel, xpRequired, level } = xpProgress(xp);
   const allDone = quests.every((q) => completedIds.includes(q.id));
   const barPercent = Math.min(100, (xpIntoLevel / xpRequired) * 100);
 
-  useEffect(() => {
-    if (allDone && completedIds.length === quests.length && completedIds !== initialCompletedIds) {
-      setJustFinished(true);
-      const t = setTimeout(() => setJustFinished(false), 3000);
-      return () => clearTimeout(t);
-    }
-  }, [allDone]);
+  function getDisplayed(quest: Quest): { name: string; detail: string } {
+    const swap = swaps.find((s) => s.original_quest_id === quest.id);
+    return swap
+      ? { name: swap.exercise_name, detail: swap.exercise_detail }
+      : { name: quest.name, detail: quest.detail };
+  }
 
   async function completeQuest(questId: number) {
     if (completedIds.includes(questId) || completingId !== null) return;
@@ -64,9 +79,62 @@ export default function DashboardClient({
         setCompletedIds(data.completedIds);
         if (data.newXp !== null) setXp(data.newXp);
         if (data.newStreak !== null) setStreak(data.newStreak);
+        if (data.allDone) {
+          setJustFinished(true);
+          setTimeout(() => setJustFinished(false), 3000);
+        }
       }
     } finally {
       setCompletingId(null);
+    }
+  }
+
+  async function openSwap(quest: Quest) {
+    if (swappingQuestId === quest.id) {
+      setSwappingQuestId(null);
+      return;
+    }
+    setSwappingQuestId(quest.id);
+    setAlternatives([]);
+    setLoadingAlts(true);
+    try {
+      const currentNames = quests.map((q) => q.name).join(",");
+      const res = await fetch(
+        `/api/quest/alternatives?fitnessLevel=${fitnessLevel}&excludeNames=${encodeURIComponent(currentNames)}`
+      );
+      const data = await res.json();
+      setAlternatives(data.alternatives ?? []);
+    } finally {
+      setLoadingAlts(false);
+    }
+  }
+
+  async function confirmSwap(originalQuestId: number, alt: Alternative) {
+    setConfirmingAltId(alt.id);
+    try {
+      const res = await fetch("/api/quest/swap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: today, originalQuestId, exerciseId: alt.id }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSwaps((prev) => {
+          const filtered = prev.filter((s) => s.original_quest_id !== originalQuestId);
+          return [
+            ...filtered,
+            {
+              original_quest_id: originalQuestId,
+              exercise_id: alt.id,
+              exercise_name: data.exercise.name,
+              exercise_detail: data.exercise.detail,
+            },
+          ];
+        });
+        setSwappingQuestId(null);
+      }
+    } finally {
+      setConfirmingAltId(null);
     }
   }
 
@@ -113,10 +181,7 @@ export default function DashboardClient({
         >
           <div
             className="h-full rounded-full transition-all duration-1000"
-            style={{
-              width: `${barPercent}%`,
-              background: "linear-gradient(90deg, #FF6B35, #7C3AED)",
-            }}
+            style={{ width: `${barPercent}%`, background: "linear-gradient(90deg, #FF6B35, #7C3AED)" }}
           />
         </div>
         <p className="text-xs text-gray-700 mt-1">{xpRequired - xpIntoLevel} XP to Level {level + 1}</p>
@@ -150,42 +215,135 @@ export default function DashboardClient({
           {quests.map((quest) => {
             const done = completedIds.includes(quest.id);
             const loading = completingId === quest.id;
+            const isSwapping = swappingQuestId === quest.id;
+            const isSwapped = swaps.some((s) => s.original_quest_id === quest.id);
+            const displayed = getDisplayed(quest);
+
             return (
-              <div
-                key={quest.id}
-                className="rounded-xl p-4 flex items-center justify-between transition-all duration-200"
-                style={{
-                  background: done ? "rgba(124,58,237,0.05)" : "rgba(255,255,255,0.02)",
-                  border: done
-                    ? "1px solid rgba(124,58,237,0.2)"
-                    : "1px solid rgba(255,255,255,0.06)",
-                }}
-              >
-                <div>
-                  <p
-                    className="text-sm font-bold"
-                    style={{ color: done ? "#7C3AED" : "#fff" }}
-                  >
-                    {quest.name}
-                  </p>
-                  <p className="text-xs text-gray-600 mt-0.5">{quest.detail}</p>
-                </div>
-                <button
-                  onClick={() => completeQuest(quest.id)}
-                  disabled={done || loading}
-                  className="ml-4 px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 disabled:cursor-default"
-                  style={
-                    done
-                      ? { background: "rgba(124,58,237,0.1)", color: "#7C3AED" }
-                      : {
-                          background: "linear-gradient(135deg, #FF6B35, #7C3AED)",
-                          color: "#fff",
-                          opacity: loading ? 0.6 : 1,
-                        }
-                  }
+              <div key={quest.id}>
+                {/* Quest row */}
+                <div
+                  className="rounded-xl p-4 transition-all duration-200"
+                  style={{
+                    background: done ? "rgba(124,58,237,0.05)" : "rgba(255,255,255,0.02)",
+                    border: done
+                      ? "1px solid rgba(124,58,237,0.2)"
+                      : isSwapping
+                      ? "1px solid rgba(255,107,53,0.3)"
+                      : "1px solid rgba(255,255,255,0.06)",
+                    borderBottomLeftRadius: isSwapping ? "0" : undefined,
+                    borderBottomRightRadius: isSwapping ? "0" : undefined,
+                    borderBottom: isSwapping ? "none" : undefined,
+                  }}
                 >
-                  {done ? "Done" : loading ? "..." : "Complete"}
-                </button>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p
+                          className="text-sm font-bold"
+                          style={{ color: done ? "#7C3AED" : "#fff" }}
+                        >
+                          {displayed.name}
+                        </p>
+                        {isSwapped && !done && (
+                          <span
+                            className="text-xs px-1.5 py-0.5 rounded font-medium"
+                            style={{ background: "rgba(255,107,53,0.1)", color: "#FF6B35" }}
+                          >
+                            swapped
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 mt-0.5">{displayed.detail}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {!done && (
+                        <button
+                          onClick={() => openSwap(quest)}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95"
+                          style={{
+                            background: isSwapping
+                              ? "rgba(255,107,53,0.15)"
+                              : "rgba(255,255,255,0.05)",
+                            color: isSwapping ? "#FF6B35" : "#6b7280",
+                            border: isSwapping
+                              ? "1px solid rgba(255,107,53,0.3)"
+                              : "1px solid rgba(255,255,255,0.06)",
+                          }}
+                        >
+                          {isSwapping ? "Cancel" : "Swap"}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => completeQuest(quest.id)}
+                        disabled={done || loading}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 disabled:cursor-default"
+                        style={
+                          done
+                            ? { background: "rgba(124,58,237,0.1)", color: "#7C3AED" }
+                            : {
+                                background: "linear-gradient(135deg, #FF6B35, #7C3AED)",
+                                color: "#fff",
+                                opacity: loading ? 0.6 : 1,
+                              }
+                        }
+                      >
+                        {done ? "Done" : loading ? "..." : "Complete"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Alternatives picker */}
+                {isSwapping && (
+                  <div
+                    className="rounded-b-xl px-4 py-3 space-y-2"
+                    style={{
+                      background: "rgba(255,107,53,0.03)",
+                      border: "1px solid rgba(255,107,53,0.3)",
+                      borderTop: "1px solid rgba(255,107,53,0.1)",
+                    }}
+                  >
+                    <p className="text-xs font-bold tracking-widest uppercase" style={{ color: "rgba(255,107,53,0.6)" }}>
+                      Choose alternative
+                    </p>
+                    {loadingAlts ? (
+                      <p className="text-xs text-gray-600 py-2">Loading...</p>
+                    ) : alternatives.length === 0 ? (
+                      <p className="text-xs text-gray-600 py-2">No alternatives found.</p>
+                    ) : (
+                      alternatives.map((alt) => (
+                        <button
+                          key={alt.id}
+                          onClick={() => confirmSwap(quest.id, alt)}
+                          disabled={confirmingAltId !== null}
+                          className="w-full text-left rounded-xl px-4 py-3 transition-all active:scale-[0.99] disabled:opacity-50"
+                          style={{
+                            background: "rgba(255,255,255,0.02)",
+                            border: "1px solid rgba(255,255,255,0.06)",
+                          }}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-bold text-white">{alt.name}</p>
+                              <p className="text-xs text-gray-600 mt-0.5">{alt.detail}</p>
+                            </div>
+                            <span
+                              className="text-xs font-bold px-2.5 py-1 rounded-lg shrink-0"
+                              style={{
+                                background: "linear-gradient(135deg, #FF6B35, #7C3AED)",
+                                color: "#fff",
+                                opacity: confirmingAltId === alt.id ? 0.6 : 1,
+                              }}
+                            >
+                              {confirmingAltId === alt.id ? "..." : "Pick"}
+                            </span>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -241,12 +399,7 @@ function Stat({ label, value, accent = false }: { label: string; value: string; 
       style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}
     >
       <p className="text-xs text-gray-600 mb-1">{label}</p>
-      <p
-        className="text-xl font-black"
-        style={{ color: accent ? "#FF6B35" : "#fff" }}
-      >
-        {value}
-      </p>
+      <p className="text-xl font-black" style={{ color: accent ? "#FF6B35" : "#fff" }}>{value}</p>
     </div>
   );
 }
