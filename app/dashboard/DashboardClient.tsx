@@ -62,7 +62,10 @@ export default function DashboardClient({
   storyNotReadToday,
   storyData,
 }: Props) {
-  const [view, setView] = useState<View>(storyNotReadToday ? "story" : "workout");
+  const alreadyDoneOnLoad = initialCompletedIds.length === quests.length;
+  const [view, setView] = useState<View>(
+    alreadyDoneOnLoad ? "done" : storyNotReadToday ? "story" : "workout"
+  );
   const [completedIds, setCompletedIds] = useState<number[]>(initialCompletedIds);
   const [xp, setXp] = useState(initialXp);
   const [streak, setStreak] = useState(initialStreak);
@@ -87,7 +90,7 @@ export default function DashboardClient({
   const barPercent = Math.min(100, (xpIntoLevel / xpRequired) * 100);
 
   // Guard: don't show completion screen if quests were already done on load
-  const completionShownRef = useRef(initialCompletedIds.length === quests.length);
+  const completionShownRef = useRef(alreadyDoneOnLoad);
 
   // Transition to completion screen when all quests done (once per session)
   useEffect(() => {
