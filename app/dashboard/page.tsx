@@ -26,6 +26,7 @@ type UserRow = {
   story_day: number | null;
   last_story_date: string | null;
   last_streak_date: string | null;
+  last_active: string | null;
   last_story_day_seen: number | null;
   avatar_config: AvatarConfig | null;
 };
@@ -126,7 +127,7 @@ export default async function DashboardPage() {
     const rows = (await sql`
       SELECT id, username, character_name, character_class, fitness_level, xp, streak, hp, protein_goal,
              onboarding_complete, is_founding_member, story_day, last_story_date, last_streak_date,
-             last_story_day_seen, avatar_config
+             last_active, last_story_day_seen, avatar_config
       FROM users WHERE id = ${session.userId}
     `) as UserRow[];
     if (!rows[0]) redirect("/login");
@@ -272,10 +273,14 @@ export default async function DashboardPage() {
     : null;
   const lastStoryDaySeen = Number(user.last_story_day_seen ?? 0);
 
-  // Zenkai Boost: user has trained before AND missed 7+ consecutive days
+  // Track every visit so Zenkai uses real app absence, not just quest completion gaps
+  sql`UPDATE users SET last_active = ${today}::date WHERE id = ${user.id}`.catch(() => {});
+
+  // Zenkai Boost: user has trained before AND hasn't opened the app in 7+ days
   let isZenkaiBoost = false;
-  if (storyDay > 1 && user.last_streak_date) {
-    const diffMs = new Date(today).getTime() - new Date(String(user.last_streak_date).slice(0, 10)).getTime();
+  const lastActive = user.last_active ? String(user.last_active).slice(0, 10) : null;
+  if (storyDay > 1 && lastActive) {
+    const diffMs = new Date(today).getTime() - new Date(lastActive).getTime();
     if (Math.floor(diffMs / 86400000) >= 7) isZenkaiBoost = true;
   }
 
