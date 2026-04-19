@@ -23,6 +23,7 @@ type Props = {
   initialCompletedIds: number[];
   initialFoodLog: FoodLogData | null;
   initialHp: number;
+  proteinGoal: number | null;
   initialSwaps: SwapEntry[];
   isFoundingMember: boolean;
   storyNotReadToday: boolean;
@@ -46,6 +47,7 @@ export default function DashboardClient({
   initialCompletedIds,
   initialFoodLog,
   initialHp,
+  proteinGoal,
   initialSwaps,
   isFoundingMember,
   storyNotReadToday,
@@ -245,6 +247,11 @@ export default function DashboardClient({
               style={{ width: `${hp}%`, background: "#22c55e" }}
             />
           </div>
+          {proteinGoal != null && (
+            <p className="text-xs mt-1.5" style={{ color: "rgba(34,197,94,0.7)" }}>
+              Daily Protein Goal: <span className="font-bold text-white">{proteinGoal}g</span>
+            </p>
+          )}
         </div>
 
         {/* Daily quests */}

@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { characterClass, goal, fitnessLevel, characterName } = body;
+  const { characterClass, goal, fitnessLevel, characterName, weightKg, heightCm, age } = body;
 
   if (!characterClass || !goal || !fitnessLevel || !characterName?.trim()) {
     return NextResponse.json({ error: "All fields required" }, { status: 400 });
@@ -33,6 +33,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid values" }, { status: 400 });
   }
 
+  const parsedWeight = weightKg != null && !isNaN(Number(weightKg)) && Number(weightKg) > 0
+    ? Number(weightKg)
+    : null;
+  const parsedHeight = heightCm != null && !isNaN(Number(heightCm)) && Number(heightCm) > 0
+    ? Number(heightCm)
+    : null;
+  const parsedAge = age != null && !isNaN(Number(age)) && Number(age) > 0
+    ? Number(age)
+    : null;
+  const proteinGoal = parsedWeight != null ? Math.round(parsedWeight * 1.8) : null;
+
   const sql = getDb();
 
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_class TEXT`;
@@ -42,6 +53,10 @@ export async function POST(req: NextRequest) {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_date DATE`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS weight_kg NUMERIC(5,1)`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS height_cm INTEGER`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS protein_goal INTEGER`;
 
   await sql`
     UPDATE users
@@ -49,9 +64,13 @@ export async function POST(req: NextRequest) {
         goal                = ${goal},
         fitness_level       = ${fitnessLevel},
         character_name      = ${characterName.trim()},
-        onboarding_complete = TRUE
+        onboarding_complete = TRUE,
+        weight_kg           = ${parsedWeight},
+        height_cm           = ${parsedHeight},
+        age                 = ${parsedAge},
+        protein_goal        = ${proteinGoal}
     WHERE id = ${user.userId}
   `;
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, proteinGoal });
 }

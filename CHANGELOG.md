@@ -3,6 +3,16 @@
 ## [Unreleased]
 
 ### Added
+- **Body stats + protein calculator**
+  - Onboarding now has 5 steps: class → goal → fitness level → body stats → character name
+  - Step 4 collects weight (kg), height (cm), age with numeric inputs; "Skip for now" bypasses without blocking
+  - Live preview: protein goal appears below weight field as user types (`weight × 1.8g`)
+  - `POST /api/onboarding` saves `weight_kg`, `height_cm`, `age`, `protein_goal` to users table
+  - `protein_goal = round(weight_kg × 1.8)` stored as integer
+  - Dashboard: "Daily Protein Goal: Xg" shown under HP bar in green (only visible if stat was set)
+  - Users who skipped body stats see no protein goal line — no empty state shown
+
+### Added
 - **Visual structure** — asset inventory + placeholder system for all future art
   - `lib/visuals.ts` — typed registry for all image paths: characters (saiyan/assassin/guardian × 3 levels), NPCs (Kael, Ryo + variants), backgrounds (7 scenes), enemies (5 grunts + 3 bosses)
   - Helper exports: `NPC_NAMES`, `NPC_COLORS`, `CLASS_COLORS`, `getCharacterImage(class, level)`

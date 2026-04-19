@@ -19,6 +19,7 @@ type UserRow = {
   xp: number | null;
   streak: number | null;
   hp: number | null;
+  protein_goal: number | null;
   onboarding_complete: boolean | null;
   is_founding_member: boolean | null;
   story_day: number | null;
@@ -110,6 +111,10 @@ export default async function DashboardPage() {
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_story_date DATE`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS hp INTEGER DEFAULT 100`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active DATE`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS weight_kg NUMERIC(5,1)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS height_cm INTEGER`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS protein_goal INTEGER`;
   } catch (e) {
     console.error("[dashboard] users migration error:", e);
   }
@@ -117,8 +122,8 @@ export default async function DashboardPage() {
   let user: UserRow;
   try {
     const rows = (await sql`
-      SELECT id, username, character_name, character_class, fitness_level, xp, streak, hp, onboarding_complete,
-             is_founding_member, story_day, last_story_date, last_streak_date
+      SELECT id, username, character_name, character_class, fitness_level, xp, streak, hp, protein_goal,
+             onboarding_complete, is_founding_member, story_day, last_story_date, last_streak_date
       FROM users WHERE id = ${session.userId}
     `) as UserRow[];
     if (!rows[0]) redirect("/login");
@@ -318,6 +323,7 @@ export default async function DashboardPage() {
         initialCompletedIds={completedIds}
         initialFoodLog={foodLog}
         initialHp={Number(user.hp) || 100}
+        proteinGoal={user.protein_goal ? Number(user.protein_goal) : null}
         initialSwaps={swaps}
         isFoundingMember={user.is_founding_member ?? false}
         storyNotReadToday={storyNotReadToday}

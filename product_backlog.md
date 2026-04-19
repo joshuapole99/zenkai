@@ -33,8 +33,8 @@
 - [ ] Side quests: unlocked after main quest complete
 - [ ] Arc system: week 1 Origin Arc, week 2 Saiyan Warrior Arc
 - [ ] Zenkai Boost mechanic (comeback quest when streak breaks)
-- [ ] Body stats onboarding: weight, height, age, goal (used to calculate protein needs + calorie targets)
-- [ ] Protein calculator: based on body stats + goal
+- [x] Body stats onboarding: weight, height, age — step 4 in onboarding flow; skip option available
+- [x] Protein calculator: weight_kg × 1.8 = daily protein goal in grams; shown on dashboard under HP bar
 - [ ] Custom workout selection: user picks their own exercises per session from exercise library
 - [ ] Daily food log: full meal input with protein/calories (replaces yes/no check)
 - [ ] Character visual evolution: avatar changes every 5 levels (original designs, anime-inspired, no IP)
