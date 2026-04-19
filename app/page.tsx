@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 // ── WaitlistForm ──────────────────────────────────────────────────────────────
 
@@ -417,14 +416,12 @@ export default function Home() {
           borderBottom: "1px solid rgba(255,255,255,0.05)",
         }}
       >
-        <Image
-          src="/logo.png"
-          alt="Zenkai"
-          width={144}
-          height={48}
-          className="w-auto"
-          style={{ height: "48px", animation: "logoGlow 2s ease-in-out infinite" }}
-        />
+        <span
+          className="font-black text-xl tracking-tight gradient-text"
+          style={{ letterSpacing: "-0.02em" }}
+        >
+          ZENKAI
+        </span>
         <div className="flex items-center gap-3">
           <Link
             href="/login"

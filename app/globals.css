@@ -62,11 +62,6 @@ body {
   50%       { text-shadow: 0 0 40px rgba(255,107,53,1), 0 0 80px rgba(124,58,237,0.4); }
 }
 
-@keyframes logoGlow {
-  0%, 100% { filter: drop-shadow(0 0 8px rgba(255,107,53,0.6)); }
-  50%       { filter: drop-shadow(0 0 16px rgba(255,107,53,0.9)); }
-}
-
 @keyframes borderPulse {
   0%, 100% { border-color: rgba(255,107,53,0.4); box-shadow: 0 0 0px rgba(255,107,53,0); }
   50%       { border-color: rgba(255,107,53,0.8); box-shadow: 0 0 20px rgba(255,107,53,0.15); }

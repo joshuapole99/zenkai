@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -83,7 +82,7 @@ export default function OnboardingPage() {
 
         {/* Header */}
         <div className="mb-10 text-center">
-          <Image src="/logo.png" alt="Zenkai" width={150} height={50} className="h-10 w-auto mx-auto" />
+          <span className="font-black text-2xl tracking-tight gradient-text">ZENKAI</span>
           <p className="text-xs text-gray-600 mt-1 tracking-widest uppercase">Character Setup</p>
         </div>
 
