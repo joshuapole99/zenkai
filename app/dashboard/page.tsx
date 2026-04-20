@@ -266,6 +266,39 @@ export default async function DashboardPage() {
 
   const quests = getDailyQuests(today);
 
+  // Server-side side quest prefetch — prevents client re-fetch on every re-mount (infinite XP exploit)
+  type InitialSideQuest = { id: number; name: string; detail: string };
+  let initialSideQuests: InitialSideQuest[] = [];
+
+  if (completedIds.length === quests.length) {
+    const sideDifficulty =
+      (user.fitness_level ?? "beginner") === "advanced" ? "advanced"
+      : (user.fitness_level ?? "beginner") === "intermediate" ? "intermediate"
+      : "beginner";
+
+    const mainQuestNames = quests.map((q) => q.name);
+    const excludeIds = sideCompletedIds.length > 0 ? sideCompletedIds : [0];
+
+    try {
+      const sideRows = (await sql`
+        SELECT id, name, sets_reps, duration FROM exercises
+        WHERE difficulty = ${sideDifficulty}
+          AND name  != ALL(${mainQuestNames}::text[])
+          AND id    != ALL(${excludeIds}::int[])
+        ORDER BY md5(id::text || ${today} || ${String(user.id)})
+        LIMIT 2
+      `) as { id: number; name: string; sets_reps: string | null; duration: string | null }[];
+
+      initialSideQuests = sideRows.map((e) => ({
+        id: e.id,
+        name: e.name,
+        detail: e.sets_reps ?? e.duration ?? "",
+      }));
+    } catch (e) {
+      console.error("[dashboard] side quest prefetch error:", e);
+    }
+  }
+
   // Story engine
   const storyDay = Math.min(Math.max(user.story_day ?? 1, 1), 7);
   const lastStoryDate = user.last_story_date
@@ -335,6 +368,7 @@ export default async function DashboardPage() {
         proteinGoal={user.protein_goal ? Number(user.protein_goal) : null}
         initialSwaps={swaps}
         initialSideCompletedIds={sideCompletedIds}
+        initialSideQuests={initialSideQuests}
         avatarConfig={user.avatar_config ? { ...DEFAULT_AVATAR, ...(user.avatar_config as object) } : null}
         isFoundingMember={user.is_founding_member ?? false}
         storyNotReadToday={storyNotReadToday}

@@ -31,6 +31,7 @@ type Props = {
   proteinGoal: number | null;
   initialSwaps: SwapEntry[];
   initialSideCompletedIds: number[];
+  initialSideQuests?: SideQuest[];
   avatarConfig: AvatarConfig | null;
   isFoundingMember: boolean;
   storyNotReadToday: boolean;
@@ -57,6 +58,7 @@ export default function DashboardClient({
   proteinGoal,
   initialSwaps,
   initialSideCompletedIds,
+  initialSideQuests = [],
   avatarConfig,
   isFoundingMember,
   storyNotReadToday,
@@ -73,10 +75,10 @@ export default function DashboardClient({
   const [completingId, setCompletingId] = useState<number | null>(null);
 
   // Side quest state
-  const [sideQuests, setSideQuests] = useState<SideQuest[]>([]);
+  const [sideQuests, setSideQuests] = useState<SideQuest[]>(initialSideQuests);
   const [sideCompletedIds, setSideCompletedIds] = useState<number[]>(initialSideCompletedIds);
   const [sideCompletingId, setSideCompletingId] = useState<number | null>(null);
-  const sideQuestsFetchedRef = useRef(false);
+  const sideQuestsFetchedRef = useRef(initialSideQuests.length > 0);
 
   // Swap state
   const [swaps, setSwaps] = useState<SwapEntry[]>(initialSwaps);

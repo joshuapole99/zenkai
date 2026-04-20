@@ -24,11 +24,12 @@ export async function GET(req: NextRequest) {
     : "beginner";
 
   const sql = getDb();
+  const today = new Date().toISOString().slice(0, 10);
 
   const rows = (await sql`
     SELECT id, name, sets_reps, duration FROM exercises
     WHERE difficulty = ${difficulty}
-    ORDER BY RANDOM()
+    ORDER BY md5(id::text || ${today})
     LIMIT 10
   `) as { id: number; name: string; sets_reps: string | null; duration: string | null }[];
 
