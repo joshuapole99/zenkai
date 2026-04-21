@@ -36,6 +36,7 @@ type Props = {
   isFoundingMember: boolean;
   storyNotReadToday: boolean;
   storyData: StoryData;
+  isFirstTimer: boolean;
 };
 
 const CLASS_LABELS: Record<string, string> = {
@@ -63,8 +64,12 @@ export default function DashboardClient({
   isFoundingMember,
   storyNotReadToday,
   storyData,
+  isFirstTimer,
 }: Props) {
   const alreadyDoneOnLoad = initialCompletedIds.length === quests.length;
+  // For first-timers: only the first quest is visible until it's done, then the rest unlock.
+  // visibleQuestCount drives how many quest cards render.
+  // It starts at 1 for first-timers with no completions, expands as they complete quests.
   const [view, setView] = useState<View>(
     alreadyDoneOnLoad ? "done" : storyNotReadToday ? "story" : "workout"
   );
@@ -90,6 +95,18 @@ export default function DashboardClient({
   const { xpIntoLevel, xpRequired, level } = xpProgress(xp);
   const allDone = quests.every((q) => completedIds.includes(q.id));
   const barPercent = Math.min(100, (xpIntoLevel / xpRequired) * 100);
+
+  // Progressive reveal: first-timers see quests one at a time
+  const visibleQuestCount = isFirstTimer
+    ? Math.min(quests.length, completedIds.length + 1)
+    : quests.length;
+  const visibleQuests = quests.slice(0, visibleQuestCount);
+  const justUnlockedMore = isFirstTimer && completedIds.length > 0 && completedIds.length < quests.length;
+
+  // Features that are hidden until after day 1
+  const showSwap      = storyData.day > 1;
+  const showNutrition = storyData.day > 1;
+  const showEnemy     = storyData.day > 1;
 
   // Guard: don't show completion screen if quests were already done on load
   const completionShownRef = useRef(alreadyDoneOnLoad);
@@ -302,31 +319,35 @@ export default function DashboardClient({
           <p className="text-xs text-gray-700 mt-1">{xpRequired - xpIntoLevel} XP to Level {level + 1}</p>
         </div>
 
-        {/* HP bar */}
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs font-medium text-gray-500">HP — Today&apos;s Nutrition</span>
-            <span className="text-xs text-gray-600">{hp} / 100</span>
+        {/* HP bar — hidden on day 1 (nutrition not yet unlocked) */}
+        {showNutrition && (
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs font-medium text-gray-500">HP — Today&apos;s Nutrition</span>
+              <span className="text-xs text-gray-600">{hp} / 100</span>
+            </div>
+            <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <div
+                className="h-full rounded-full transition-all duration-1000"
+                style={{ width: `${hp}%`, background: "#22c55e" }}
+              />
+            </div>
+            {proteinGoal != null && (
+              <p className="text-xs mt-1.5" style={{ color: "rgba(34,197,94,0.7)" }}>
+                Daily Protein Goal: <span className="font-bold text-white">{proteinGoal}g</span>
+              </p>
+            )}
           </div>
-          <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-            <div
-              className="h-full rounded-full transition-all duration-1000"
-              style={{ width: `${hp}%`, background: "#22c55e" }}
-            />
-          </div>
-          {proteinGoal != null && (
-            <p className="text-xs mt-1.5" style={{ color: "rgba(34,197,94,0.7)" }}>
-              Daily Protein Goal: <span className="font-bold text-white">{proteinGoal}g</span>
-            </p>
-          )}
-        </div>
+        )}
 
-        {/* Enemy */}
-        <EnemyCard
-          enemy={getEnemy(storyData.day, storyData.isZenkaiBoost)}
-          questsTotal={quests.length}
-          questsDone={completedIds.length}
-        />
+        {/* Enemy — hidden on day 1 */}
+        {showEnemy && (
+          <EnemyCard
+            enemy={getEnemy(storyData.day, storyData.isZenkaiBoost)}
+            questsTotal={quests.length}
+            questsDone={completedIds.length}
+          />
+        )}
 
         {/* Daily quests */}
         <div>
@@ -339,8 +360,21 @@ export default function DashboardClient({
             )}
           </div>
 
+          {/* "More quests unlocked" hint */}
+          {justUnlockedMore && (
+            <div
+              className="rounded-xl px-4 py-2.5 mb-3 flex items-center gap-2"
+              style={{ background: "rgba(255,107,53,0.06)", border: "1px solid rgba(255,107,53,0.2)" }}
+            >
+              <span style={{ color: "#FF6B35" }} className="text-sm font-bold">⚡</span>
+              <p className="text-xs font-bold" style={{ color: "#FF6B35" }}>
+                {quests.length - completedIds.length} more quest{quests.length - completedIds.length > 1 ? "s" : ""} unlocked
+              </p>
+            </div>
+          )}
+
           <div className="space-y-3">
-            {quests.map((quest) => {
+            {visibleQuests.map((quest) => {
               const done = completedIds.includes(quest.id);
               const loading = completingId === quest.id;
               const isSwapping = swappingQuestId === quest.id;
@@ -374,7 +408,7 @@ export default function DashboardClient({
                         <p className="text-xs text-gray-600 mt-0.5">{displayed.detail}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {!done && (
+                        {!done && showSwap && (
                           <button
                             onClick={() => openSwap(quest)}
                             className="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95"
@@ -494,11 +528,13 @@ export default function DashboardClient({
           </div>
         )}
 
-        <NutritionLog
-          initialFoodLog={initialFoodLog}
-          initialHp={initialHp}
-          onHpChange={(newHp) => setHp(newHp)}
-        />
+        {showNutrition && (
+          <NutritionLog
+            initialFoodLog={initialFoodLog}
+            initialHp={initialHp}
+            onHpChange={(newHp) => setHp(newHp)}
+          />
+        )}
       </div>
     </>
   );

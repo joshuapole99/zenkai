@@ -373,6 +373,7 @@ export default async function DashboardPage() {
         isFoundingMember={user.is_founding_member ?? false}
         storyNotReadToday={storyNotReadToday}
         storyData={storyData}
+        isFirstTimer={(user.xp ?? 0) === 0 && completedIds.length === 0 && !isZenkaiBoost}
       />
 
       <footer

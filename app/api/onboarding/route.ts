@@ -20,17 +20,23 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { characterClass, goal, fitnessLevel, characterName, weightKg, heightCm, age } = body;
+  const {
+    characterClass,
+    characterName,
+    weightKg, heightCm, age,
+    // goal and fitnessLevel are optional — collected later in the app
+    goal: rawGoal,
+    fitnessLevel: rawLevel,
+  } = body;
 
-  if (!characterClass || !goal || !fitnessLevel || !characterName?.trim()) {
-    return NextResponse.json({ error: "All fields required" }, { status: 400 });
+  const goal        = VALID_GOALS.includes(rawGoal)  ? rawGoal  : "consistent";
+  const fitnessLevel = VALID_LEVELS.includes(rawLevel) ? rawLevel : "beginner";
+
+  if (!characterClass || !characterName?.trim()) {
+    return NextResponse.json({ error: "Class and character name are required" }, { status: 400 });
   }
-  if (
-    !VALID_CLASSES.includes(characterClass) ||
-    !VALID_GOALS.includes(goal) ||
-    !VALID_LEVELS.includes(fitnessLevel)
-  ) {
-    return NextResponse.json({ error: "Invalid values" }, { status: 400 });
+  if (!VALID_CLASSES.includes(characterClass)) {
+    return NextResponse.json({ error: "Invalid class" }, { status: 400 });
   }
 
   const parsedWeight = weightKg != null && !isNaN(Number(weightKg)) && Number(weightKg) > 0
