@@ -266,7 +266,10 @@ export default async function DashboardPage() {
 
   const quests = getDailyQuests(today);
 
-  // Server-side side quest prefetch — prevents client re-fetch on every re-mount (infinite XP exploit)
+  // Server-side side quest prefetch.
+  // Side quests are FIXED per user+date — same 2 every load.
+  // Never exclude already-completed IDs here; the client marks them as done.
+  // Excluding completed IDs was the exploit: each navigation surfaced fresh completable quests.
   type InitialSideQuest = { id: number; name: string; detail: string };
   let initialSideQuests: InitialSideQuest[] = [];
 
@@ -277,14 +280,12 @@ export default async function DashboardPage() {
       : "beginner";
 
     const mainQuestNames = quests.map((q) => q.name);
-    const excludeIds = sideCompletedIds.length > 0 ? sideCompletedIds : [0];
 
     try {
       const sideRows = (await sql`
         SELECT id, name, sets_reps, duration FROM exercises
         WHERE difficulty = ${sideDifficulty}
-          AND name  != ALL(${mainQuestNames}::text[])
-          AND id    != ALL(${excludeIds}::int[])
+          AND name != ALL(${mainQuestNames}::text[])
         ORDER BY md5(id::text || ${today} || ${String(user.id)})
         LIMIT 2
       `) as { id: number; name: string; sets_reps: string | null; duration: string | null }[];

@@ -8,8 +8,9 @@ export async function GET(req: NextRequest) {
   const token = cookieStore.get("auth-token")?.value;
   if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  let user;
   try {
-    await verifyToken(token);
+    user = await verifyToken(token);
   } catch {
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
@@ -26,10 +27,13 @@ export async function GET(req: NextRequest) {
   const sql = getDb();
   const today = new Date().toISOString().slice(0, 10);
 
+  // Seed includes user ID so each user gets their own fixed side quests for the day.
+  // Do NOT exclude already-completed IDs — the client marks them as done.
+  // Excluding completed IDs was the exploit: each call returned fresh completable exercises.
   const rows = (await sql`
     SELECT id, name, sets_reps, duration FROM exercises
     WHERE difficulty = ${difficulty}
-    ORDER BY md5(id::text || ${today})
+    ORDER BY md5(id::text || ${today} || ${String(user.userId)})
     LIMIT 10
   `) as { id: number; name: string; sets_reps: string | null; duration: string | null }[];
 
