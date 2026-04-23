@@ -13,7 +13,7 @@ export const story = {
           { name: "Plank", duration: "30 seconds" }
         ]
       },
-      completion: "Good. That's the first spark. Come back tomorrow — or it dies.",
+      completion: "That's the first spark. Come back tomorrow and let's see what you're made of.",
       xp: 100
     },
     {
@@ -126,7 +126,7 @@ export const story = {
     background: "zenkai" as const,
     npc: "kael" as const,
     title: "Zenkai Boost",
-    intro: "You fell. Good. Master Kael is already there — he doesn't look angry, he looks satisfied. 'You know what a Zenkai is? In the old texts, it is written that Saiyan warriors grow most after their greatest defeats. Not despite the fall — because of it. You just fell. That means your next rise will be the biggest yet.'",
+    intro: "Master Kael is waiting. He doesn't say much — just nods. 'You're back. That's the only thing that matters.' He opens the old texts to a page you haven't seen: 'There is a phenomenon called Zenkai. It happens when a warrior steps away — then returns. The body remembers. The power you built is still there, and it is ready to spike. Pick up exactly where you left off.'",
     quest: {
       exercises: [
         { name: "Push-ups", reps: 25 },
@@ -135,7 +135,7 @@ export const story = {
         { name: "Plank", duration: "1 minute" }
       ]
     },
-    completion: "Your power level just spiked. That's a Zenkai. Remember this feeling — every time you fall, this is waiting for you on the other side.",
+    completion: "That's a Zenkai. Your power just jumped — coming back after a break makes you stronger than if you'd never stopped. Welcome back.",
     xp: 300
   }
 }

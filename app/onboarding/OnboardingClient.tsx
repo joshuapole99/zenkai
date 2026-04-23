@@ -9,7 +9,14 @@ const CLASSES = [
   { id: "guardian", name: "Iron Guardian",   description: "Endurance is your superpower. Never stop.",      tag: "Endurance"    },
 ];
 
-type Step = 1 | 2;
+const WEAK_SPOTS = [
+  { id: "busy_weeks",       label: "Busy weeks",           sub: "Work and life get in the way" },
+  { id: "motivation_dips",  label: "Motivation dips",      sub: "Hard to start when energy is low" },
+  { id: "travel",           label: "Travel & disruptions", sub: "Routine breaks when I'm away" },
+  { id: "injury",           label: "Injury or soreness",   sub: "Body doesn't always cooperate" },
+];
+
+type Step = 1 | 2 | 3;
 
 export default function OnboardingClient({ isFoundingMember }: { isFoundingMember: boolean }) {
   const router = useRouter();
@@ -17,10 +24,11 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
   const [step, setStep] = useState<Step>(1);
   const [characterClass, setCharacterClass] = useState("");
   const [characterName, setCharacterName] = useState("");
+  const [weakSpot, setWeakSpot] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function submit() {
+  async function submit(selectedWeakSpot: string) {
     if (!characterName.trim()) { setError("Enter your character name."); return; }
     setLoading(true);
     setError("");
@@ -28,7 +36,7 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ characterClass, characterName }),
+        body: JSON.stringify({ characterClass, characterName, weakSpot: selectedWeakSpot }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Something went wrong."); return; }
@@ -95,7 +103,7 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
 
         {/* Step dots */}
         <div className="flex items-center justify-center gap-2 mb-10">
-          {([1, 2] as Step[]).map((s) => (
+          {([1, 2, 3] as Step[]).map((s) => (
             <div
               key={s}
               className="transition-all duration-300"
@@ -155,7 +163,7 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
               maxLength={20}
               value={characterName}
               onChange={(e) => { setCharacterName(e.target.value); setError(""); }}
-              onKeyDown={(e) => e.key === "Enter" && submit()}
+              onKeyDown={(e) => { if (e.key === "Enter" && characterName.trim()) setStep(3); }}
               placeholder="e.g. Shadow Goku"
               className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-gray-600 outline-none transition-all"
               style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
@@ -163,6 +171,32 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
               onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
             />
             <p className="text-xs text-gray-600 mt-2">Max 20 characters.</p>
+          </div>
+        )}
+
+        {/* Step 3: Weak spot — tap to select and auto-submit */}
+        {step === 3 && (
+          <div>
+            <h1 className="text-2xl font-black text-white mb-1">What trips you up most?</h1>
+            <p className="text-sm text-gray-500 mb-6">We&apos;ll build around it, not against it.</p>
+            <div className="space-y-3">
+              {WEAK_SPOTS.map((w) => (
+                <button
+                  key={w.id}
+                  onClick={() => { setWeakSpot(w.id); submit(w.id); }}
+                  disabled={loading}
+                  className="w-full text-left rounded-xl p-4 transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
+                  style={{
+                    background: weakSpot === w.id ? "rgba(255,107,53,0.08)" : "rgba(255,255,255,0.02)",
+                    border: weakSpot === w.id ? "1px solid rgba(255,107,53,0.5)" : "1px solid rgba(255,255,255,0.06)",
+                  }}
+                >
+                  <p className="font-bold text-white text-sm">{w.label}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{w.sub}</p>
+                </button>
+              ))}
+            </div>
+            {loading && <p className="text-xs text-gray-600 mt-4 text-center">Setting up your training...</p>}
           </div>
         )}
 
@@ -182,17 +216,25 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
               Back
             </button>
             <button
-              onClick={submit}
-              disabled={loading}
-              className="flex-1 py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+              onClick={() => { if (characterName.trim()) setStep(3); else setError("Enter your character name."); }}
+              className="flex-1 py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 active:scale-[0.98]"
               style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
             >
-              {loading ? "Saving..." : "Begin Training"}
+              Next
             </button>
           </div>
         )}
 
-        <p className="text-center text-xs text-gray-700 mt-4">{step} / 2</p>
+        {step === 3 && (
+          <button
+            onClick={() => setStep(2)}
+            className="mt-6 text-xs text-gray-600 hover:text-gray-400 transition-colors"
+          >
+            Back
+          </button>
+        )}
+
+        <p className="text-center text-xs text-gray-700 mt-4">{step} / 3</p>
       </div>
     </div>
   );

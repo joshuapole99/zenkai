@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db";
 const VALID_CLASSES = ["saiyan", "shadow", "guardian"];
 const VALID_GOALS = ["stronger", "weight", "consistent"];
 const VALID_LEVELS = ["beginner", "intermediate", "advanced"];
+const VALID_WEAK_SPOTS = ["busy_weeks", "motivation_dips", "travel", "injury"];
 
 export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
@@ -27,10 +28,12 @@ export async function POST(req: NextRequest) {
     // goal and fitnessLevel are optional — collected later in the app
     goal: rawGoal,
     fitnessLevel: rawLevel,
+    weakSpot: rawWeakSpot,
   } = body;
 
   const goal        = VALID_GOALS.includes(rawGoal)  ? rawGoal  : "consistent";
   const fitnessLevel = VALID_LEVELS.includes(rawLevel) ? rawLevel : "beginner";
+  const weakSpot    = VALID_WEAK_SPOTS.includes(rawWeakSpot) ? rawWeakSpot : null;
 
   if (!characterClass || !characterName?.trim()) {
     return NextResponse.json({ error: "Class and character name are required" }, { status: 400 });
@@ -63,6 +66,7 @@ export async function POST(req: NextRequest) {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS height_cm INTEGER`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS protein_goal INTEGER`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS weak_spot TEXT`;
 
   await sql`
     UPDATE users
@@ -74,7 +78,8 @@ export async function POST(req: NextRequest) {
         weight_kg           = ${parsedWeight},
         height_cm           = ${parsedHeight},
         age                 = ${parsedAge},
-        protein_goal        = ${proteinGoal}
+        protein_goal        = ${proteinGoal},
+        weak_spot           = ${weakSpot}
     WHERE id = ${user.userId}
   `;
 

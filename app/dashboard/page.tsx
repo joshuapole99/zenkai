@@ -315,7 +315,7 @@ export default async function DashboardPage() {
   const lastActive = user.last_active ? String(user.last_active).slice(0, 10) : null;
   if (storyDay > 1 && lastActive) {
     const diffMs = new Date(today).getTime() - new Date(lastActive).getTime();
-    if (Math.floor(diffMs / 86400000) >= 7) isZenkaiBoost = true;
+    if (Math.floor(diffMs / 86400000) >= 3) isZenkaiBoost = true;
   }
 
   // Story not seen: normal arc = haven't seen this story_day yet; boost = haven't seen today

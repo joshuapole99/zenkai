@@ -8,6 +8,7 @@ import type { SwapEntry } from "./page";
 import type { StoryData } from "./page";
 import StoryScreen from "./StoryScreen";
 import CompletionScreen from "./CompletionScreen";
+import MomentScreen from "./MomentScreen";
 import NutritionLog, { type FoodLogData } from "./NutritionLog";
 import { AvatarSVG, type AvatarConfig, DEFAULT_AVATAR } from "@/components/AvatarSVG";
 import EnemyCard from "./EnemyCard";
@@ -15,7 +16,7 @@ import { getEnemy } from "@/lib/enemies";
 
 type Alternative = { id: number; name: string; detail: string };
 type SideQuest = { id: number; name: string; detail: string };
-type View = "story" | "workout" | "complete" | "done";
+type View = "story" | "workout" | "moment" | "complete" | "done";
 
 type Props = {
   characterName: string;
@@ -94,6 +95,23 @@ export default function DashboardClient({
 
   const { xpIntoLevel, xpRequired, level } = xpProgress(xp);
   const allDone = quests.every((q) => completedIds.includes(q.id));
+  const [floorLoading, setFloorLoading] = useState(false);
+
+  async function completeFloorSession() {
+    if (floorLoading || allDone) return;
+    setFloorLoading(true);
+    try {
+      const res = await fetch("/api/quest/floor", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setCompletedIds(data.completedIds);
+        if (data.newXp !== null) setXp(data.newXp);
+        if (data.newStreak !== null) setStreak(data.newStreak);
+      }
+    } finally {
+      setFloorLoading(false);
+    }
+  }
   const barPercent = Math.min(100, (xpIntoLevel / xpRequired) * 100);
 
   // Progressive reveal: first-timers see quests one at a time
@@ -115,7 +133,7 @@ export default function DashboardClient({
   useEffect(() => {
     if (allDone && view === "workout" && !completionShownRef.current) {
       completionShownRef.current = true;
-      const t = setTimeout(() => setView("complete"), 700);
+      const t = setTimeout(() => setView("moment"), 700);
       return () => clearTimeout(t);
     }
   }, [allDone, view]);
@@ -229,6 +247,11 @@ export default function DashboardClient({
           storyDay={storyData.day}
           onAccept={() => setView("workout")}
         />
+      )}
+
+      {/* Moment screen — post-workout pause */}
+      {view === "moment" && (
+        <MomentScreen onDone={() => setView("complete")} />
       )}
 
       {/* Completion overlay */}
@@ -480,6 +503,23 @@ export default function DashboardClient({
             })}
           </div>
         </div>
+
+        {/* Floor Session — minimum dose for busy days */}
+        {!allDone && (
+          <div className="pt-1">
+            <button
+              onClick={completeFloorSession}
+              disabled={floorLoading}
+              className="w-full rounded-xl px-4 py-3 text-left transition-all active:scale-[0.99] disabled:opacity-50"
+              style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+            >
+              <p className="text-xs font-bold text-gray-500 mb-0.5">Short on time?</p>
+              <p className="text-sm font-bold text-white">
+                {floorLoading ? "Logging..." : "Count today as done — just showing up matters"}
+              </p>
+            </button>
+          </div>
+        )}
 
         {/* Side quests — unlocked after all main quests done */}
         {allDone && sideQuests.length > 0 && (
