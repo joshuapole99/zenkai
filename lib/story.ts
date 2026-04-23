@@ -29,7 +29,7 @@ export const story = {
           { name: "High Knees", reps: 10 }
         ]
       },
-      completion: "Your power grows. But consistency is everything. Return tomorrow.",
+      completion: "Your power grows. Not because it was given to you — because you earned it.",
       xp: 120
     },
     {
@@ -45,7 +45,7 @@ export const story = {
           { name: "Jump Squats", reps: 15 }
         ]
       },
-      completion: "Ryo watches. He expected you to quit. You didn't.",
+      completion: "Ryo watches. He expected you to stop. You didn't. Remember that.",
       xp: 140
     },
     {
@@ -61,7 +61,7 @@ export const story = {
           { name: "Plank", duration: "1 minute" }
         ]
       },
-      completion: "The doubt is still there. But you trained anyway. That's what separates warriors from everyone else.",
+      completion: "The doubt was there. You trained anyway. That is not ordinary. That is the mark of a fighter.",
       xp: 150
     },
     {

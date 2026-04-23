@@ -105,7 +105,7 @@ export default function CompletionScreen({
             className="rounded-xl px-4 py-3 mb-8"
             style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
           >
-            <p className="text-xs text-gray-600 mb-1 tracking-widest uppercase">Return tomorrow</p>
+            <p className="text-xs text-gray-600 mb-1 tracking-widest uppercase">Next chapter</p>
             <p className="text-sm font-bold text-white">{nextChapterTitle}</p>
           </div>
         ) : (

@@ -493,15 +493,15 @@ export default function Home() {
 
           {/* Hero title */}
           <h1
-            className="font-black uppercase text-white mb-6 leading-none tracking-tighter"
+            className="font-black text-white mb-6 leading-tight"
             style={{
-              fontSize: "clamp(2.8rem, 9vw, 6.5rem)",
+              fontSize: "clamp(2rem, 7vw, 4.5rem)",
               animation: "bootIn 0.6s ease 0.5s both",
             }}
           >
-            <span className="gradient-text">Every setback</span>
+            Built for people who never give up —
             <br />
-            <span style={{ color: "#fff" }}>makes you stronger.</span>
+            <span className="gradient-text">even when they keep stopping.</span>
           </h1>
 
           {/* Subtitle */}
@@ -509,10 +509,8 @@ export default function Home() {
             className="text-lg text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed"
             style={{ animation: "bootIn 0.6s ease 0.7s both" }}
           >
-            Train in real life. Level up like an anime character.{" "}
-            <span className="text-white font-medium">Miss a week?</span>{" "}
-            That&apos;s when your{" "}
-            <span style={{ color: "#FF6B35" }} className="font-bold">Zenkai Boost</span> begins.
+            Zenkai turns your worst weeks into your biggest power spikes.{" "}
+            <span style={{ color: "#FF6B35" }} className="font-bold">Every comeback makes you stronger than before.</span>
           </p>
 
           {/* Waitlist form */}
@@ -556,9 +554,9 @@ export default function Home() {
 
           <div className="space-y-4">
             {[
-              "You start fired up — then life gets in the way. You miss a day. Then a week. Somehow that becomes your fault.",
-              "Other apps punish you for stopping. Streak gone. Badges wiped. Progress erased. Like you already lost.",
-              "You feel guilty, quit completely — and the app collects dust. The cycle repeats.",
+              "You start strong. Then life gets in the way — a busy week, a rough patch, a week off. The app gives you a red card. You feel guilty. You stop entirely.",
+              "Most fitness apps are built for people who are already consistent. They punish you when you're not. That's the opposite of what you need.",
+              "What you need is a coach who remembers you, pays attention to why you stopped, and meets you exactly where you are when you come back.",
             ].map((text, i) => (
               <div
                 key={i}
@@ -582,8 +580,8 @@ export default function Home() {
 
           <div className="mt-12 text-center">
             <p className="text-2xl sm:text-3xl font-black text-white">
-              Zenkai flips the script.{" "}
-              <span className="gradient-text">Completely.</span>
+              Zenkai is the coach that{" "}
+              <span className="gradient-text">keeps going with you.</span>
             </p>
           </div>
         </div>
@@ -606,20 +604,20 @@ export default function Home() {
             {[
               {
                 label: "01",
-                title: "Zenkai Boost",
-                desc: "Miss a few days? You get a special comeback quest — just like Saiyans after every defeat. Your setback becomes your power.",
+                title: "A coach, not a tracker",
+                desc: "Master Kael remembers you. He knows your weak spots. He builds around them — not against them. Every session, he's in your corner.",
                 accent: "#FF6B35",
               },
               {
                 label: "02",
-                title: "Home workouts",
-                desc: "No gym needed. Your room is your dojo. Built for small spaces, zero equipment, any schedule.",
+                title: "Zenkai Boost",
+                desc: "Miss a few days? You get a special comeback quest and a bonus XP spike. The app doesn't punish absence — it turns it into power.",
                 accent: "#7C3AED",
               },
               {
                 label: "03",
                 title: "You are the main character",
-                desc: "Your anime character levels up with your real progress. Every workout is XP. Every comeback is a power-up.",
+                desc: "Your character levels up with your real progress. Every workout is XP. Every comeback is a power-up. No perfection required.",
                 accent: "#FF6B35",
               },
             ].map(({ label, title, desc, accent }) => (
@@ -638,6 +636,40 @@ export default function Home() {
                 <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── THE ZENKAI CONCEPT ── */}
+      <section className="py-24 px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#FF6B35" }}>
+              The Zenkai principle
+            </p>
+            <h2 className="text-3xl sm:text-5xl font-black text-white mb-6">
+              What is a Zenkai?
+            </h2>
+          </div>
+          <div
+            className="rounded-2xl p-8 mb-8"
+            style={{ background: "rgba(255,107,53,0.03)", border: "1px solid rgba(255,107,53,0.12)" }}
+          >
+            <p className="text-gray-300 leading-relaxed text-base mb-4">
+              In ancient warrior texts, <span style={{ color: "#FF6B35" }} className="font-bold">Zenkai</span> describes what happens when a fighter is pushed to their limit and recovers — they come back stronger than before. Not despite the setback. <em>Because</em> of it.
+            </p>
+            <p className="text-gray-400 leading-relaxed text-sm">
+              We built an app around that idea. Miss a few days? Your Zenkai activates. The app doesn&apos;t punish you — it hands you a bonus quest and a power spike. The longer you were gone, the bigger the return.
+            </p>
+          </div>
+          <div
+            className="rounded-2xl p-6"
+            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <p className="text-sm font-bold text-white mb-2">No streaks that punish you. No red cards.</p>
+            <p className="text-sm text-gray-500 leading-relaxed">
+              Just a coach who remembers you, understands why you stopped, and keeps going with you — wherever you left off.
+            </p>
           </div>
         </div>
       </section>
@@ -812,7 +844,7 @@ export default function Home() {
       <footer className="py-10 px-6 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="font-black gradient-text tracking-tight">ZENKAI</span>
-          <p className="text-xs text-gray-700 text-center">© 2026 Zenkai. Every setback makes you stronger.</p>
+          <p className="text-xs text-gray-700 text-center">© 2026 Zenkai. Trust that with us, you&apos;ll become better.</p>
           <div className="flex gap-5 text-xs text-gray-600">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>

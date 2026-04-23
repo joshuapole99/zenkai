@@ -111,7 +111,7 @@ export default function StoryScreen({ day, title, intro, isZenkaiBoost, backgrou
           {title}
         </h1>
         {isZenkaiBoost && (
-          <p className="text-xs text-gray-600 mt-3 tracking-wide">You fell. Now rise harder.</p>
+          <p className="text-xs text-gray-600 mt-3 tracking-wide">You&apos;re back. That&apos;s the only thing that matters.</p>
         )}
       </div>
 

@@ -29,6 +29,8 @@ type UserRow = {
   last_active: string | null;
   last_story_day_seen: number | null;
   avatar_config: AvatarConfig | null;
+  weak_spot: string | null;
+  fighter_type: string | null;
 };
 
 export type StoryData = {
@@ -120,6 +122,8 @@ export default async function DashboardPage() {
     sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS protein_goal INTEGER`,
     sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_config JSONB`,
     sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_story_day_seen INTEGER DEFAULT 0`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS weak_spot TEXT`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fighter_type TEXT`,
   ]).catch(e => console.error("[dashboard] users migration error:", e));
 
   let user: UserRow;
@@ -127,7 +131,7 @@ export default async function DashboardPage() {
     const rows = (await sql`
       SELECT id, username, character_name, character_class, fitness_level, xp, streak, hp, protein_goal,
              onboarding_complete, is_founding_member, story_day, last_story_date, last_streak_date,
-             last_active, last_story_day_seen, avatar_config
+             last_active, last_story_day_seen, avatar_config, weak_spot, fighter_type
       FROM users WHERE id = ${session.userId}
     `) as UserRow[];
     if (!rows[0]) redirect("/login");
@@ -375,6 +379,8 @@ export default async function DashboardPage() {
         storyNotReadToday={storyNotReadToday}
         storyData={storyData}
         isFirstTimer={(user.xp ?? 0) === 0 && completedIds.length === 0 && !isZenkaiBoost}
+        weakSpot={user.weak_spot ?? null}
+        fighterType={user.fighter_type ?? null}
       />
 
       <footer

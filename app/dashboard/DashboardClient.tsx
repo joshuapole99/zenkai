@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Quest, xpProgress, calcLevel } from "@/lib/quests";
+import { getArcName } from "@/lib/questArc";
 import { CLASS_COLORS } from "@/lib/visuals";
 import type { SwapEntry } from "./page";
 import type { StoryData } from "./page";
@@ -38,6 +39,8 @@ type Props = {
   storyNotReadToday: boolean;
   storyData: StoryData;
   isFirstTimer: boolean;
+  weakSpot: string | null;
+  fighterType: string | null;
 };
 
 const CLASS_LABELS: Record<string, string> = {
@@ -66,6 +69,8 @@ export default function DashboardClient({
   storyNotReadToday,
   storyData,
   isFirstTimer,
+  weakSpot,
+  fighterType: _fighterType,
 }: Props) {
   const alreadyDoneOnLoad = initialCompletedIds.length === quests.length;
   // For first-timers: only the first quest is visible until it's done, then the rest unlock.
@@ -96,6 +101,7 @@ export default function DashboardClient({
   const { xpIntoLevel, xpRequired, level } = xpProgress(xp);
   const allDone = quests.every((q) => completedIds.includes(q.id));
   const [floorLoading, setFloorLoading] = useState(false);
+  const [floorMessage, setFloorMessage] = useState<string | null>(null);
 
   async function completeFloorSession() {
     if (floorLoading || allDone) return;
@@ -107,6 +113,7 @@ export default function DashboardClient({
         setCompletedIds(data.completedIds);
         if (data.newXp !== null) setXp(data.newXp);
         if (data.newStreak !== null) setStreak(data.newStreak);
+        setFloorMessage("Even showing up when you have nothing left — that is the mark of a true fighter.");
       }
     } finally {
       setFloorLoading(false);
@@ -418,9 +425,9 @@ export default function DashboardClient({
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-bold" style={{ color: done ? "#7C3AED" : "#fff" }}>
-                            {displayed.name}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-xs font-bold tracking-widest uppercase" style={{ color: done ? "rgba(124,58,237,0.6)" : "rgba(255,107,53,0.6)" }}>
+                            {getArcName(displayed.name)}
                           </p>
                           {isSwapped && !done && (
                             <span className="text-xs px-1.5 py-0.5 rounded font-medium" style={{ background: "rgba(255,107,53,0.1)", color: "#FF6B35" }}>
@@ -428,6 +435,9 @@ export default function DashboardClient({
                             </span>
                           )}
                         </div>
+                        <p className="text-sm font-bold mt-0.5" style={{ color: done ? "#7C3AED" : "#fff" }}>
+                          {displayed.name}
+                        </p>
                         <p className="text-xs text-gray-600 mt-0.5">{displayed.detail}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -503,6 +513,27 @@ export default function DashboardClient({
             })}
           </div>
         </div>
+
+        {/* Floor session coach message — after completing */}
+        {floorMessage && (
+          <div
+            className="rounded-xl px-4 py-3 flex gap-3 items-start"
+            style={{ background: "rgba(255,107,53,0.04)", border: "1px solid rgba(255,107,53,0.15)" }}
+          >
+            <span className="text-xs font-black mt-0.5 shrink-0" style={{ color: "#FF6B35" }}>Kael</span>
+            <p className="text-xs text-gray-400 leading-relaxed italic">&ldquo;{floorMessage}&rdquo;</p>
+          </div>
+        )}
+
+        {/* Weak spot reminder — subtle, personal, coach voice */}
+        {weakSpot && !allDone && !floorMessage && (
+          <p className="text-xs text-gray-600 px-1">
+            {weakSpot === "busy_weeks"      && "Busy week? Floor Session counts. Showing up is enough."}
+            {weakSpot === "motivation_dips" && "Low energy today? That's exactly when it matters most."}
+            {weakSpot === "travel"          && "Away from home? Your quests travel with you."}
+            {weakSpot === "injury"          && "Body not cooperating? Do what you can. Rest counts too."}
+          </p>
+        )}
 
         {/* Floor Session — minimum dose for busy days */}
         {!allDone && (
