@@ -63,11 +63,11 @@ function WeekCalendar({
     >
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xs font-bold tracking-widest uppercase text-gray-500">This week</h2>
-        {plan && (
+        {plan && workoutDayIndices.length > 0 && (
           <span className="text-xs text-gray-600">
             {thisWeekLogs.filter((d) => weekDates.includes(d) && workoutDayIndices.includes(weekDates.indexOf(d))).length}
             {" / "}
-            {workoutDayIndices.filter((i) => weekDates[i] <= today).length} done
+            {workoutDayIndices.length} workouts
           </span>
         )}
       </div>

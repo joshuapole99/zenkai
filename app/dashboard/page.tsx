@@ -109,9 +109,9 @@ export default async function DashboardPage() {
     await Promise.all([
       sql`
         CREATE TABLE IF NOT EXISTS workout_plans (
-          id         SERIAL PRIMARY KEY,
-          user_id    INTEGER NOT NULL UNIQUE,
-          exercises  JSONB NOT NULL DEFAULT '[]',
+          id          SERIAL PRIMARY KEY,
+          user_id     INTEGER NOT NULL UNIQUE,
+          exercises   JSONB NOT NULL DEFAULT '[]',
           day_indices INTEGER[] DEFAULT '{0,2,4}',
           time_of_day TEXT DEFAULT 'flexible',
           updated_at  TIMESTAMPTZ DEFAULT NOW()
@@ -126,6 +126,20 @@ export default async function DashboardPage() {
         )
       `,
     ]);
+
+    // Data fix: correct "squads" typo in any workout plan exercises
+    sql`
+      UPDATE workout_plans
+      SET exercises = (
+        SELECT jsonb_agg(
+          CASE WHEN lower(e->>'name') = 'squads'
+          THEN jsonb_set(e, '{name}', '"Squats"')
+          ELSE e END
+        )
+        FROM jsonb_array_elements(exercises) e
+      )
+      WHERE exercises::text ILIKE '%squads%'
+    `.catch(() => {});
 
     // Fetch workout plan + this week's logs in parallel
     const weekStart = getWeekStart(today);

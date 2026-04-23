@@ -66,11 +66,15 @@ export async function POST(req: NextRequest) {
     const exercises: ExerciseInput[] = workoutPlan.exercises
       .filter((e: ExerciseInput) => typeof e.name === "string" && e.name.trim())
       .slice(0, 5)
-      .map((e: ExerciseInput) => ({ name: e.name.trim(), detail: (e.detail ?? "").trim() }));
+      .map((e: ExerciseInput) => ({
+        name: e.name.trim().slice(0, 50),
+        detail: (e.detail ?? "").trim().slice(0, 30),
+      }));
 
-    const dayIndices: number[] = workoutPlan.dayIndices
-      .filter((d: unknown) => typeof d === "number" && d >= 0 && d <= 6)
-      .slice(0, 6);
+    const dayIndices: number[] = [...new Set(
+      workoutPlan.dayIndices
+        .filter((d: unknown) => typeof d === "number" && d >= 0 && d <= 6)
+    )].slice(0, 6) as number[];
 
     const timeOfDay = VALID_TIMES.includes(workoutPlan.timeOfDay) ? workoutPlan.timeOfDay : "flexible";
 
