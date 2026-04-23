@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const CLASSES = [
-  { id: "saiyan",   name: "Saiyan Warrior",  description: "Raw power. Built for strength and dominance.",   tag: "Strength"     },
+  { id: "saiyan",   name: "Saiyan Warrior",  description: "Raw power. Built for strength and dominance.",   tag: "Strength"      },
   { id: "shadow",   name: "Shadow Assassin", description: "Speed is everything. Fast, agile, untouchable.", tag: "Speed / Agility" },
-  { id: "guardian", name: "Iron Guardian",   description: "Endurance is your superpower. Never stop.",      tag: "Endurance"    },
+  { id: "guardian", name: "Iron Guardian",   description: "Endurance is your superpower. Never stop.",      tag: "Endurance"     },
 ];
 
 const WEAK_SPOTS = [
@@ -17,13 +17,23 @@ const WEAK_SPOTS = [
 ];
 
 const FIGHTER_TYPES = [
-  { id: "comeback_king", label: "The Comeback King",  sub: "Gets stronger after every setback" },
-  { id: "unbreakable",   label: "The Unbreakable",    sub: "Never gives up no matter what" },
-  { id: "survivor",      label: "The Survivor",       sub: "Keeps going when everything falls apart" },
-  { id: "quiet_beast",   label: "The Quiet Beast",    sub: "Shows up every day, no excuses" },
+  { id: "comeback_king", label: "The Comeback King",  sub: "Gets stronger after every setback", img: "/images/comeback-king.png" },
+  { id: "unbreakable",   label: "The Unbreakable",    sub: "Never gives up no matter what",      img: "/images/unbreakable.png"   },
+  { id: "survivor",      label: "The Survivor",       sub: "Keeps going when everything falls apart", img: "/images/survivor.png" },
+  { id: "quiet_beast",   label: "The Quiet Beast",    sub: "Shows up every day, no excuses",     img: "/images/quiet-beast.png"  },
 ];
 
-type Step = 1 | 2 | 3 | 4;
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const TIME_OPTIONS = [
+  { id: "morning",   label: "Morning",   sub: "Before the world wakes up" },
+  { id: "afternoon", label: "Afternoon", sub: "Midday energy reset" },
+  { id: "evening",   label: "Evening",   sub: "After work, before rest" },
+  { id: "flexible",  label: "Flexible",  sub: "Whenever I can" },
+];
+
+type Exercise = { name: string; detail: string };
+type WorkoutPlan = { exercises: Exercise[]; dayIndices: number[]; timeOfDay: string };
+type Step = 1 | 2 | 3 | 4 | 5;
 
 export default function OnboardingClient({ isFoundingMember }: { isFoundingMember: boolean }) {
   const router = useRouter();
@@ -36,7 +46,15 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function submit(selectedFighterType: string) {
+  // Step 5: workout plan
+  const [exercises, setExercises] = useState<Exercise[]>([
+    { name: "", detail: "" },
+    { name: "", detail: "" },
+  ]);
+  const [trainingDays, setTrainingDays] = useState<number[]>([0, 2, 4]); // Mon, Wed, Fri
+  const [timeOfDay, setTimeOfDay] = useState("morning");
+
+  async function submit(selectedFighterType: string, workoutPlan: WorkoutPlan | null) {
     if (!characterName.trim()) { setError("Enter your character name."); return; }
     setLoading(true);
     setError("");
@@ -44,7 +62,13 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ characterClass, characterName, weakSpot, fighterType: selectedFighterType }),
+        body: JSON.stringify({
+          characterClass,
+          characterName,
+          weakSpot,
+          fighterType: selectedFighterType,
+          workoutPlan,
+        }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Something went wrong."); return; }
@@ -54,6 +78,35 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleStep5Submit(skip: boolean) {
+    const plan: WorkoutPlan | null = skip ? null : {
+      exercises: exercises.filter((e) => e.name.trim()),
+      dayIndices: trainingDays,
+      timeOfDay,
+    };
+    submit(fighterType, plan);
+  }
+
+  function toggleDay(index: number) {
+    setTrainingDays((prev) =>
+      prev.includes(index)
+        ? prev.length > 1 ? prev.filter((d) => d !== index) : prev
+        : prev.length < 6 ? [...prev, index].sort() : prev
+    );
+  }
+
+  function updateExercise(i: number, field: keyof Exercise, value: string) {
+    setExercises((prev) => prev.map((e, idx) => idx === i ? { ...e, [field]: value } : e));
+  }
+
+  function addExercise() {
+    if (exercises.length < 5) setExercises((prev) => [...prev, { name: "", detail: "" }]);
+  }
+
+  function removeExercise(i: number) {
+    if (exercises.length > 1) setExercises((prev) => prev.filter((_, idx) => idx !== i));
   }
 
   if (showFoundingScreen) {
@@ -70,15 +123,14 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
             <h1 className="text-3xl font-black text-white mb-4 leading-tight">You were on the waitlist.</h1>
             <p className="text-gray-400 leading-relaxed text-sm">
               Your exclusive <span style={{ color: "#FFD700" }} className="font-bold">Founding Member skin</span> is reserved.
-              It unlocks at official launch when character visuals go live.
+              It unlocks at official launch.
             </p>
           </div>
           <div className="rounded-2xl p-6 mb-8 text-left" style={{ background: "rgba(255,215,0,0.03)", border: "1px solid rgba(255,215,0,0.12)" }}>
             <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "rgba(255,215,0,0.5)" }}>What you get</p>
             <div className="space-y-2 text-sm text-gray-400">
               <p>— Exclusive Founding Member skin (reserved)</p>
-              <p>— "Founding Member" badge on your profile</p>
-              <p>— Origin Arc — the first story arc</p>
+              <p>— &quot;Founding Member&quot; badge on your profile</p>
               <p>— Your name in the Founding Member list</p>
             </div>
           </div>
@@ -102,12 +154,12 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
           <span className="font-black text-2xl tracking-tight" style={{ background: "linear-gradient(90deg, #FF6B35, #7C3AED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             ZENKAI
           </span>
-          <p className="text-xs text-gray-600 mt-1 tracking-widest uppercase">Character Setup</p>
+          <p className="text-xs text-gray-600 mt-1 tracking-widest uppercase">Setup</p>
         </div>
 
         {/* Step dots */}
         <div className="flex items-center justify-center gap-2 mb-10">
-          {([1, 2, 3, 4] as Step[]).map((s) => (
+          {([1, 2, 3, 4, 5] as Step[]).map((s) => (
             <div
               key={s}
               className="transition-all duration-300"
@@ -172,7 +224,7 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
           </div>
         )}
 
-        {/* Step 3: Weak spot — tap advances to step 4 */}
+        {/* Step 3: Weak spot */}
         {step === 3 && (
           <div>
             <h1 className="text-2xl font-black text-white mb-1">What trips you up most?</h1>
@@ -183,10 +235,7 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
                   key={w.id}
                   onClick={() => { setWeakSpot(w.id); setStep(4); }}
                   className="w-full text-left rounded-xl p-4 transition-all duration-200 active:scale-[0.98]"
-                  style={{
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.06)",
-                  }}
+                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
                 >
                   <p className="font-bold text-white text-sm">{w.label}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{w.sub}</p>
@@ -196,7 +245,7 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
           </div>
         )}
 
-        {/* Step 4: Fighter type — tap submits */}
+        {/* Step 4: Fighter type */}
         {step === 4 && (
           <div>
             <h1 className="text-2xl font-black text-white mb-1">How do you see yourself?</h1>
@@ -205,20 +254,152 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
               {FIGHTER_TYPES.map((f) => (
                 <button
                   key={f.id}
-                  onClick={() => { setFighterType(f.id); submit(f.id); }}
-                  disabled={loading}
-                  className="w-full text-left rounded-xl p-4 transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
+                  onClick={() => { setFighterType(f.id); setStep(5); }}
+                  className="w-full text-left rounded-xl p-4 transition-all duration-200 active:scale-[0.98] flex items-center gap-4"
                   style={{
                     background: fighterType === f.id ? "rgba(124,58,237,0.08)" : "rgba(255,255,255,0.02)",
                     border: fighterType === f.id ? "1px solid rgba(124,58,237,0.5)" : "1px solid rgba(255,255,255,0.06)",
                   }}
                 >
-                  <p className="font-bold text-white text-sm">{f.label}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{f.sub}</p>
+                  <img
+                    src={f.img}
+                    alt={f.label}
+                    className="shrink-0"
+                    style={{ width: 44, height: 44, objectFit: "contain" }}
+                  />
+                  <div>
+                    <p className="font-bold text-white text-sm">{f.label}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{f.sub}</p>
+                  </div>
                 </button>
               ))}
             </div>
-            {loading && <p className="text-xs text-gray-600 mt-4 text-center">Setting up your training...</p>}
+          </div>
+        )}
+
+        {/* Step 5: Design your first week */}
+        {step === 5 && (
+          <div>
+            <h1 className="text-2xl font-black text-white mb-1">Design your first week</h1>
+            <p className="text-sm text-gray-500 mb-6">Your workouts. Your schedule. We handle the rest.</p>
+
+            {/* Exercises */}
+            <div className="mb-6">
+              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "rgba(255,107,53,0.7)" }}>
+                Your exercises
+              </p>
+              <div className="space-y-2">
+                {exercises.map((ex, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={ex.name}
+                      onChange={(e) => updateExercise(i, "name", e.target.value)}
+                      placeholder={`Exercise ${i + 1} (e.g. Push-ups)`}
+                      className="flex-1 px-3 py-2 rounded-xl text-sm text-white placeholder-gray-700 outline-none"
+                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,107,53,0.4)")}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
+                    />
+                    <input
+                      type="text"
+                      value={ex.detail}
+                      onChange={(e) => updateExercise(i, "detail", e.target.value)}
+                      placeholder="3×10"
+                      className="w-20 px-3 py-2 rounded-xl text-sm text-white placeholder-gray-700 outline-none text-center"
+                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,107,53,0.4)")}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
+                    />
+                    {exercises.length > 1 && (
+                      <button
+                        onClick={() => removeExercise(i)}
+                        className="text-gray-600 hover:text-gray-400 transition-colors text-lg leading-none"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {exercises.length < 5 && (
+                <button
+                  onClick={addExercise}
+                  className="mt-2 text-xs font-bold transition-colors"
+                  style={{ color: "rgba(255,107,53,0.6)" }}
+                >
+                  + Add exercise
+                </button>
+              )}
+            </div>
+
+            {/* Training days */}
+            <div className="mb-6">
+              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "rgba(255,107,53,0.7)" }}>
+                Training days
+              </p>
+              <div className="grid grid-cols-7 gap-1.5">
+                {DAY_LABELS.map((day, i) => (
+                  <button
+                    key={day}
+                    onClick={() => toggleDay(i)}
+                    className="py-2 rounded-lg text-xs font-bold transition-all"
+                    style={{
+                      background: trainingDays.includes(i) ? "rgba(255,107,53,0.15)" : "rgba(255,255,255,0.03)",
+                      border: trainingDays.includes(i) ? "1px solid rgba(255,107,53,0.5)" : "1px solid rgba(255,255,255,0.06)",
+                      color: trainingDays.includes(i) ? "#FF6B35" : "#6b7280",
+                    }}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-700 mt-2">{trainingDays.length} training day{trainingDays.length !== 1 ? "s" : ""} · {7 - trainingDays.length} rest day{7 - trainingDays.length !== 1 ? "s" : ""}</p>
+            </div>
+
+            {/* Time of day */}
+            <div className="mb-8">
+              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "rgba(255,107,53,0.7)" }}>
+                Best time to train
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {TIME_OPTIONS.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setTimeOfDay(t.id)}
+                    className="text-left px-3 py-3 rounded-xl transition-all"
+                    style={{
+                      background: timeOfDay === t.id ? "rgba(124,58,237,0.12)" : "rgba(255,255,255,0.02)",
+                      border: timeOfDay === t.id ? "1px solid rgba(124,58,237,0.5)" : "1px solid rgba(255,255,255,0.06)",
+                    }}
+                  >
+                    <p className="text-sm font-bold" style={{ color: timeOfDay === t.id ? "#a78bfa" : "#fff" }}>{t.label}</p>
+                    <p className="text-xs text-gray-600 mt-0.5">{t.sub}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleStep5Submit(true)}
+                disabled={loading}
+                className="px-4 py-3 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-300 transition-colors disabled:opacity-50"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+              >
+                Skip
+              </button>
+              <button
+                onClick={() => handleStep5Submit(false)}
+                disabled={loading}
+                className="flex-1 py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+                style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
+              >
+                {loading ? "Setting up..." : "Save my week →"}
+              </button>
+            </div>
+            {loading && <p className="text-xs text-gray-600 mt-3 text-center">Building your training schedule...</p>}
           </div>
         )}
 
@@ -247,7 +428,7 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
           </div>
         )}
 
-        {(step === 3 || step === 4) && (
+        {(step === 3 || step === 4 || step === 5) && step !== 5 && (
           <button
             onClick={() => setStep((step - 1) as Step)}
             className="mt-6 text-xs text-gray-600 hover:text-gray-400 transition-colors"
@@ -256,7 +437,16 @@ export default function OnboardingClient({ isFoundingMember }: { isFoundingMembe
           </button>
         )}
 
-        <p className="text-center text-xs text-gray-700 mt-4">{step} / 4</p>
+        {step === 5 && (
+          <button
+            onClick={() => setStep(4)}
+            className="mt-4 text-xs text-gray-600 hover:text-gray-400 transition-colors block"
+          >
+            Back
+          </button>
+        )}
+
+        <p className="text-center text-xs text-gray-700 mt-4">{step} / 5</p>
       </div>
     </div>
   );

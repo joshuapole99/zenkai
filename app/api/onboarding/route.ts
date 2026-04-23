@@ -3,11 +3,12 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 
-const VALID_CLASSES = ["saiyan", "shadow", "guardian"];
-const VALID_GOALS = ["stronger", "weight", "consistent"];
-const VALID_LEVELS = ["beginner", "intermediate", "advanced"];
-const VALID_WEAK_SPOTS = ["busy_weeks", "motivation_dips", "travel", "injury"];
+const VALID_CLASSES      = ["saiyan", "shadow", "guardian"];
+const VALID_WEAK_SPOTS   = ["busy_weeks", "motivation_dips", "travel", "injury"];
 const VALID_FIGHTER_TYPES = ["comeback_king", "unbreakable", "survivor", "quiet_beast"];
+const VALID_TIMES        = ["morning", "afternoon", "evening", "flexible"];
+
+type ExerciseInput = { name: string; detail: string };
 
 export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
@@ -22,21 +23,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const {
-    characterClass,
-    characterName,
-    weightKg, heightCm, age,
-    // goal and fitnessLevel are optional — collected later in the app
-    goal: rawGoal,
-    fitnessLevel: rawLevel,
-    weakSpot: rawWeakSpot,
-    fighterType: rawFighterType,
-  } = body;
-
-  const goal        = VALID_GOALS.includes(rawGoal)  ? rawGoal  : "consistent";
-  const fitnessLevel = VALID_LEVELS.includes(rawLevel) ? rawLevel : "beginner";
-  const weakSpot    = VALID_WEAK_SPOTS.includes(rawWeakSpot) ? rawWeakSpot : null;
-  const fighterType = VALID_FIGHTER_TYPES.includes(rawFighterType) ? rawFighterType : null;
+  const { characterClass, characterName, weakSpot: rawWeakSpot, fighterType: rawFighterType, workoutPlan } = body;
 
   if (!characterClass || !characterName?.trim()) {
     return NextResponse.json({ error: "Class and character name are required" }, { status: 400 });
@@ -45,48 +32,71 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid class" }, { status: 400 });
   }
 
-  const parsedWeight = weightKg != null && !isNaN(Number(weightKg)) && Number(weightKg) > 0
-    ? Number(weightKg)
-    : null;
-  const parsedHeight = heightCm != null && !isNaN(Number(heightCm)) && Number(heightCm) > 0
-    ? Number(heightCm)
-    : null;
-  const parsedAge = age != null && !isNaN(Number(age)) && Number(age) > 0
-    ? Number(age)
-    : null;
-  const proteinGoal = parsedWeight != null ? Math.round(parsedWeight * 1.8) : null;
+  const weakSpot    = VALID_WEAK_SPOTS.includes(rawWeakSpot)     ? rawWeakSpot     : null;
+  const fighterType = VALID_FIGHTER_TYPES.includes(rawFighterType) ? rawFighterType : null;
 
   const sql = getDb();
 
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_class TEXT`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS goal TEXT`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fitness_level TEXT`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_name TEXT`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_date DATE`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS weight_kg NUMERIC(5,1)`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS height_cm INTEGER`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS protein_goal INTEGER`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS weak_spot TEXT`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fighter_type TEXT`;
+  // Ensure users columns exist
+  await Promise.all([
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_class TEXT`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS character_name TEXT`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS streak INTEGER DEFAULT 0`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_date DATE`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fitness_level TEXT`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS weak_spot TEXT`,
+    sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS fighter_type TEXT`,
+  ]).catch(() => {});
 
   await sql`
     UPDATE users
     SET character_class     = ${characterClass},
-        goal                = ${goal},
-        fitness_level       = ${fitnessLevel},
+        fitness_level       = 'beginner',
         character_name      = ${characterName.trim()},
         onboarding_complete = TRUE,
-        weight_kg           = ${parsedWeight},
-        height_cm           = ${parsedHeight},
-        age                 = ${parsedAge},
-        protein_goal        = ${proteinGoal},
         weak_spot           = ${weakSpot},
         fighter_type        = ${fighterType}
     WHERE id = ${user.userId}
   `;
 
-  return NextResponse.json({ success: true, proteinGoal });
+  // Save workout plan if provided
+  if (workoutPlan && Array.isArray(workoutPlan.exercises) && Array.isArray(workoutPlan.dayIndices)) {
+    const exercises: ExerciseInput[] = workoutPlan.exercises
+      .filter((e: ExerciseInput) => typeof e.name === "string" && e.name.trim())
+      .slice(0, 5)
+      .map((e: ExerciseInput) => ({ name: e.name.trim(), detail: (e.detail ?? "").trim() }));
+
+    const dayIndices: number[] = workoutPlan.dayIndices
+      .filter((d: unknown) => typeof d === "number" && d >= 0 && d <= 6)
+      .slice(0, 6);
+
+    const timeOfDay = VALID_TIMES.includes(workoutPlan.timeOfDay) ? workoutPlan.timeOfDay : "flexible";
+
+    if (exercises.length > 0 && dayIndices.length > 0) {
+      await sql`
+        CREATE TABLE IF NOT EXISTS workout_plans (
+          id         SERIAL PRIMARY KEY,
+          user_id    INTEGER NOT NULL UNIQUE,
+          exercises  JSONB NOT NULL DEFAULT '[]',
+          day_indices INTEGER[] DEFAULT '{0,2,4}',
+          time_of_day TEXT DEFAULT 'flexible',
+          updated_at  TIMESTAMPTZ DEFAULT NOW()
+        )
+      `;
+
+      await sql`
+        INSERT INTO workout_plans (user_id, exercises, day_indices, time_of_day)
+        VALUES (${user.userId}, ${JSON.stringify(exercises)}, ${dayIndices}, ${timeOfDay})
+        ON CONFLICT (user_id) DO UPDATE
+          SET exercises   = EXCLUDED.exercises,
+              day_indices = EXCLUDED.day_indices,
+              time_of_day = EXCLUDED.time_of_day,
+              updated_at  = NOW()
+      `;
+    }
+  }
+
+  return NextResponse.json({ success: true });
 }

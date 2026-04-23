@@ -3,222 +3,151 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-// ── WaitlistForm ──────────────────────────────────────────────────────────────
+// ── WeekPreviewCard ───────────────────────────────────────────────────────────
 
-function WaitlistForm({ compact = false }: { compact?: boolean }) {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [message, setMessage] = useState("");
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email) return;
-    setStatus("loading");
-    try {
-      const res = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setStatus("success");
-        setMessage(data.message || "You're on the list. Your arc starts now.");
-        setEmail("");
-      } else {
-        setStatus("error");
-        setMessage(data.error || "Something went wrong. Try again.");
-      }
-    } catch {
-      setStatus("error");
-      setMessage("No connection. Try again later.");
-    }
-  }
-
-  if (status === "success") {
-    return (
-      <div
-        className="text-center py-6 rounded-xl"
-        style={{ background: "rgba(255,107,53,0.06)", border: "1px solid rgba(255,107,53,0.2)" }}
-      >
-        <p className="font-black text-lg" style={{ color: "#FF6B35" }}>{message}</p>
-        <p className="text-sm text-gray-500 mt-1">We&apos;ll reach out when Zenkai goes live.</p>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className={`flex ${compact ? "flex-col sm:flex-row" : "flex-col"} gap-3 w-full`}>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="your@email.com"
-        required
-        className={`flex-1 px-4 py-3 rounded-xl text-white placeholder-gray-600 focus:outline-none transition-all ${compact ? "text-sm" : "text-base"}`}
-        style={{
-          background: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.08)",
-        }}
-        onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,107,53,0.5)")}
-        onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
-      />
-      <button
-        type="submit"
-        disabled={status === "loading"}
-        className="px-6 py-3 rounded-xl font-black text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60 whitespace-nowrap text-sm"
-        style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
-      >
-        {status === "loading" ? "Joining..." : "Start Your Zenkai"}
-      </button>
-      {status === "error" && (
-        <p className="text-xs text-red-400 mt-1">{message}</p>
-      )}
-    </form>
-  );
-}
-
-// ── PowerScouter ──────────────────────────────────────────────────────────────
-
-function PowerScouter() {
-  const TARGET = 9700;
-  const [phase, setPhase] = useState<"scanning" | "counting" | "done">("scanning");
-  const [count, setCount] = useState(0);
-
+function WeekPreviewCard() {
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setPhase("counting"), 1000);
+    const t = setTimeout(() => setMounted(true), 500);
     return () => clearTimeout(t);
   }, []);
 
-  useEffect(() => {
-    if (phase !== "counting") return;
-    const steps = 90;
-    const duration = 1800;
-    const interval = duration / steps;
-    let step = 0;
-    const timer = setInterval(() => {
-      step++;
-      // Ease-out: slower near the end
-      const progress = 1 - Math.pow(1 - step / steps, 2);
-      const current = Math.floor(progress * TARGET);
-      setCount(current);
-      if (step >= steps) {
-        setCount(TARGET);
-        setPhase("done");
-        clearInterval(timer);
-      }
-    }, interval);
-    return () => clearInterval(timer);
-  }, [phase]);
+  const days = [
+    { label: "MON", type: "done", exercise: "Push-ups" },
+    { label: "TUE", type: "rest" },
+    { label: "WED", type: "done", exercise: "Squats" },
+    { label: "THU", type: "rest" },
+    { label: "FRI", type: "today", exercise: "Plank 60s" },
+    { label: "SAT", type: "rest" },
+    { label: "SUN", type: "rest" },
+  ];
 
   return (
     <div
-      className="relative inline-block mx-auto px-8 py-5 scouter-border"
       style={{
-        border: "1px solid rgba(255,107,53,0.4)",
+        maxWidth: "460px",
+        margin: "0 auto",
+        border: "1px solid rgba(255,107,53,0.25)",
+        borderRadius: "16px",
+        padding: "20px 18px",
         background: "rgba(255,107,53,0.03)",
-        minWidth: "280px",
+        animation: "bootIn 0.6s ease 0.3s both",
       }}
     >
-      {/* Corner brackets */}
-      <Corner pos="tl" />
-      <Corner pos="tr" />
-      <Corner pos="bl" />
-      <Corner pos="br" />
-
-      {/* Scan line — only visible during counting */}
-      {phase === "counting" && (
-        <div
-          className="absolute left-0 right-0 h-px pointer-events-none"
-          style={{
-            background: "linear-gradient(90deg, transparent, rgba(255,107,53,0.6), transparent)",
-            animation: "scanSweep 0.9s linear forwards",
-            zIndex: 2,
-          }}
-        />
-      )}
-
-      {/* Label */}
       <p
-        className="text-xs font-bold tracking-[0.3em] uppercase mb-3 text-center"
-        style={{ color: "rgba(255,107,53,0.6)", fontFamily: "monospace" }}
+        style={{
+          fontSize: "10px",
+          fontWeight: 700,
+          letterSpacing: "0.2em",
+          color: "rgba(255,107,53,0.6)",
+          textTransform: "uppercase",
+          marginBottom: "14px",
+          fontFamily: "monospace",
+        }}
       >
-        POWER LEVEL
+        THIS WEEK
       </p>
 
-      {/* Number / Scanning state */}
-      <div className="text-center" style={{ minHeight: "80px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {phase === "scanning" ? (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(7, 1fr)",
+          gap: "5px",
+          marginBottom: "16px",
+        }}
+      >
+        {days.map((d) => (
           <div
-            className="font-bold tracking-[0.2em] text-xl"
-            style={{ color: "rgba(255,107,53,0.5)", fontFamily: "monospace" }}
-          >
-            SCANNING<span className="cursor-blink">_</span>
-          </div>
-        ) : (
-          <div
-            className={phase === "done" ? "number-glow" : ""}
+            key={d.label}
             style={{
-              fontSize: "clamp(2.5rem, 8vw, 5rem)",
-              fontWeight: 900,
-              fontFamily: "monospace",
-              letterSpacing: "-0.02em",
-              color: "#FF6B35",
-              lineHeight: 1,
+              borderRadius: "10px",
+              padding: "10px 3px",
+              textAlign: "center",
+              background:
+                d.type === "today"
+                  ? "rgba(255,107,53,0.1)"
+                  : "rgba(255,255,255,0.02)",
+              border:
+                d.type === "today"
+                  ? "1px solid rgba(255,107,53,0.4)"
+                  : "1px solid rgba(255,255,255,0.06)",
+              transition: "all 0.4s ease",
             }}
           >
-            {count.toLocaleString("en-US")}
+            <p
+              style={{
+                fontSize: "9px",
+                color: "rgba(255,255,255,0.3)",
+                marginBottom: "6px",
+                fontWeight: 700,
+              }}
+            >
+              {d.label}
+            </p>
+            {d.type === "done" && (
+              <p
+                style={{
+                  fontSize: "15px",
+                  color: "#22c55e",
+                  opacity: mounted ? 1 : 0,
+                  transition: "opacity 0.5s ease",
+                }}
+              >
+                ✓
+              </p>
+            )}
+            {d.type === "rest" && (
+              <p style={{ fontSize: "9px", color: "rgba(255,255,255,0.18)" }}>
+                Rest
+              </p>
+            )}
+            {d.type === "today" && (
+              <p
+                style={{ fontSize: "9px", color: "#FF6B35", fontWeight: 700 }}
+              >
+                Today
+              </p>
+            )}
+            {d.exercise && (
+              <p
+                style={{
+                  fontSize: "7px",
+                  color: "rgba(255,255,255,0.25)",
+                  marginTop: "3px",
+                  lineHeight: 1.3,
+                }}
+              >
+                {d.exercise}
+              </p>
+            )}
           </div>
-        )}
+        ))}
       </div>
 
-      {/* Status line */}
       <div
-        className="mt-3 flex items-center justify-between gap-4"
-        style={{ borderTop: "1px solid rgba(255,107,53,0.1)", paddingTop: "10px" }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          paddingTop: "12px",
+        }}
       >
-        <span
-          className="text-xs tracking-[0.2em] uppercase"
-          style={{ color: "rgba(255,107,53,0.4)", fontFamily: "monospace" }}
-        >
-          ZENKAI
+        <span style={{ fontSize: "12px", color: "#FF6B35", fontWeight: 700 }}>
+          2-day streak
         </span>
-        <span
-          className="text-xs tracking-[0.2em] uppercase"
-          style={{
-            color: phase === "done" ? "rgba(255,107,53,0.7)" : "rgba(255,255,255,0.2)",
-            fontFamily: "monospace",
-            transition: "color 0.5s",
-          }}
-        >
-          {phase === "done" ? "SCAN COMPLETE" : "..."}
+        <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)" }}>
+          Up next: Plank 60s
         </span>
       </div>
     </div>
   );
 }
 
-function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
-  const style: React.CSSProperties = {
-    position: "absolute",
-    width: "12px",
-    height: "12px",
-    borderColor: "#FF6B35",
-    borderStyle: "solid",
-    borderWidth: "0",
-  };
-  if (pos === "tl") { style.top = -1; style.left = -1; style.borderTopWidth = "2px"; style.borderLeftWidth = "2px"; }
-  if (pos === "tr") { style.top = -1; style.right = -1; style.borderTopWidth = "2px"; style.borderRightWidth = "2px"; }
-  if (pos === "bl") { style.bottom = -1; style.left = -1; style.borderBottomWidth = "2px"; style.borderLeftWidth = "2px"; }
-  if (pos === "br") { style.bottom = -1; style.right = -1; style.borderBottomWidth = "2px"; style.borderRightWidth = "2px"; }
-  return <div style={style} />;
-}
-
 // ── HeroCards ─────────────────────────────────────────────────────────────────
 
 function HeroCards() {
   const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 400);
     return () => clearTimeout(t);
@@ -226,34 +155,34 @@ function HeroCards() {
 
   const cards = [
     {
-      label: "Level",
-      value: "Lv. 12",
-      valueSize: "22px",
+      label: "Streak",
+      value: "14 days",
+      valueSize: "18px",
       valueColor: "#FF6B35",
-      desc: "Saiyan Warrior",
+      desc: "Consecutive weeks",
       barColor: "#FF6B35",
       barTarget: 68,
-      bottom: "680 / 1000 XP",
+      bottom: "Personal best",
     },
     {
-      label: "Power",
-      value: "Zenkai Boost",
-      valueSize: "13px",
+      label: "Zenkai Boost",
+      value: "Active",
+      valueSize: "14px",
       valueColor: "#a78bfa",
-      desc: "Active after comeback",
+      desc: "Comeback week bonus",
       barColor: "#7C3AED",
       barTarget: 45,
-      bottom: "+300 XP bonus",
+      bottom: "+300 XP ready",
     },
     {
-      label: "Streak",
-      value: "14",
-      valueSize: "22px",
+      label: "This week",
+      value: "2 / 3",
+      valueSize: "18px",
       valueColor: "#fff",
-      desc: "Day streak",
-      barColor: "rgba(255,255,255,0.35)",
-      barTarget: 82,
-      bottom: "Personal best",
+      desc: "Workouts done",
+      barColor: "rgba(34,197,94,0.7)",
+      barTarget: 66,
+      bottom: "Friday left",
     },
   ];
 
@@ -280,23 +209,47 @@ function HeroCards() {
             minWidth: 0,
           }}
         >
-          {/* Label */}
-          <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.3)", marginBottom: "6px" }}>
+          <p
+            style={{
+              fontSize: "10px",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: "rgba(255,255,255,0.3)",
+              marginBottom: "6px",
+            }}
+          >
             {card.label}
           </p>
-
-          {/* Value */}
-          <p style={{ fontSize: card.valueSize, fontWeight: 900, color: card.valueColor, lineHeight: 1.1, marginBottom: "4px", wordBreak: "break-word" }}>
+          <p
+            style={{
+              fontSize: card.valueSize,
+              fontWeight: 900,
+              color: card.valueColor,
+              lineHeight: 1.1,
+              marginBottom: "4px",
+              wordBreak: "break-word",
+            }}
+          >
             {card.value}
           </p>
-
-          {/* Description */}
-          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginBottom: "10px" }}>
+          <p
+            style={{
+              fontSize: "11px",
+              color: "rgba(255,255,255,0.3)",
+              marginBottom: "10px",
+            }}
+          >
             {card.desc}
           </p>
-
-          {/* XP bar track */}
-          <div style={{ height: "3px", borderRadius: "2px", background: "rgba(255,255,255,0.07)", overflow: "hidden", marginBottom: "6px" }}>
+          <div
+            style={{
+              height: "3px",
+              borderRadius: "2px",
+              background: "rgba(255,255,255,0.07)",
+              overflow: "hidden",
+              marginBottom: "6px",
+            }}
+          >
             <div
               style={{
                 height: "100%",
@@ -307,8 +260,6 @@ function HeroCards() {
               }}
             />
           </div>
-
-          {/* Bottom label */}
           <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.18)" }}>
             {card.bottom}
           </p>
@@ -323,54 +274,40 @@ function HeroCards() {
 function HeroBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
-      {/* Energy orb — center */}
       <div
-        className="energy-orb-1 absolute rounded-full"
+        className="absolute rounded-full"
         style={{
           top: "-10%",
           left: "50%",
           transform: "translateX(-50%)",
           width: "700px",
           height: "500px",
-          background: "radial-gradient(ellipse, rgba(255,107,53,0.09) 0%, transparent 65%)",
+          background:
+            "radial-gradient(ellipse, rgba(255,107,53,0.09) 0%, transparent 65%)",
         }}
       />
-      {/* Energy orb — left */}
       <div
-        className="energy-orb-2 absolute rounded-full"
+        className="absolute rounded-full"
         style={{
           top: "20%",
           left: "-10%",
           width: "400px",
           height: "400px",
-          background: "radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 65%)",
+          background:
+            "radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 65%)",
         }}
       />
-      {/* Energy orb — right */}
       <div
-        className="energy-orb-3 absolute rounded-full"
+        className="absolute rounded-full"
         style={{
           top: "10%",
           right: "-8%",
           width: "350px",
           height: "350px",
-          background: "radial-gradient(circle, rgba(255,107,53,0.07) 0%, transparent 65%)",
+          background:
+            "radial-gradient(circle, rgba(255,107,53,0.07) 0%, transparent 65%)",
         }}
       />
-      {/* Bottom purple glow */}
-      <div
-        className="energy-orb-2 absolute rounded-full"
-        style={{
-          bottom: "-5%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "600px",
-          height: "200px",
-          background: "radial-gradient(ellipse, rgba(124,58,237,0.07) 0%, transparent 70%)",
-        }}
-      />
-
-      {/* Grid overlay */}
       <div
         className="absolute inset-0"
         style={{
@@ -379,8 +316,6 @@ function HeroBackground() {
           backgroundSize: "80px 80px",
         }}
       />
-
-      {/* Scanline overlay */}
       <div
         className="absolute inset-0"
         style={{
@@ -388,8 +323,6 @@ function HeroBackground() {
             "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px)",
         }}
       />
-
-      {/* Vignette */}
       <div
         className="absolute inset-0"
         style={{
@@ -417,7 +350,7 @@ export default function Home() {
           color: "rgba(255,255,255,0.7)",
         }}
       >
-        Open Beta — Help us build Zenkai. Free during beta.
+        Open Beta — Free during beta. Help us build Zenkai.
       </div>
 
       {/* ── NAV ── */}
@@ -461,8 +394,7 @@ export default function Home() {
           className="relative z-10 max-w-4xl mx-auto w-full text-center"
           style={{ animation: "bootIn 0.8s ease both" }}
         >
-
-          {/* System badge */}
+          {/* Badge */}
           <div
             className="inline-flex items-center gap-3 px-4 py-2 mb-10"
             style={{
@@ -483,56 +415,74 @@ export default function Home() {
             </span>
           </div>
 
-          {/* Power Scouter — centerpiece */}
+          {/* Week preview widget */}
           <div
             className="flex justify-center mb-10"
             style={{ animation: "bootIn 0.6s ease 0.2s both" }}
           >
-            <PowerScouter />
+            <WeekPreviewCard />
           </div>
 
           {/* Hero title */}
           <h1
-            className="font-black text-white mb-6 leading-tight"
+            className="font-black text-white mb-5 leading-tight"
             style={{
               fontSize: "clamp(2rem, 7vw, 4.5rem)",
               animation: "bootIn 0.6s ease 0.5s both",
             }}
           >
-            Built for people who never give up —
+            The reason you quit isn&apos;t discipline.
             <br />
-            <span className="gradient-text">even when they keep stopping.</span>
+            <span className="gradient-text">It&apos;s guilt.</span>
           </h1>
 
-          {/* Subtitle */}
+          {/* Subheadline */}
           <p
-            className="text-lg text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed"
-            style={{ animation: "bootIn 0.6s ease 0.7s both" }}
+            className="text-lg text-gray-400 max-w-xl mx-auto mb-3 leading-relaxed"
+            style={{ animation: "bootIn 0.6s ease 0.65s both" }}
           >
-            Zenkai turns your worst weeks into your biggest power spikes.{" "}
-            <span style={{ color: "#FF6B35" }} className="font-bold">Every comeback makes you stronger than before.</span>
+            When you miss a few days, most apps make you feel like you failed.
+          </p>
+          <p
+            className="text-lg font-bold max-w-xl mx-auto mb-10"
+            style={{
+              color: "#FF6B35",
+              animation: "bootIn 0.6s ease 0.75s both",
+            }}
+          >
+            Zenkai is built for what happens next.
           </p>
 
-          {/* Waitlist form */}
+          {/* CTA */}
           <div
-            className="max-w-md mx-auto"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
             style={{ animation: "bootIn 0.6s ease 0.85s both" }}
           >
-            <WaitlistForm compact />
-            <p className="text-xs text-gray-700 mt-3">No spam. No credit card. 7 days free.</p>
+            <Link
+              href="/signup"
+              className="px-8 py-4 rounded-xl font-black text-white text-base transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
+            >
+              Get your comeback workout
+            </Link>
+            <Link
+              href="/login"
+              className="text-sm text-gray-500 hover:text-white transition-colors"
+            >
+              Already have an account?
+            </Link>
           </div>
 
           {/* Social proof */}
           <div
-            className="mt-10 flex items-center justify-center gap-6 text-sm text-gray-600"
+            className="flex items-center justify-center gap-6 text-sm text-gray-600"
             style={{ animation: "bootIn 0.6s ease 1s both" }}
           >
-            <span>1,200+ on the waitlist</span>
-            <span
-              className="w-px h-4"
-              style={{ background: "rgba(255,255,255,0.08)" }}
-            />
+            <span>1,200+ already training</span>
+            <span className="w-px h-4" style={{ background: "rgba(255,255,255,0.08)" }} />
             <span>Free to start</span>
+            <span className="w-px h-4" style={{ background: "rgba(255,255,255,0.08)" }} />
+            <span>No credit card</span>
           </div>
 
           {/* Stat cards */}
@@ -554,9 +504,9 @@ export default function Home() {
 
           <div className="space-y-4">
             {[
-              "You start strong. Then life gets in the way — a busy week, a rough patch, a week off. The app gives you a red card. You feel guilty. You stop entirely.",
-              "Most fitness apps are built for people who are already consistent. They punish you when you're not. That's the opposite of what you need.",
-              "What you need is a coach who remembers you, pays attention to why you stopped, and meets you exactly where you are when you come back.",
+              "You miss a few days. The app gives you a red card. You feel like you failed. You stop entirely — not because you're lazy, but because the guilt is heavier than the workout.",
+              "Most fitness apps are built for people who are already consistent. They don't handle the real world — travel, bad weeks, injuries, life. They punish absence instead of working around it.",
+              "What you need is a coach who remembers where you left off, adapts to why you stopped, and hands you a comeback workout instead of a red card.",
             ].map((text, i) => (
               <div
                 key={i}
@@ -580,44 +530,108 @@ export default function Home() {
 
           <div className="mt-12 text-center">
             <p className="text-2xl sm:text-3xl font-black text-white">
-              Zenkai is the coach that{" "}
-              <span className="gradient-text">keeps going with you.</span>
+              Zenkai remembers you.{" "}
+              <span className="gradient-text">It adapts to your life.</span>
             </p>
           </div>
         </div>
       </section>
 
-      {/* ── WHY ZENKAI ── */}
+      {/* ── HOW IT WORKS ── */}
       <section className="py-24 px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#FF6B35" }}>
+              How it works
+            </p>
+            <h2 className="text-3xl sm:text-5xl font-black text-white">
+              Simple. Personal. Consistent.
+            </h2>
+          </div>
+
+          <div className="space-y-0">
+            {[
+              {
+                step: "01",
+                title: "You choose your exercises",
+                desc: "Push-ups, squats, plank — whatever you do. Add them once. Zenkai remembers your workout so you never have to think about what to do.",
+              },
+              {
+                step: "02",
+                title: "You pick when to train",
+                desc: "Monday, Wednesday, Friday? Twice a week? You decide. Zenkai builds your calendar around your life — not the other way around.",
+              },
+              {
+                step: "03",
+                title: "Zenkai reminds, tracks, celebrates",
+                desc: "Smart reminders at your chosen time. Every workout logged. Every streak celebrated. No judgment, no pressure — just your coach showing up with you.",
+              },
+              {
+                step: "04",
+                title: "Miss a week? Your comeback is waiting",
+                desc: "Life gets in the way. Zenkai asks what happened, adapts your next workout, and gives you a Zenkai Boost — a special comeback session with bonus momentum.",
+              },
+            ].map(({ step, title, desc }, i) => (
+              <div key={step} className="flex gap-6 items-start relative">
+                {i < 3 && (
+                  <div
+                    className="absolute left-[22px] top-14 bottom-0 w-px"
+                    style={{
+                      background:
+                        "linear-gradient(to bottom, rgba(255,107,53,0.3), transparent)",
+                    }}
+                  />
+                )}
+                <div
+                  className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center font-black text-xs z-10"
+                  style={{
+                    background: "linear-gradient(135deg, #FF6B35, #7C3AED)",
+                    color: "#fff",
+                  }}
+                >
+                  {step}
+                </div>
+                <div className="pb-12">
+                  <h3 className="text-lg font-black text-white mb-2">{title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── WHY ZENKAI ── */}
+      <section className="py-24 px-6" style={{ background: "rgba(255,255,255,0.02)" }}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#7C3AED" }}>
               Why Zenkai
             </p>
             <h2 className="text-3xl sm:text-5xl font-black text-white">
-              Built for real people
+              Design your own workouts.
             </h2>
-            <p className="text-gray-500 mt-4">Who know that life gets in the way.</p>
+            <p className="text-gray-500 mt-4">We handle consistency.</p>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-4">
             {[
               {
                 label: "01",
-                title: "A coach, not a tracker",
-                desc: "Master Kael remembers you. He knows your weak spots. He builds around them — not against them. Every session, he's in your corner.",
+                title: "Your workouts, your rules",
+                desc: "No pre-built programs. Add the exercises you actually do — and Zenkai builds your week around them. Full control, zero friction.",
                 accent: "#FF6B35",
               },
               {
                 label: "02",
                 title: "Zenkai Boost",
-                desc: "Miss a few days? You get a special comeback quest and a bonus XP spike. The app doesn't punish absence — it turns it into power.",
+                desc: "Miss a few days? Zenkai asks what got in the way, adapts your comeback workout to fit, and gives you a bonus session. No punishment. Just momentum.",
                 accent: "#7C3AED",
               },
               {
                 label: "03",
-                title: "You are the main character",
-                desc: "Your character levels up with your real progress. Every workout is XP. Every comeback is a power-up. No perfection required.",
+                title: "Coached consistency",
+                desc: "Weekly summaries tell you where you tend to fall off. Reminders hit at your chosen time. Master Kael keeps your motivation grounded in reality.",
                 accent: "#FF6B35",
               },
             ].map(({ label, title, desc, accent }) => (
@@ -629,7 +643,10 @@ export default function Home() {
                   border: "1px solid rgba(255,255,255,0.06)",
                 }}
               >
-                <span className="text-xs font-black tracking-widest" style={{ color: accent }}>
+                <span
+                  className="text-xs font-black tracking-widest"
+                  style={{ color: accent }}
+                >
                   {label}
                 </span>
                 <h3 className="text-lg font-black text-white">{title}</h3>
@@ -653,82 +670,47 @@ export default function Home() {
           </div>
           <div
             className="rounded-2xl p-8 mb-8"
-            style={{ background: "rgba(255,107,53,0.03)", border: "1px solid rgba(255,107,53,0.12)" }}
+            style={{
+              background: "rgba(255,107,53,0.03)",
+              border: "1px solid rgba(255,107,53,0.12)",
+            }}
           >
             <p className="text-gray-300 leading-relaxed text-base mb-4">
-              In ancient warrior texts, <span style={{ color: "#FF6B35" }} className="font-bold">Zenkai</span> describes what happens when a fighter is pushed to their limit and recovers — they come back stronger than before. Not despite the setback. <em>Because</em> of it.
+              In ancient warrior texts,{" "}
+              <span style={{ color: "#FF6B35" }} className="font-bold">
+                Zenkai
+              </span>{" "}
+              describes what happens when a fighter is pushed to their limit and
+              recovers — they come back stronger than before. Not despite the
+              setback. <em>Because</em> of it.
             </p>
             <p className="text-gray-400 leading-relaxed text-sm">
-              We built an app around that idea. Miss a few days? Your Zenkai activates. The app doesn&apos;t punish you — it hands you a bonus quest and a power spike. The longer you were gone, the bigger the return.
+              We built an app around that idea. Miss a few days? Your Zenkai
+              activates. The app doesn&apos;t punish you — it remembers where you
+              left off, asks what happened, and adapts your comeback workout to
+              meet you exactly where you are.
             </p>
           </div>
           <div
             className="rounded-2xl p-6"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
           >
-            <p className="text-sm font-bold text-white mb-2">No streaks that punish you. No red cards.</p>
+            <p className="text-sm font-bold text-white mb-2">
+              No red cards. No guilt trips.
+            </p>
             <p className="text-sm text-gray-500 leading-relaxed">
-              Just a coach who remembers you, understands why you stopped, and keeps going with you — wherever you left off.
+              Just a coach who remembers you, understands why you stopped, and
+              keeps going with you — wherever you left off.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ── */}
-      <section className="py-24 px-6" style={{ background: "rgba(255,255,255,0.02)" }}>
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#FF6B35" }}>
-              How it works
-            </p>
-            <h2 className="text-3xl sm:text-5xl font-black text-white">
-              3 steps to your comeback
-            </h2>
-          </div>
-
-          <div className="space-y-0">
-            {[
-              {
-                step: "01",
-                title: "Create your character",
-                desc: "Pick your class, name your character, set your starting level. You decide who you become.",
-              },
-              {
-                step: "02",
-                title: "Complete daily quests",
-                desc: "Home workouts — no equipment needed. 3 new challenges every day, scaled to your level.",
-              },
-              {
-                step: "03",
-                title: "Watch your character grow",
-                desc: "As you train, your character evolves. Fall off? No punishment — your Zenkai Boost gives you bonus XP when you return.",
-              },
-            ].map(({ step, title, desc }, i) => (
-              <div key={step} className="flex gap-6 items-start relative">
-                {i < 2 && (
-                  <div
-                    className="absolute left-[22px] top-14 bottom-0 w-px"
-                    style={{ background: "linear-gradient(to bottom, rgba(255,107,53,0.3), transparent)" }}
-                  />
-                )}
-                <div
-                  className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center font-black text-xs z-10"
-                  style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)", color: "#fff" }}
-                >
-                  {step}
-                </div>
-                <div className="pb-12">
-                  <h3 className="text-lg font-black text-white mb-2">{title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
       {/* ── PRICING ── */}
-      <section className="py-24 px-6">
+      <section className="py-24 px-6" style={{ background: "rgba(255,255,255,0.02)" }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#7C3AED" }}>
@@ -748,7 +730,10 @@ export default function Home() {
           <div className="grid sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
             <div
               className="p-8 rounded-2xl flex flex-col gap-5"
-              style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
             >
               <div>
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Free trial</p>
@@ -756,33 +741,49 @@ export default function Home() {
                 <p className="text-sm text-gray-600 mt-1">7 days, full access</p>
               </div>
               <ul className="space-y-2.5 flex-1 text-sm text-gray-400">
-                {["Create your character", "7 days of daily quests", "Basic workout library", "Progress tracker"].map((item) => (
+                {[
+                  "Design your own workouts",
+                  "Weekly calendar view",
+                  "Streak tracking",
+                  "Zenkai Boost on comeback",
+                ].map((item) => (
                   <li key={item} className="flex items-center gap-2.5">
                     <span style={{ color: "#FF6B35" }}>—</span> {item}
                   </li>
                 ))}
               </ul>
-              <a
-                href="#waitlist"
+              <Link
+                href="/signup"
                 className="block text-center py-3 px-6 rounded-xl font-bold text-white text-sm transition-all hover:bg-white/5"
                 style={{ border: "1px solid rgba(255,255,255,0.1)" }}
               >
                 Start for free
-              </a>
+              </Link>
             </div>
 
             <div
               className="p-8 rounded-2xl flex flex-col gap-5 relative overflow-hidden"
-              style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.3)" }}
+              style={{
+                background: "rgba(124,58,237,0.06)",
+                border: "1px solid rgba(124,58,237,0.3)",
+              }}
             >
               <div
                 className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-black"
-                style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)", color: "#fff" }}
+                style={{
+                  background: "linear-gradient(135deg, #FF6B35, #7C3AED)",
+                  color: "#fff",
+                }}
               >
                 POPULAR
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#7C3AED" }}>Full Power</p>
+                <p
+                  className="text-xs font-bold uppercase tracking-widest mb-2"
+                  style={{ color: "#7C3AED" }}
+                >
+                  Full Power
+                </p>
                 <div className="flex items-baseline gap-1">
                   <p className="text-4xl font-black text-white">€4.99</p>
                   <p className="text-gray-500 text-sm">/month</p>
@@ -790,65 +791,83 @@ export default function Home() {
                 <p className="text-sm text-gray-600 mt-1">Billed monthly, cancel anytime</p>
               </div>
               <ul className="space-y-2.5 flex-1 text-sm text-gray-300">
-                {["Everything in Free", "Full character system", "Zenkai Boost quests", "Unlimited workout history", "Exclusive character skins", "Priority new features"].map((item) => (
+                {[
+                  "Everything in Free",
+                  "Smart reminders at your time",
+                  "Weekly coaching summaries",
+                  "Comeback workout adapts to you",
+                  "Unlimited workout history",
+                  "Priority new features",
+                ].map((item) => (
                   <li key={item} className="flex items-center gap-2.5">
                     <span style={{ color: "#7C3AED" }}>—</span> {item}
                   </li>
                 ))}
               </ul>
-              <a
-                href="#waitlist"
+              <Link
+                href="/signup"
                 className="block text-center py-3 px-6 rounded-xl font-black text-white transition-all hover:opacity-90 text-sm"
                 style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
               >
-                Start Your Zenkai
-              </a>
+                Get your comeback workout
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── WAITLIST ── */}
-      <section id="waitlist" className="py-24 px-6" style={{ background: "rgba(255,255,255,0.02)" }}>
+      {/* ── CTA ── */}
+      <section className="py-24 px-6">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#FF6B35" }}>
-            Join the waitlist
+            Start now
           </p>
-          <h2 className="text-3xl sm:text-5xl font-black text-white mb-4">Be first in line</h2>
+          <h2 className="text-3xl sm:text-5xl font-black text-white mb-4">
+            Your comeback workout is waiting.
+          </h2>
           <p className="text-gray-500 mb-10 leading-relaxed">
-            Zenkai is coming. Get early access — including an exclusive{" "}
-            <span style={{ color: "#FF6B35" }} className="font-bold">Founding Member skin</span>{" "}
-            for those who show up early.
+            Design your first week in 60 seconds.{" "}
+            <span style={{ color: "#FF6B35" }} className="font-bold">
+              No judgment. No reset.
+            </span>{" "}
+            Just show up.
           </p>
-          <div
-            className="p-7 rounded-2xl"
-            style={{ background: "rgba(255,107,53,0.03)", border: "1px solid rgba(255,107,53,0.12)" }}
+          <Link
+            href="/signup"
+            className="inline-block px-10 py-4 rounded-xl font-black text-white text-lg transition-all hover:opacity-90 active:scale-[0.98]"
+            style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
           >
-            <WaitlistForm />
-            <div className="mt-5 flex items-center justify-center gap-5 text-xs text-gray-600 flex-wrap">
-              <span>No spam</span>
-              <span style={{ color: "rgba(255,255,255,0.1)" }}>|</span>
-              <span>7 days free</span>
-              <span style={{ color: "rgba(255,255,255,0.1)" }}>|</span>
-              <span>No credit card</span>
-            </div>
-            <p className="text-xs text-gray-700 mt-4 leading-relaxed">
-              Zenkai is currently in open beta. The Founding Member skin will be delivered at official launch.{" "}
-              Early access users help shape the app.
-            </p>
-          </div>
+            Get started — it&apos;s free
+          </Link>
+          <p className="text-xs text-gray-700 mt-4">
+            Free during beta. No credit card required.
+          </p>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="py-10 px-6 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+      <footer
+        className="py-10 px-6 border-t"
+        style={{ borderColor: "rgba(255,255,255,0.06)" }}
+      >
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="font-black gradient-text tracking-tight">ZENKAI</span>
-          <p className="text-xs text-gray-700 text-center">© 2026 Zenkai. Trust that with us, you&apos;ll become better.</p>
+          <p className="text-xs text-gray-700 text-center">
+            © 2026 Zenkai. Consistency over perfection.
+          </p>
           <div className="flex gap-5 text-xs text-gray-600">
-            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
-            <a href="mailto:support@zenkai.app" className="hover:text-white transition-colors">Contact</a>
+            <Link href="/privacy" className="hover:text-white transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Terms
+            </Link>
+            <a
+              href="mailto:support@zenkai.app"
+              className="hover:text-white transition-colors"
+            >
+              Contact
+            </a>
           </div>
         </div>
       </footer>

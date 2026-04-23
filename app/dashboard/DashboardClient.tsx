@@ -1,625 +1,502 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { Quest, xpProgress, calcLevel } from "@/lib/quests";
-import { getArcName } from "@/lib/questArc";
-import { CLASS_COLORS } from "@/lib/visuals";
-import type { SwapEntry } from "./page";
-import type { StoryData } from "./page";
-import StoryScreen from "./StoryScreen";
-import CompletionScreen from "./CompletionScreen";
+import { useState } from "react";
 import MomentScreen from "./MomentScreen";
-import NutritionLog, { type FoodLogData } from "./NutritionLog";
-import { AvatarSVG, type AvatarConfig, DEFAULT_AVATAR } from "@/components/AvatarSVG";
-import EnemyCard from "./EnemyCard";
-import { getEnemy } from "@/lib/enemies";
+import type { WorkoutPlan } from "./page";
 
-type Alternative = { id: number; name: string; detail: string };
-type SideQuest = { id: number; name: string; detail: string };
-type View = "story" | "workout" | "moment" | "complete" | "done";
+type View = "workout" | "moment" | "done";
 
 type Props = {
   characterName: string;
   characterClass: string;
-  fitnessLevel: string;
   xp: number;
   streak: number;
-  quests: Quest[];
+  workoutPlan: WorkoutPlan | null;
+  thisWeekLogs: string[];
+  isLoggedToday: boolean;
   today: string;
-  initialCompletedIds: number[];
-  initialFoodLog: FoodLogData | null;
-  initialHp: number;
-  proteinGoal: number | null;
-  initialSwaps: SwapEntry[];
-  initialSideCompletedIds: number[];
-  initialSideQuests?: SideQuest[];
-  avatarConfig: AvatarConfig | null;
-  isFoundingMember: boolean;
-  storyNotReadToday: boolean;
-  storyData: StoryData;
-  isFirstTimer: boolean;
   weakSpot: string | null;
   fighterType: string | null;
+  isZenkaiBoost: boolean;
+  isFoundingMember: boolean;
+  lastWorkoutDate: string | null;
 };
 
-const CLASS_LABELS: Record<string, string> = {
-  saiyan: "Saiyan Warrior",
-  shadow: "Shadow Assassin",
-  guardian: "Iron Guardian",
-};
+// 0=Mon, 6=Sun in our system. JS Date.getDay(): 0=Sun → our 6, 1=Mon → our 0
+function jsDownToOurIndex(jsDow: number): number {
+  return (jsDow + 6) % 7;
+}
+
+function getWeekDates(today: string): string[] {
+  const d = new Date(today + "T00:00:00");
+  const dow = d.getDay();
+  const offset = dow === 0 ? -6 : 1 - dow; // go to Monday
+  const monday = new Date(d);
+  monday.setDate(monday.getDate() + offset);
+  return Array.from({ length: 7 }, (_, i) => {
+    const day = new Date(monday);
+    day.setDate(monday.getDate() + i);
+    return day.toISOString().slice(0, 10);
+  });
+}
+
+// ── WeekCalendar ──────────────────────────────────────────────────────────────
+
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function WeekCalendar({
+  plan,
+  thisWeekLogs,
+  today,
+}: {
+  plan: WorkoutPlan | null;
+  thisWeekLogs: string[];
+  today: string;
+}) {
+  const weekDates = getWeekDates(today);
+  const workoutDayIndices = plan?.dayIndices ?? [];
+
+  return (
+    <div
+      className="rounded-2xl p-5"
+      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xs font-bold tracking-widest uppercase text-gray-500">This week</h2>
+        {plan && (
+          <span className="text-xs text-gray-600">
+            {thisWeekLogs.filter((d) => weekDates.includes(d) && workoutDayIndices.includes(weekDates.indexOf(d))).length}
+            {" / "}
+            {workoutDayIndices.filter((i) => weekDates[i] <= today).length} done
+          </span>
+        )}
+      </div>
+
+      <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(7, 1fr)" }}>
+        {DAY_LABELS.map((label, i) => {
+          const dateStr = weekDates[i];
+          const isToday = dateStr === today;
+          const isWorkoutDay = workoutDayIndices.includes(i);
+          const isDone = thisWeekLogs.includes(dateStr);
+          const isPast = dateStr < today;
+
+          return (
+            <div
+              key={label}
+              style={{
+                borderRadius: "10px",
+                padding: "10px 4px",
+                textAlign: "center",
+                background: isToday
+                  ? "rgba(255,107,53,0.08)"
+                  : isWorkoutDay && isDone
+                  ? "rgba(34,197,94,0.05)"
+                  : "rgba(255,255,255,0.02)",
+                border: isToday
+                  ? "1px solid rgba(255,107,53,0.35)"
+                  : isWorkoutDay && isDone
+                  ? "1px solid rgba(34,197,94,0.2)"
+                  : "1px solid rgba(255,255,255,0.05)",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  color: isToday ? "rgba(255,107,53,0.7)" : "rgba(255,255,255,0.3)",
+                  marginBottom: "6px",
+                }}
+              >
+                {label}
+              </p>
+
+              {isWorkoutDay ? (
+                isDone ? (
+                  <p style={{ fontSize: "14px", color: "#22c55e" }}>✓</p>
+                ) : isToday ? (
+                  <p style={{ fontSize: "9px", color: "#FF6B35", fontWeight: 700 }}>Today</p>
+                ) : isPast ? (
+                  <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.12)" }}>○</p>
+                ) : (
+                  <p style={{ fontSize: "9px", color: "rgba(255,255,255,0.2)" }}>–</p>
+                )
+              ) : (
+                <p style={{ fontSize: "9px", color: "rgba(255,255,255,0.15)" }}>Rest</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Exercise preview for workout days */}
+      {plan && plan.exercises.length > 0 && (
+        <div
+          className="mt-4 pt-4"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+        >
+          <p className="text-xs text-gray-700 mb-2">Your workout</p>
+          <div className="flex flex-wrap gap-2">
+            {plan.exercises.map((ex, i) => (
+              <span
+                key={i}
+                className="text-xs px-2.5 py-1 rounded-lg"
+                style={{ background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.06)" }}
+              >
+                {ex.name}{ex.detail ? ` · ${ex.detail}` : ""}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── TodayCard ─────────────────────────────────────────────────────────────────
+
+function TodayCard({
+  plan,
+  isLoggedToday,
+  today,
+  isZenkaiBoost,
+  weakSpot,
+  onComplete,
+  loading,
+}: {
+  plan: WorkoutPlan | null;
+  isLoggedToday: boolean;
+  today: string;
+  isZenkaiBoost: boolean;
+  weakSpot: string | null;
+  onComplete: () => void;
+  loading: boolean;
+}) {
+  const todayDow = jsDownToOurIndex(new Date(today + "T00:00:00").getDay());
+  const isTodayWorkoutDay = plan?.dayIndices.includes(todayDow) ?? false;
+
+  const dayName = new Date(today + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" });
+  const dateFormatted = new Date(today + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric" });
+
+  // No plan set yet
+  if (!plan) {
+    return (
+      <div
+        className="rounded-2xl p-6"
+        style={{ background: "rgba(255,107,53,0.04)", border: "1px solid rgba(255,107,53,0.15)" }}
+      >
+        <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: "rgba(255,107,53,0.6)" }}>
+          Get started
+        </p>
+        <h3 className="text-lg font-black text-white mb-2">Design your first week</h3>
+        <p className="text-sm text-gray-500 mb-4 leading-relaxed">
+          Add your exercises, pick your training days, and Zenkai handles the rest.
+        </p>
+        <a
+          href="/onboarding"
+          className="inline-block px-5 py-2.5 rounded-xl text-sm font-black text-white transition-all hover:opacity-90"
+          style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
+        >
+          Set up my week
+        </a>
+      </div>
+    );
+  }
+
+  // Already done today
+  if (isLoggedToday) {
+    return (
+      <div
+        className="rounded-2xl p-6"
+        style={{ background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.2)" }}
+      >
+        <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: "rgba(34,197,94,0.6)" }}>
+          {dayName} · {dateFormatted}
+        </p>
+        <div className="flex items-center gap-3 mb-1">
+          <span style={{ fontSize: "24px", color: "#22c55e" }}>✓</span>
+          <h3 className="text-xl font-black text-white">Done for today.</h3>
+        </div>
+        <p className="text-sm text-gray-500">You showed up. That&apos;s the whole game.</p>
+      </div>
+    );
+  }
+
+  // Rest day
+  if (!isTodayWorkoutDay) {
+    return (
+      <div
+        className="rounded-2xl p-6"
+        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: "rgba(255,255,255,0.25)" }}>
+          {dayName} · {dateFormatted}
+        </p>
+        <h3 className="text-xl font-black text-white mb-2">Rest day.</h3>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          Recovery is part of training. Your next workout is{" "}
+          {getNextWorkoutDay(plan, today)}.
+        </p>
+      </div>
+    );
+  }
+
+  // Zenkai Boost workout day
+  if (isZenkaiBoost) {
+    return (
+      <div
+        className="rounded-2xl p-6"
+        style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.3)" }}
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <span
+            className="text-xs font-black px-2.5 py-1 rounded-full"
+            style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)", color: "#fff" }}
+          >
+            ZENKAI BOOST
+          </span>
+          <p className="text-xs font-bold" style={{ color: "rgba(167,139,250,0.7)" }}>
+            Comeback activated
+          </p>
+        </div>
+        <h3 className="text-xl font-black text-white mb-2">{dayName} — comeback workout</h3>
+        <p className="text-sm text-gray-400 mb-5 leading-relaxed">
+          You were away. That&apos;s real life. No judgment — just momentum. Your workout is exactly the same,
+          and today it counts double.
+        </p>
+        <ExerciseList exercises={plan.exercises} />
+        <CoachNote weakSpot={weakSpot} isZenkai />
+        <button
+          onClick={onComplete}
+          disabled={loading}
+          className="mt-5 w-full py-3.5 rounded-xl font-black text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+          style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
+        >
+          {loading ? "Logging..." : "Mark workout done"}
+        </button>
+      </div>
+    );
+  }
+
+  // Normal workout day
+  return (
+    <div
+      className="rounded-2xl p-6"
+      style={{ background: "rgba(255,107,53,0.04)", border: "1px solid rgba(255,107,53,0.15)" }}
+    >
+      <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "rgba(255,107,53,0.6)" }}>
+        {dayName} · {dateFormatted}
+      </p>
+      <h3 className="text-xl font-black text-white mb-4">Today&apos;s workout</h3>
+      <ExerciseList exercises={plan.exercises} />
+      <CoachNote weakSpot={weakSpot} />
+      <button
+        onClick={onComplete}
+        disabled={loading}
+        className="mt-5 w-full py-3.5 rounded-xl font-black text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+        style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
+      >
+        {loading ? "Logging..." : "Mark workout done"}
+      </button>
+    </div>
+  );
+}
+
+function ExerciseList({ exercises }: { exercises: { name: string; detail: string }[] }) {
+  return (
+    <div className="space-y-2 mb-1">
+      {exercises.map((ex, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between px-4 py-3 rounded-xl"
+          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <p className="text-sm font-bold text-white">{ex.name}</p>
+          {ex.detail && (
+            <p className="text-xs text-gray-600">{ex.detail}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CoachNote({ weakSpot, isZenkai = false }: { weakSpot: string | null; isZenkai?: boolean }) {
+  const note = isZenkai
+    ? "Showing up after a break takes more courage than showing up fresh. Kael knows."
+    : weakSpot === "busy_weeks"
+    ? "Busy week? This workout counts no matter how fast you do it."
+    : weakSpot === "motivation_dips"
+    ? "Low energy? Starting is the hardest part. Once you begin, you're already winning."
+    : weakSpot === "travel"
+    ? "Traveling? Your workouts go wherever you go."
+    : weakSpot === "injury"
+    ? "Body not at 100%? Do what you can. Showing up is the whole point."
+    : null;
+
+  if (!note) return null;
+
+  return (
+    <div
+      className="mt-3 flex gap-3 items-start px-4 py-3 rounded-xl"
+      style={{ background: "rgba(255,107,53,0.04)", border: "1px solid rgba(255,107,53,0.1)" }}
+    >
+      <img
+        src="/images/master-kael-avatar.png"
+        alt="Kael"
+        style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0, background: "rgba(255,107,53,0.1)" }}
+      />
+      <p className="text-xs text-gray-400 leading-relaxed italic">&ldquo;{note}&rdquo;</p>
+    </div>
+  );
+}
+
+function getNextWorkoutDay(plan: WorkoutPlan, today: string): string {
+  const weekDates = getWeekDates(today);
+  const todayIdx = weekDates.indexOf(today);
+  for (let i = todayIdx + 1; i < 7; i++) {
+    if (plan.dayIndices.includes(i)) {
+      return new Date(weekDates[i] + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" });
+    }
+  }
+  // Next week
+  for (let i = 0; i < todayIdx; i++) {
+    if (plan.dayIndices.includes(i)) {
+      return `next ${DAY_LABELS[i]}`;
+    }
+  }
+  return "soon";
+}
+
+// ── StatsRow ──────────────────────────────────────────────────────────────────
+
+function StatsRow({ streak, lastWorkoutDate, today }: { streak: number; lastWorkoutDate: string | null; today: string }) {
+  const lastDateFormatted = lastWorkoutDate
+    ? (() => {
+        const d = new Date(lastWorkoutDate + "T00:00:00");
+        const diff = Math.floor((new Date(today).getTime() - d.getTime()) / 86400000);
+        if (diff === 0) return "Today";
+        if (diff === 1) return "Yesterday";
+        return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+      })()
+    : "Never";
+
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div
+        className="rounded-xl p-4 text-center"
+        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
+      >
+        <p className="text-xs text-gray-600 mb-1">Streak</p>
+        <p className="text-2xl font-black" style={{ color: streak > 0 ? "#FF6B35" : "#fff" }}>
+          {streak}
+        </p>
+        <p className="text-xs text-gray-700 mt-0.5">day{streak !== 1 ? "s" : ""}</p>
+      </div>
+      <div
+        className="rounded-xl p-4 text-center"
+        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
+      >
+        <p className="text-xs text-gray-600 mb-1">Last workout</p>
+        <p className="text-sm font-black text-white">{lastDateFormatted}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 
 export default function DashboardClient({
   characterName,
-  characterClass,
-  fitnessLevel,
-  xp: initialXp,
+  characterClass: _characterClass,
+  xp: _xp,
   streak: initialStreak,
-  quests,
+  workoutPlan,
+  thisWeekLogs,
+  isLoggedToday: initialLoggedToday,
   today,
-  initialCompletedIds,
-  initialFoodLog,
-  initialHp,
-  proteinGoal,
-  initialSwaps,
-  initialSideCompletedIds,
-  initialSideQuests = [],
-  avatarConfig,
-  isFoundingMember,
-  storyNotReadToday,
-  storyData,
-  isFirstTimer,
   weakSpot,
   fighterType: _fighterType,
+  isZenkaiBoost,
+  isFoundingMember,
+  lastWorkoutDate: initialLastWorkoutDate,
 }: Props) {
-  const alreadyDoneOnLoad = initialCompletedIds.length === quests.length;
-  // For first-timers: only the first quest is visible until it's done, then the rest unlock.
-  // visibleQuestCount drives how many quest cards render.
-  // It starts at 1 for first-timers with no completions, expands as they complete quests.
-  const [view, setView] = useState<View>(
-    alreadyDoneOnLoad ? "done" : storyNotReadToday ? "story" : "workout"
-  );
-  const [completedIds, setCompletedIds] = useState<number[]>(initialCompletedIds);
-  const [xp, setXp] = useState(initialXp);
+  const [view, setView] = useState<View>(initialLoggedToday ? "done" : "workout");
   const [streak, setStreak] = useState(initialStreak);
-  const [hp, setHp] = useState(initialHp);
-  const [completingId, setCompletingId] = useState<number | null>(null);
+  const [isLoggedToday, setIsLoggedToday] = useState(initialLoggedToday);
+  const [lastWorkoutDate, setLastWorkoutDate] = useState(initialLastWorkoutDate);
+  const [loading, setLoading] = useState(false);
 
-  // Side quest state
-  const [sideQuests, setSideQuests] = useState<SideQuest[]>(initialSideQuests);
-  const [sideCompletedIds, setSideCompletedIds] = useState<number[]>(initialSideCompletedIds);
-  const [sideCompletingId, setSideCompletingId] = useState<number | null>(null);
-  const sideQuestsFetchedRef = useRef(initialSideQuests.length > 0);
-
-  // Swap state
-  const [swaps, setSwaps] = useState<SwapEntry[]>(initialSwaps);
-  const [swappingQuestId, setSwappingQuestId] = useState<number | null>(null);
-  const [alternatives, setAlternatives] = useState<Alternative[]>([]);
-  const [loadingAlts, setLoadingAlts] = useState(false);
-  const [confirmingAltId, setConfirmingAltId] = useState<number | null>(null);
-
-  const { xpIntoLevel, xpRequired, level } = xpProgress(xp);
-  const allDone = quests.every((q) => completedIds.includes(q.id));
-  const [floorLoading, setFloorLoading] = useState(false);
-  const [floorMessage, setFloorMessage] = useState<string | null>(null);
-
-  async function completeFloorSession() {
-    if (floorLoading || allDone) return;
-    setFloorLoading(true);
+  async function completeWorkout() {
+    if (loading || isLoggedToday) return;
+    setLoading(true);
     try {
-      const res = await fetch("/api/quest/floor", { method: "POST" });
+      const res = await fetch("/api/workout/complete", { method: "POST" });
       const data = await res.json();
       if (res.ok) {
-        setCompletedIds(data.completedIds);
-        if (data.newXp !== null) setXp(data.newXp);
-        if (data.newStreak !== null) setStreak(data.newStreak);
-        setFloorMessage("Even showing up when you have nothing left — that is the mark of a true fighter.");
+        setStreak(data.newStreak ?? streak + 1);
+        setIsLoggedToday(true);
+        setLastWorkoutDate(today);
+        setView("moment");
       }
     } finally {
-      setFloorLoading(false);
-    }
-  }
-  const barPercent = Math.min(100, (xpIntoLevel / xpRequired) * 100);
-
-  // Progressive reveal: first-timers see quests one at a time
-  const visibleQuestCount = isFirstTimer
-    ? Math.min(quests.length, completedIds.length + 1)
-    : quests.length;
-  const visibleQuests = quests.slice(0, visibleQuestCount);
-  const justUnlockedMore = isFirstTimer && completedIds.length > 0 && completedIds.length < quests.length;
-
-  // Features that are hidden until after day 1
-  const showSwap      = storyData.day > 1;
-  const showNutrition = storyData.day > 1;
-  const showEnemy     = storyData.day > 1;
-
-  // Guard: don't show completion screen if quests were already done on load
-  const completionShownRef = useRef(alreadyDoneOnLoad);
-
-  // Transition to completion screen when all quests done (once per session)
-  useEffect(() => {
-    if (allDone && view === "workout" && !completionShownRef.current) {
-      completionShownRef.current = true;
-      const t = setTimeout(() => setView("moment"), 700);
-      return () => clearTimeout(t);
-    }
-  }, [allDone, view]);
-
-  // Load side quests once allDone
-  useEffect(() => {
-    if (!allDone || sideQuestsFetchedRef.current) return;
-    sideQuestsFetchedRef.current = true;
-    const mainNames = quests.map((q) => q.name).join(",");
-    fetch(`/api/quest/side?fitnessLevel=${fitnessLevel}&excludeNames=${encodeURIComponent(mainNames)}`)
-      .then((r) => r.json())
-      .then((data) => { if (data.quests) setSideQuests(data.quests); })
-      .catch(() => {});
-  }, [allDone]);
-
-  async function completeSideQuest(exerciseId: number) {
-    if (sideCompletedIds.includes(exerciseId) || sideCompletingId !== null) return;
-    setSideCompletingId(exerciseId);
-    try {
-      const res = await fetch("/api/quest/side/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ exerciseId }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSideCompletedIds((prev) => [...prev, exerciseId]);
-        if (data.newXp !== null) setXp(data.newXp);
-      }
-    } finally {
-      setSideCompletingId(null);
-    }
-  }
-
-  function getDisplayed(quest: Quest): { name: string; detail: string } {
-    const swap = swaps.find((s) => s.original_quest_id === quest.id);
-    return swap
-      ? { name: swap.exercise_name, detail: swap.exercise_detail }
-      : { name: quest.name, detail: quest.detail };
-  }
-
-  async function completeQuest(questId: number) {
-    if (completedIds.includes(questId) || completingId !== null) return;
-    setCompletingId(questId);
-    try {
-      const res = await fetch("/api/quest/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questId }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setCompletedIds(data.completedIds);
-        if (data.newXp !== null) setXp(data.newXp);
-        if (data.newStreak !== null) setStreak(data.newStreak);
-      }
-    } finally {
-      setCompletingId(null);
-    }
-  }
-
-  async function openSwap(quest: Quest) {
-    if (swappingQuestId === quest.id) { setSwappingQuestId(null); return; }
-    setSwappingQuestId(quest.id);
-    setAlternatives([]);
-    setLoadingAlts(true);
-    try {
-      const currentNames = quests.map((q) => q.name).join(",");
-      const res = await fetch(
-        `/api/quest/alternatives?fitnessLevel=${fitnessLevel}&excludeNames=${encodeURIComponent(currentNames)}`
-      );
-      const data = await res.json();
-      setAlternatives(data.alternatives ?? []);
-    } finally {
-      setLoadingAlts(false);
-    }
-  }
-
-  async function confirmSwap(originalQuestId: number, alt: Alternative) {
-    setConfirmingAltId(alt.id);
-    try {
-      const res = await fetch("/api/quest/swap", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: today, originalQuestId, exerciseId: alt.id }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSwaps((prev) => [
-          ...prev.filter((s) => s.original_quest_id !== originalQuestId),
-          { original_quest_id: originalQuestId, exercise_id: alt.id, exercise_name: data.exercise.name, exercise_detail: data.exercise.detail },
-        ]);
-        setSwappingQuestId(null);
-      }
-    } finally {
-      setConfirmingAltId(null);
+      setLoading(false);
     }
   }
 
   return (
     <>
-      {/* Story overlay */}
-      {view === "story" && (
-        <StoryScreen
-          day={storyData.day}
-          title={storyData.title}
-          intro={storyData.intro}
-          isZenkaiBoost={storyData.isZenkaiBoost}
-          background={storyData.background}
-          npc={storyData.npc}
-          storyDay={storyData.day}
-          onAccept={() => setView("workout")}
-        />
-      )}
-
-      {/* Moment screen — post-workout pause */}
       {view === "moment" && (
-        <MomentScreen onDone={() => setView("complete")} />
+        <MomentScreen onDone={() => setView("done")} />
       )}
 
-      {/* Completion overlay */}
-      {view === "complete" && (
-        <CompletionScreen
-          completionText={storyData.completion}
-          xpGained={100}
-          newLevel={calcLevel(xp)}
-          nextChapterTitle={storyData.nextChapterTitle}
-          isZenkaiBoost={storyData.isZenkaiBoost}
-          onContinue={() => setView("done")}
-        />
-      )}
+      <div className="max-w-lg mx-auto px-4 py-8 space-y-5">
 
-      {/* Workout dashboard */}
-      <div className="max-w-lg mx-auto px-4 py-8 space-y-6">
-
-        {/* Character header */}
+        {/* Header */}
         <div
-          className="rounded-2xl p-6"
+          className="rounded-2xl p-5"
           style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
         >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: "#FF6B35" }}>
-            {CLASS_LABELS[characterClass] ?? characterClass}
-          </p>
-          <div className="flex items-center gap-3 flex-wrap mb-1">
-            <h1
-              className="text-3xl font-black leading-none"
-              style={{ color: isFoundingMember ? "#FFD700" : "#fff" }}
-            >
-              {characterName}
-            </h1>
-            {isFoundingMember && (
-              <span
-                className="text-xs font-bold px-2.5 py-1 rounded-full"
-                style={{ background: "rgba(255,215,0,0.1)", color: "#FFD700", border: "1px solid rgba(255,215,0,0.25)" }}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: "rgba(255,107,53,0.6)" }}>
+                {isFoundingMember ? "Founding Member" : "Zenkai"}
+              </p>
+              <h1
+                className="text-2xl font-black leading-none"
+                style={{ color: isFoundingMember ? "#FFD700" : "#fff" }}
               >
-                Founding Member
+                {characterName}
+              </h1>
+            </div>
+            {isZenkaiBoost && (
+              <span
+                className="text-xs font-black px-3 py-1.5 rounded-full"
+                style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)", color: "#fff" }}
+              >
+                ZENKAI
               </span>
             )}
           </div>
-          {isFoundingMember && (
-            <div className="mb-3">
-              <p className="text-xs font-bold" style={{ color: "rgba(255,215,0,0.7)" }}>Founding Member — Origin Arc</p>
-              <p className="text-xs text-gray-600 mt-0.5">Exclusive skin unlocks at official launch</p>
-            </div>
-          )}
-          {!isFoundingMember && <div className="mb-4" />}
-
-          <div className="grid grid-cols-3 gap-3">
-            <Stat label="Power Level" value={`${level}`} />
-            <Stat label="XP Total" value={`${xp}`} />
-            <Stat label="Streak" value={`${streak}d`} accent={streak > 0} />
-          </div>
-            </div>
-
-            {/* Avatar */}
-            <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
-              <Link href="/character">
-                <div
-                  className="rounded-xl overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-                  style={{ width: "72px", height: "96px", background: `${CLASS_COLORS[characterClass] ?? "#FF6B35"}18`, border: `1px solid ${CLASS_COLORS[characterClass] ?? "#FF6B35"}30` }}
-                >
-                  <AvatarSVG config={avatarConfig ?? DEFAULT_AVATAR} characterClass={characterClass} />
-                </div>
-              </Link>
-              <Link href="/character" className="text-[9px] font-bold transition-colors" style={{ color: "rgba(255,255,255,0.2)" }}>
-                Edit
-              </Link>
-            </div>
-          </div>
         </div>
 
-        {/* XP bar */}
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs font-medium text-gray-500">Level {level}</span>
-            <span className="text-xs text-gray-600">{xpIntoLevel} / {xpRequired} XP</span>
-          </div>
-          <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-            <div
-              className="h-full rounded-full transition-all duration-1000"
-              style={{ width: `${barPercent}%`, background: "linear-gradient(90deg, #FF6B35, #7C3AED)" }}
-            />
-          </div>
-          <p className="text-xs text-gray-700 mt-1">{xpRequired - xpIntoLevel} XP to Level {level + 1}</p>
-        </div>
+        {/* Stats */}
+        <StatsRow streak={streak} lastWorkoutDate={lastWorkoutDate} today={today} />
 
-        {/* HP bar — hidden on day 1 (nutrition not yet unlocked) */}
-        {showNutrition && (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-medium text-gray-500">HP — Today&apos;s Nutrition</span>
-              <span className="text-xs text-gray-600">{hp} / 100</span>
-            </div>
-            <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-              <div
-                className="h-full rounded-full transition-all duration-1000"
-                style={{ width: `${hp}%`, background: "#22c55e" }}
-              />
-            </div>
-            {proteinGoal != null && (
-              <p className="text-xs mt-1.5" style={{ color: "rgba(34,197,94,0.7)" }}>
-                Daily Protein Goal: <span className="font-bold text-white">{proteinGoal}g</span>
-              </p>
-            )}
-          </div>
-        )}
+        {/* Weekly calendar */}
+        <WeekCalendar plan={workoutPlan} thisWeekLogs={isLoggedToday ? [...thisWeekLogs, today].filter((v, i, a) => a.indexOf(v) === i) : thisWeekLogs} today={today} />
 
-        {/* Enemy — hidden on day 1 */}
-        {showEnemy && (
-          <EnemyCard
-            enemy={getEnemy(storyData.day, storyData.isZenkaiBoost)}
-            questsTotal={quests.length}
-            questsDone={completedIds.length}
-          />
-        )}
+        {/* Today's workout card */}
+        <TodayCard
+          plan={workoutPlan}
+          isLoggedToday={isLoggedToday}
+          today={today}
+          isZenkaiBoost={isZenkaiBoost}
+          weakSpot={weakSpot}
+          onComplete={completeWorkout}
+          loading={loading}
+        />
 
-        {/* Daily quests */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-bold tracking-widest uppercase text-gray-500">Daily Quests</h2>
-            {allDone && (
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(124,58,237,0.15)", color: "#7C3AED" }}>
-                +100 XP
-              </span>
-            )}
-          </div>
-
-          {/* "More quests unlocked" hint */}
-          {justUnlockedMore && (
-            <div
-              className="rounded-xl px-4 py-2.5 mb-3 flex items-center gap-2"
-              style={{ background: "rgba(255,107,53,0.06)", border: "1px solid rgba(255,107,53,0.2)" }}
-            >
-              <span style={{ color: "#FF6B35" }} className="text-sm font-bold">⚡</span>
-              <p className="text-xs font-bold" style={{ color: "#FF6B35" }}>
-                {quests.length - completedIds.length} more quest{quests.length - completedIds.length > 1 ? "s" : ""} unlocked
-              </p>
-            </div>
-          )}
-
-          <div className="space-y-3">
-            {visibleQuests.map((quest) => {
-              const done = completedIds.includes(quest.id);
-              const loading = completingId === quest.id;
-              const isSwapping = swappingQuestId === quest.id;
-              const isSwapped = swaps.some((s) => s.original_quest_id === quest.id);
-              const displayed = getDisplayed(quest);
-
-              return (
-                <div key={quest.id}>
-                  <div
-                    className="rounded-xl p-4 transition-all duration-200"
-                    style={{
-                      background: done ? "rgba(124,58,237,0.05)" : "rgba(255,255,255,0.02)",
-                      border: done ? "1px solid rgba(124,58,237,0.2)" : isSwapping ? "1px solid rgba(255,107,53,0.3)" : "1px solid rgba(255,255,255,0.06)",
-                      borderBottomLeftRadius: isSwapping ? "0" : undefined,
-                      borderBottomRightRadius: isSwapping ? "0" : undefined,
-                      borderBottom: isSwapping ? "none" : undefined,
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-xs font-bold tracking-widest uppercase" style={{ color: done ? "rgba(124,58,237,0.6)" : "rgba(255,107,53,0.6)" }}>
-                            {getArcName(displayed.name)}
-                          </p>
-                          {isSwapped && !done && (
-                            <span className="text-xs px-1.5 py-0.5 rounded font-medium" style={{ background: "rgba(255,107,53,0.1)", color: "#FF6B35" }}>
-                              swapped
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm font-bold mt-0.5" style={{ color: done ? "#7C3AED" : "#fff" }}>
-                          {displayed.name}
-                        </p>
-                        <p className="text-xs text-gray-600 mt-0.5">{displayed.detail}</p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        {!done && showSwap && (
-                          <button
-                            onClick={() => openSwap(quest)}
-                            className="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95"
-                            style={{
-                              background: isSwapping ? "rgba(255,107,53,0.15)" : "rgba(255,255,255,0.05)",
-                              color: isSwapping ? "#FF6B35" : "#6b7280",
-                              border: isSwapping ? "1px solid rgba(255,107,53,0.3)" : "1px solid rgba(255,255,255,0.06)",
-                            }}
-                          >
-                            {isSwapping ? "Cancel" : "Swap"}
-                          </button>
-                        )}
-                        <button
-                          onClick={() => completeQuest(quest.id)}
-                          disabled={done || loading}
-                          className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 disabled:cursor-default"
-                          style={
-                            done
-                              ? { background: "rgba(124,58,237,0.1)", color: "#7C3AED" }
-                              : { background: "linear-gradient(135deg, #FF6B35, #7C3AED)", color: "#fff", opacity: loading ? 0.6 : 1 }
-                          }
-                        >
-                          {done ? "Done" : loading ? "..." : "Complete"}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {isSwapping && (
-                    <div
-                      className="rounded-b-xl px-4 py-3 space-y-2"
-                      style={{ background: "rgba(255,107,53,0.03)", border: "1px solid rgba(255,107,53,0.3)", borderTop: "1px solid rgba(255,107,53,0.1)" }}
-                    >
-                      <p className="text-xs font-bold tracking-widest uppercase" style={{ color: "rgba(255,107,53,0.6)" }}>
-                        Choose alternative
-                      </p>
-                      {loadingAlts ? (
-                        <p className="text-xs text-gray-600 py-2">Loading...</p>
-                      ) : alternatives.length === 0 ? (
-                        <p className="text-xs text-gray-600 py-2">No alternatives found.</p>
-                      ) : (
-                        alternatives.map((alt) => (
-                          <button
-                            key={alt.id}
-                            onClick={() => confirmSwap(quest.id, alt)}
-                            disabled={confirmingAltId !== null}
-                            className="w-full text-left rounded-xl px-4 py-3 transition-all active:scale-[0.99] disabled:opacity-50"
-                            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-                          >
-                            <div className="flex items-center justify-between gap-3">
-                              <div>
-                                <p className="text-sm font-bold text-white">{alt.name}</p>
-                                <p className="text-xs text-gray-600 mt-0.5">{alt.detail}</p>
-                              </div>
-                              <span
-                                className="text-xs font-bold px-2.5 py-1 rounded-lg shrink-0"
-                                style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)", color: "#fff", opacity: confirmingAltId === alt.id ? 0.6 : 1 }}
-                              >
-                                {confirmingAltId === alt.id ? "..." : "Pick"}
-                              </span>
-                            </div>
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Floor session coach message — after completing */}
-        {floorMessage && (
-          <div
-            className="rounded-xl px-4 py-3 flex gap-3 items-start"
-            style={{ background: "rgba(255,107,53,0.04)", border: "1px solid rgba(255,107,53,0.15)" }}
-          >
-            <span className="text-xs font-black mt-0.5 shrink-0" style={{ color: "#FF6B35" }}>Kael</span>
-            <p className="text-xs text-gray-400 leading-relaxed italic">&ldquo;{floorMessage}&rdquo;</p>
-          </div>
-        )}
-
-        {/* Weak spot reminder — subtle, personal, coach voice */}
-        {weakSpot && !allDone && !floorMessage && (
-          <p className="text-xs text-gray-600 px-1">
-            {weakSpot === "busy_weeks"      && "Busy week? Floor Session counts. Showing up is enough."}
-            {weakSpot === "motivation_dips" && "Low energy today? That's exactly when it matters most."}
-            {weakSpot === "travel"          && "Away from home? Your quests travel with you."}
-            {weakSpot === "injury"          && "Body not cooperating? Do what you can. Rest counts too."}
-          </p>
-        )}
-
-        {/* Floor Session — minimum dose for busy days */}
-        {!allDone && (
-          <div className="pt-1">
-            <button
-              onClick={completeFloorSession}
-              disabled={floorLoading}
-              className="w-full rounded-xl px-4 py-3 text-left transition-all active:scale-[0.99] disabled:opacity-50"
-              style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-            >
-              <p className="text-xs font-bold text-gray-500 mb-0.5">Short on time?</p>
-              <p className="text-sm font-bold text-white">
-                {floorLoading ? "Logging..." : "Count today as done — just showing up matters"}
-              </p>
-            </button>
-          </div>
-        )}
-
-        {/* Side quests — unlocked after all main quests done */}
-        {allDone && sideQuests.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-bold tracking-widest uppercase text-gray-500">Side Quests</h2>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>
-                +25 XP each
-              </span>
-            </div>
-            <div className="space-y-3">
-              {sideQuests.map((sq) => {
-                const done = sideCompletedIds.includes(sq.id);
-                const loading = sideCompletingId === sq.id;
-                return (
-                  <div
-                    key={sq.id}
-                    className="rounded-xl p-4"
-                    style={{
-                      background: done ? "rgba(34,197,94,0.04)" : "rgba(255,255,255,0.02)",
-                      border: done ? "1px solid rgba(34,197,94,0.15)" : "1px solid rgba(255,255,255,0.06)",
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold" style={{ color: done ? "#22c55e" : "#fff" }}>{sq.name}</p>
-                        <p className="text-xs text-gray-600 mt-0.5">{sq.detail}</p>
-                      </div>
-                      <button
-                        onClick={() => completeSideQuest(sq.id)}
-                        disabled={done || loading}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 disabled:cursor-default shrink-0"
-                        style={
-                          done
-                            ? { background: "rgba(34,197,94,0.1)", color: "#22c55e" }
-                            : { background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff", opacity: loading ? 0.6 : 1 }
-                        }
-                      >
-                        {done ? "Done" : loading ? "..." : "Complete"}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {showNutrition && (
-          <NutritionLog
-            initialFoodLog={initialFoodLog}
-            initialHp={initialHp}
-            onHpChange={(newHp) => setHp(newHp)}
-          />
-        )}
       </div>
     </>
-  );
-}
-
-
-function Stat({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div
-      className="rounded-xl p-3 text-center"
-      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}
-    >
-      <p className="text-xs text-gray-600 mb-1">{label}</p>
-      <p className="text-xl font-black" style={{ color: accent ? "#FF6B35" : "#fff" }}>{value}</p>
-    </div>
   );
 }
