@@ -1,101 +1,99 @@
 # Product Backlog
 
-## Bugs
-- [x] "Level 10 / 100 XP" shows incorrect level number — fixed: flat 100 XP/level formula
-- [x] Plank quest shows "Done" incorrectly on first load — fixed: Number() coercion + force-dynamic + DATE cast
-- [x] Streak not updating correctly — fixed: PostgreSQL interval math instead of JS date arithmetic
+## Bugs (Known Issues)
+- [ ] Timezone display — Netherlands (UTC+2) showed Saturday instead of Friday — CRITICAL
+- [ ] Can't add workouts if onboarding step 5 was skipped — HIGH
+- [ ] "Design your workouts" button missing from dashboard when no plan — HIGH
 
 ## Done
-- [x] Landing page
-- [x] Waitlist email form
-- [x] PWA manifest
-- [x] English copy
-- [x] Auth system (signup/login)
-- [x] Character creation (onboarding flow, 4 steps)
-- [x] Dashboard with daily quests
-- [x] XP system (level, XP bar, +100 XP per day)
-- [x] Streak counter
-- [x] Food check (daily HP log — yes/no)
+
+### Phase 1 — Core Coach (COMPLETE - April 24, 2026)
+- [x] Landing page rewrite — "The reason you quit isn't discipline. It's guilt."
+- [x] Auth system (signup/login/logout)
+- [x] Onboarding flow — 5 steps: fighter type, weak spot, training days, time of day, first week design
+- [x] Custom workout setup — user enters own exercises (name + detail), picks days + time
+- [x] Weekly calendar dashboard — shows workout/rest/done/today per day
+- [x] Workout logging API (/api/workout/complete)
+- [x] Streak tracking
+- [x] Zenkai Boost mechanic — triggered after 3 missed days
+- [x] Weak spot memory — coach messages keyed to user's weak spot
+- [x] Fighter type identity — stored in onboarding, shown in dashboard
+- [x] Post-workout moment screen
+- [x] Master Kael NPC — coach voice in dashboard
+- [x] Founding Member system — auto-detected via waitlist cross-check
 - [x] Privacy + Terms pages
-- [x] UI polish — no emojis, Linear-inspired, orange/purple accents
-- [x] Hero redesign — anime game aesthetic, power scouter, stat cards
-- [x] Story data — 7-day Origin Arc + Zenkai Boost arc (lib/story.ts)
-- [x] Exercise library — 27 exercises in Neon DB (push/pull/legs/core/cardio × beginner/intermediate/advanced)
-- [x] Exercise swap feature — inline picker, saves per day, resets next day
-- [x] Founding Member system — auto-detected on signup via waitlist cross-check; gold badge + name in dashboard; special onboarding screen; open beta messaging on signup + landing page
-- [x] Story engine — daily RPG narrative flow: story screen → workout → completion screen; typewriter text; Zenkai Boost trigger; next chapter teaser; story_day progression saved per user
-- [x] Visual structure — lib/visuals.ts asset registry; placeholder system; story screen background + NPC per day; character image on dashboard
+- [x] PWA manifest
+- [x] Security audit — JWT secret required in prod, rate limiting, input validation, debug reset guarded
+- [x] Rate limiting — 10 login/IP/15min, 5 signup/IP/hour
 
 ## Todo
 
-### Core product
-- [ ] Zenkai Boost arc: expand with more story arcs beyond day 7
-- [ ] Side quests: unlocked after main quest complete
-- [ ] Arc system: week 1 Origin Arc, week 2 Saiyan Warrior Arc
-- [ ] Zenkai Boost mechanic (comeback quest when streak breaks)
-- [x] Body stats onboarding: weight, height, age — step 4 in onboarding flow; skip option available
-- [x] Protein calculator: weight_kg × 1.8 = daily protein goal in grams; shown on dashboard under HP bar
-- [ ] Custom workout selection: user picks their own exercises per session from exercise library
-- [ ] Daily food log: full meal input with protein/calories (replaces yes/no check)
-- [ ] Character visual evolution: avatar changes every 5 levels (original designs, anime-inspired, no IP)
-- [ ] Weekly boss quest: harder challenge every Sunday
-- [ ] Workout history / XP log
-- [ ] Gym + home workouts: user chooses workout environment per session
-- [ ] Push notifications (daily quest reminder)
+### Phase 2 — Retention & Intelligence (NEXT)
+
+High impact (build now):
+- [ ] Streak pause / grace day — 1 per week automatic, no guilt
+- [ ] Weekly pattern insight — "You skip Thursdays" detected from logs
+- [ ] Exit survey — "What got in the way?" 4-tap options when workout missed
+- [ ] Weekly coach summary — Sunday: "You did X workouts, weak spot was Y"
+- [ ] Smart reminders — push notification at user's chosen time of day
+
+Nice-to-have:
+- [ ] Comeback friction reducer — special re-entry screen after 3+ days absent
+- [ ] Adaptive difficulty — suggest lighter workout based on absence length
+- [ ] Cohort monitoring — D1/D3/D7/D30 retention tracking (internal dashboard)
+
+### Phase 3 — Gamification Layer (OPTIONAL — only if Phase 2 retention is proven)
+- [ ] XP and level progression — secondary display, not primary motivation
+- [ ] Character progression / stages — visual changes every N workouts
+- [ ] Story arc segments — unlock after 7 days of consistency
+- [ ] Achievement badges — consistency milestones (7-day, 30-day, etc.)
+
+### Phase 4 — Social (ONLY IF USERS ASK — NEVER LEADERBOARD)
+- [ ] Accountability partner — 2-person pair only, not groups
+- [ ] Shared weekly check-ins — see partner's week, send a reaction
 
 ### Monetization
 - [ ] Lemon Squeezy payments (7-day trial → €4.99/month)
-- [ ] Resend email integration (RESEND_API_KEY in Vercel) — transactional emails
+- [ ] Resend email integration — transactional emails (welcome, weekly recap)
 
-### Enemies & Combat
-- [ ] Daily enemies: each story day has a weak enemy defeated by completing the workout
-- [ ] Enemy HP bar goes down as each exercise is completed
-- [ ] Enemy types: grunt fighters, shadow warriors, corrupt monks (original designs, no IP)
-- [ ] Enemy defeated animation when all quests done
+---
 
-### Weekly Boss
-- [ ] Every 7 days: a boss fight requiring all quests + side quest
-- [ ] Boss defeated = arc complete + special XP reward
-- [ ] Week 1 boss: The Shadow General
-- [ ] Week 2 boss: Ryo (rival becomes boss)
-- [ ] Week 3 boss: A corrupted version of yourself
-
-### Friends & Co-op
-- [ ] Friends system: search by username, send/accept/decline requests
-- [ ] View friends' power level and streak
-- [ ] Co-op story: two players share a story arc
-- [ ] Co-op quests: both must complete workout for it to count
-- [ ] Shared power level boost when both players train on the same day
-
-### Leaderboard
-- [ ] Global XP ranking (top 100 visible)
-- [ ] Weekly streak ranking
-- [ ] Power level ranking
-- [ ] Friends-only leaderboard
-- [ ] Your own rank always visible regardless of position
-
-### Social / Growth
-- [ ] Instagram content strategy — @zenkai_app (1 platform focus, consistent posting)
-
-### Depth
-- [ ] Custom character creator: users design their own original anime-inspired character (no licensed IP)
+## Won't Build
+- ❌ Enemies & combat system
+- ❌ Weekly boss fights
+- ❌ Leaderboard (public or friends)
+- ❌ Co-op mode
+- ❌ Character visual evolution (moved to Phase 3 only if needed)
+- ❌ Custom character creator
+- ❌ Daily food/HP logging
+- ❌ Exercise swap mechanic
+- ❌ Pre-built daily quest library
+- ❌ Global XP ranking
 
 ---
 
 ## Build Priority
-1. Fix bugs
-2. Story engine (show story intro/completion in dashboard)
-3. Body stats + protein calculator
-4. Zenkai Boost mechanic
-5. Custom workout selection from library
-6. Full food tracking
+1. Fix known bugs (timezone, no-plan dashboard state)
+2. Grace day mechanic
+3. Weekly pattern insight
+4. Exit survey
+5. Smart reminders / push notifications
+6. Weekly coach summary
 7. Lemon Squeezy payments
 8. Resend emails
-9. Anime story mode arc system + enemies
-10. Weekly boss fights
-11. Character visual evolution
-12. Push notifications
-13. Leaderboard
-14. Friends system
-15. Co-op mode
-16. Custom character creator
+9. Cohort monitoring (internal)
+10. Phase 3 gamification (only if D30 retention >20%)
+
+---
+
+## Design Principle
+Every feature must answer: "Does this help users stay consistent?"
+If not, we don't build it.
+
+## Metrics We're Tracking (Beta)
+- D1 retention: % users return day 1
+- D3 retention: % users return after first miss
+- D7 retention: % users active after 1 week
+- Streak length distribution
+- Grace day usage rate
+- Time to Zenkai Boost trigger
