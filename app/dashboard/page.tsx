@@ -250,6 +250,10 @@ export default async function DashboardPage() {
         .filter((s) => s.scheduled >= 2 && s.missed / s.scheduled >= 0.5)
         .sort((a, b) => b.missed / b.scheduled - a.missed / a.scheduled)[0];
       skippedDayIndex = worst?.dayIdx ?? null;
+      // Suppress pattern if the user already logged that day this week
+      if (skippedDayIndex !== null && thisWeekLogs.includes(weekDates[skippedDayIndex])) {
+        skippedDayIndex = null;
+      }
     }
 
     // Sunday: show weekly summary
