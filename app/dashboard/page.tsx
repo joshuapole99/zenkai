@@ -53,10 +53,19 @@ function DashboardError() {
 
 function getWeekStart(today: string): string {
   const d = new Date(today + "T00:00:00");
-  const dow = d.getDay(); // 0=Sun
+  const dow = d.getDay();
   const offset = dow === 0 ? -6 : 1 - dow;
   d.setDate(d.getDate() + offset);
   return d.toISOString().slice(0, 10);
+}
+
+function getWeekDates(weekStart: string): string[] {
+  const monday = new Date(weekStart + "T00:00:00");
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d.toISOString().slice(0, 10);
+  });
 }
 
 export default async function DashboardPage() {
@@ -105,6 +114,12 @@ export default async function DashboardPage() {
   const today = new Date().toISOString().slice(0, 10);
 
   try {
+    // Ensure grace day columns exist
+    await Promise.all([
+      sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS grace_days_used INTEGER DEFAULT 0`,
+      sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS grace_week_start DATE`,
+    ]).catch((e) => console.error("[dashboard] grace migration error:", e));
+
     // Ensure tables exist
     await Promise.all([
       sql`
@@ -143,7 +158,8 @@ export default async function DashboardPage() {
 
     // Fetch workout plan + this week's logs in parallel
     const weekStart = getWeekStart(today);
-    const [planRows, logRows, lastLogRows] = await Promise.all([
+    const weekDates = getWeekDates(weekStart);
+    const [planRows, logRows, lastLogRows, graceRows] = await Promise.all([
       sql`SELECT exercises, day_indices, time_of_day FROM workout_plans WHERE user_id = ${user.id}`,
       sql`
         SELECT log_date::text FROM workout_logs
@@ -155,6 +171,9 @@ export default async function DashboardPage() {
         SELECT log_date::text FROM workout_logs
         WHERE user_id = ${user.id}
         ORDER BY log_date DESC LIMIT 1
+      `,
+      sql`
+        SELECT grace_days_used, grace_week_start::text FROM users WHERE id = ${user.id}
       `,
     ]);
 
@@ -171,6 +190,18 @@ export default async function DashboardPage() {
       String(r.log_date).slice(0, 10)
     );
     const isLoggedToday = thisWeekLogs.includes(today);
+
+    const graceRow = (graceRows as { grace_days_used: number; grace_week_start: string | null }[])[0];
+    const graceWeekStart = graceRow?.grace_week_start ? String(graceRow.grace_week_start).slice(0, 10) : null;
+    const isNewWeek = !graceWeekStart || graceWeekStart < weekStart;
+    const graceAvailable = isNewWeek || (graceRow?.grace_days_used ?? 0) < 1;
+
+    const missedWorkoutDate = workoutPlan
+      ? (workoutPlan.dayIndices
+          .map((i) => weekDates[i])
+          .filter((d) => d && d < today && !thisWeekLogs.includes(d))
+          .pop() ?? null)
+      : null;
 
     const lastLogDate = (lastLogRows as { log_date: string }[])[0]?.log_date
       ? String((lastLogRows as { log_date: string }[])[0].log_date).slice(0, 10)
@@ -212,6 +243,8 @@ export default async function DashboardPage() {
           isZenkaiBoost={isZenkaiBoost}
           isFoundingMember={user.is_founding_member ?? false}
           lastWorkoutDate={lastLogDate}
+          graceAvailable={graceAvailable}
+          missedWorkoutDate={missedWorkoutDate}
         />
 
         <footer

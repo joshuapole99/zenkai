@@ -213,6 +213,8 @@ type Props = {
   isZenkaiBoost: boolean;
   isFoundingMember: boolean;
   lastWorkoutDate: string | null;
+  graceAvailable: boolean;
+  missedWorkoutDate: string | null;
 };
 
 // 0=Mon, 6=Sun in our system. JS Date.getDay(): 0=Sun → our 6, 1=Mon → our 0
@@ -540,6 +542,59 @@ function getNextWorkoutDay(plan: WorkoutPlan, today: string): string {
   return "soon";
 }
 
+// ── GraceDayCard ──────────────────────────────────────────────────────────────
+
+function GraceDayCard({
+  missedDate,
+  onUse,
+  loading,
+  used,
+}: {
+  missedDate: string;
+  onUse: () => void;
+  loading: boolean;
+  used: boolean;
+}) {
+  const dayName = new Date(missedDate + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" });
+
+  if (used) {
+    return (
+      <div
+        className="rounded-2xl p-5"
+        style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.15)" }}
+      >
+        <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: "rgba(167,139,250,0.5)" }}>
+          Grace day used
+        </p>
+        <p className="text-sm text-gray-500">{dayName} is now counted. Streak protected.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="rounded-2xl p-5"
+      style={{ background: "rgba(124,58,237,0.05)", border: "1px solid rgba(124,58,237,0.25)" }}
+    >
+      <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: "rgba(167,139,250,0.7)" }}>
+        Grace day available · 1 per week
+      </p>
+      <h3 className="text-base font-black text-white mb-1">You missed {dayName}.</h3>
+      <p className="text-sm text-gray-500 mb-4 leading-relaxed">
+        Life happens. Use your grace day to protect your streak — no guilt.
+      </p>
+      <button
+        onClick={onUse}
+        disabled={loading}
+        className="px-5 py-2.5 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+        style={{ background: "linear-gradient(135deg, #7C3AED, #4F46E5)" }}
+      >
+        {loading ? "Protecting streak..." : "Use grace day — protect my streak"}
+      </button>
+    </div>
+  );
+}
+
 // ── StatsRow ──────────────────────────────────────────────────────────────────
 
 function StatsRow({ streak, lastWorkoutDate, today }: { streak: number; lastWorkoutDate: string | null; today: string }) {
@@ -592,6 +647,8 @@ export default function DashboardClient({
   isZenkaiBoost,
   isFoundingMember,
   lastWorkoutDate: initialLastWorkoutDate,
+  graceAvailable,
+  missedWorkoutDate,
 }: Props) {
   const [view, setView] = useState<View>(initialLoggedToday ? "done" : "workout");
   const [streak, setStreak] = useState(initialStreak);
@@ -600,8 +657,23 @@ export default function DashboardClient({
   const [loading, setLoading] = useState(false);
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutPlan | null>(initialWorkoutPlan);
   const [showSetup, setShowSetup] = useState(false);
+  const [graceUsed, setGraceUsed] = useState(false);
+  const [graceLoading, setGraceLoading] = useState(false);
 
   const hasNoPlan = !workoutPlan || workoutPlan.exercises.length === 0;
+
+  const showGraceCard =
+    !!missedWorkoutDate && graceAvailable && !graceUsed;
+
+  async function useGraceDay() {
+    setGraceLoading(true);
+    try {
+      const res = await fetch("/api/workout/grace", { method: "POST" });
+      if (res.ok) setGraceUsed(true);
+    } finally {
+      setGraceLoading(false);
+    }
+  }
 
   async function completeWorkout() {
     if (loading || isLoggedToday) return;
@@ -704,6 +776,16 @@ export default function DashboardClient({
 
         {/* Stats */}
         <StatsRow streak={streak} lastWorkoutDate={lastWorkoutDate} today={today} />
+
+        {/* Grace day */}
+        {(showGraceCard || graceUsed) && missedWorkoutDate && (
+          <GraceDayCard
+            missedDate={missedWorkoutDate}
+            onUse={useGraceDay}
+            loading={graceLoading}
+            used={graceUsed}
+          />
+        )}
 
         {/* Weekly calendar */}
         <WeekCalendar plan={workoutPlan} thisWeekLogs={currentWeekLogs} today={today} />
