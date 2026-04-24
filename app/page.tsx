@@ -336,6 +336,68 @@ function HeroBackground() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+function WaitlistForm() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStatus("done");
+      } else {
+        setErrorMsg(data.error ?? "Something went wrong.");
+        setStatus("error");
+      }
+    } catch {
+      setErrorMsg("No connection. Try again.");
+      setStatus("error");
+    }
+  }
+
+  if (status === "done") {
+    return (
+      <p className="text-sm font-bold" style={{ color: "#FF6B35" }}>
+        You&apos;re on the list. We&apos;ll email you when spots open.
+      </p>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="your@email.com"
+        required
+        className="flex-1 px-4 py-3 rounded-xl text-sm text-white placeholder-gray-600 outline-none"
+        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+      />
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className="px-6 py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 disabled:opacity-50 whitespace-nowrap"
+        style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
+      >
+        {status === "loading" ? "..." : "Join waitlist"}
+      </button>
+      {status === "error" && (
+        <p className="text-xs text-red-400 w-full sm:col-span-2">{errorMsg}</p>
+      )}
+    </form>
+  );
+}
+
 export default function Home() {
   return (
     <main className="min-h-screen" style={{ background: "#0a0a0a" }}>
@@ -813,6 +875,20 @@ export default function Home() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── WAITLIST ── */}
+      <section className="py-16 px-6">
+        <div className="max-w-xl mx-auto text-center">
+          <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "rgba(255,255,255,0.2)" }}>
+            Not ready to sign up yet?
+          </p>
+          <h2 className="text-2xl font-black text-white mb-3">Join the waitlist</h2>
+          <p className="text-sm text-gray-600 mb-8">
+            We&apos;ll email you when the next beta spots open. No spam.
+          </p>
+          <WaitlistForm />
         </div>
       </section>
 

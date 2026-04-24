@@ -545,6 +545,86 @@ function getNextWorkoutDay(plan: WorkoutPlan, today: string): string {
   return "soon";
 }
 
+// ── FeedbackCard ──────────────────────────────────────────────────────────────
+
+function FeedbackCard() {
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function submit() {
+    if (!message.trim()) return;
+    setLoading(true);
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
+      });
+      setSent(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (sent) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-xs text-gray-700">Feedback received. Thank you.</p>
+      </div>
+    );
+  }
+
+  if (!open) {
+    return (
+      <div className="text-center py-4">
+        <button
+          onClick={() => setOpen(true)}
+          className="text-xs text-gray-700 hover:text-gray-500 transition-colors"
+        >
+          Share feedback with the team →
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="rounded-2xl p-5"
+      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+    >
+      <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "rgba(255,255,255,0.2)" }}>
+        Beta feedback
+      </p>
+      <textarea
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="What's working? What's missing? What should Zenkai do differently?"
+        rows={3}
+        className="w-full px-3 py-2.5 rounded-xl text-sm text-white placeholder-gray-700 outline-none resize-none"
+        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+      />
+      <div className="flex gap-2 mt-3">
+        <button
+          onClick={() => setOpen(false)}
+          className="text-xs text-gray-600 hover:text-gray-400 px-3 py-2 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={submit}
+          disabled={loading || !message.trim()}
+          className="flex-1 py-2 rounded-xl text-xs font-black text-white transition-all hover:opacity-90 disabled:opacity-50"
+          style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
+        >
+          {loading ? "Sending..." : "Send feedback"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── GraceDayCard ──────────────────────────────────────────────────────────────
 
 function GraceDayCard({
@@ -963,6 +1043,9 @@ export default function DashboardClient({
           onComplete={completeWorkout}
           loading={loading}
         />
+
+        {/* Beta feedback */}
+        <FeedbackCard />
 
       </div>
     </>
