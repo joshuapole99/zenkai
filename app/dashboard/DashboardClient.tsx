@@ -4,6 +4,199 @@ import { useState } from "react";
 import MomentScreen from "./MomentScreen";
 import type { WorkoutPlan } from "./page";
 
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const TIME_OPTIONS = [
+  { id: "morning",   label: "Morning",   sub: "Before the world wakes up" },
+  { id: "afternoon", label: "Afternoon", sub: "Midday energy reset" },
+  { id: "evening",   label: "Evening",   sub: "After work, before rest" },
+  { id: "flexible",  label: "Flexible",  sub: "Whenever I can" },
+];
+
+type ExerciseInput = { name: string; detail: string };
+
+// ── WorkoutSetupForm ──────────────────────────────────────────────────────────
+// Used both for first-time setup and editing an existing plan from the dashboard.
+
+function WorkoutSetupForm({
+  onSave,
+  onCancel,
+  initial,
+}: {
+  onSave: (plan: WorkoutPlan) => void;
+  onCancel: () => void;
+  initial?: WorkoutPlan | null;
+}) {
+  const [exercises, setExercises] = useState<ExerciseInput[]>(
+    initial?.exercises?.length
+      ? initial.exercises
+      : [{ name: "", detail: "" }, { name: "", detail: "" }]
+  );
+  const [trainingDays, setTrainingDays] = useState<number[]>(
+    initial?.dayIndices ?? [0, 2, 4]
+  );
+  const [timeOfDay, setTimeOfDay] = useState(initial?.timeOfDay ?? "morning");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  function toggleDay(i: number) {
+    setTrainingDays((prev) =>
+      prev.includes(i)
+        ? prev.length > 1 ? prev.filter((d) => d !== i) : prev
+        : prev.length < 6 ? [...prev, i].sort() : prev
+    );
+  }
+
+  function updateExercise(i: number, field: keyof ExerciseInput, value: string) {
+    setExercises((prev) => prev.map((e, idx) => idx === i ? { ...e, [field]: value } : e));
+  }
+
+  function addExercise() {
+    if (exercises.length < 5) setExercises((prev) => [...prev, { name: "", detail: "" }]);
+  }
+
+  function removeExercise(i: number) {
+    if (exercises.length > 1) setExercises((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  async function handleSave() {
+    const filtered = exercises.filter((e) => e.name.trim());
+    if (filtered.length === 0) { setError("Add at least one exercise."); return; }
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch("/api/workout/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ exercises: filtered, dayIndices: trainingDays, timeOfDay }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Something went wrong."); return; }
+      onSave({ exercises: filtered, dayIndices: trainingDays, timeOfDay });
+    } catch {
+      setError("No connection. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="rounded-2xl p-5 space-y-5"
+      style={{ background: "rgba(255,107,53,0.04)", border: "1px solid rgba(255,107,53,0.15)" }}
+    >
+      {/* Exercises */}
+      <div>
+        <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "rgba(255,107,53,0.7)" }}>
+          Your exercises
+        </p>
+        <div className="space-y-2">
+          {exercises.map((ex, i) => (
+            <div key={i} className="flex gap-2 items-center">
+              <input
+                type="text"
+                value={ex.name}
+                onChange={(e) => updateExercise(i, "name", e.target.value)}
+                placeholder={`Exercise (e.g. Push-ups)`}
+                className="flex-1 px-3 py-2 rounded-xl text-sm text-white placeholder-gray-700 outline-none"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,107,53,0.4)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
+              />
+              <input
+                type="text"
+                value={ex.detail}
+                onChange={(e) => updateExercise(i, "detail", e.target.value)}
+                placeholder="3×10"
+                className="w-16 px-2 py-2 rounded-xl text-sm text-white placeholder-gray-700 outline-none text-center"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(255,107,53,0.4)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
+              />
+              {exercises.length > 1 && (
+                <button onClick={() => removeExercise(i)} className="text-gray-600 hover:text-gray-400 text-lg leading-none w-6 flex-shrink-0">×</button>
+              )}
+            </div>
+          ))}
+        </div>
+        {exercises.length < 5 && (
+          <button onClick={addExercise} className="mt-2 text-xs font-bold" style={{ color: "rgba(255,107,53,0.6)" }}>
+            + Add exercise
+          </button>
+        )}
+      </div>
+
+      {/* Training days */}
+      <div>
+        <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "rgba(255,107,53,0.7)" }}>
+          Training days
+        </p>
+        <div className="grid grid-cols-7 gap-1">
+          {DAY_LABELS.map((day, i) => (
+            <button
+              key={day}
+              onClick={() => toggleDay(i)}
+              className="py-2 rounded-lg text-xs font-bold transition-all"
+              style={{
+                background: trainingDays.includes(i) ? "rgba(255,107,53,0.15)" : "rgba(255,255,255,0.04)",
+                border: trainingDays.includes(i) ? "1px solid rgba(255,107,53,0.5)" : "1px solid rgba(255,255,255,0.07)",
+                color: trainingDays.includes(i) ? "#FF6B35" : "#6b7280",
+              }}
+            >
+              {day}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-gray-700 mt-2">
+          {trainingDays.length} training · {7 - trainingDays.length} rest
+        </p>
+      </div>
+
+      {/* Time of day */}
+      <div>
+        <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "rgba(255,107,53,0.7)" }}>
+          Best time to train
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {TIME_OPTIONS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTimeOfDay(t.id)}
+              className="text-left px-3 py-2.5 rounded-xl transition-all"
+              style={{
+                background: timeOfDay === t.id ? "rgba(124,58,237,0.12)" : "rgba(255,255,255,0.03)",
+                border: timeOfDay === t.id ? "1px solid rgba(124,58,237,0.5)" : "1px solid rgba(255,255,255,0.06)",
+              }}
+            >
+              <p className="text-xs font-bold" style={{ color: timeOfDay === t.id ? "#a78bfa" : "#fff" }}>{t.label}</p>
+              <p className="text-xs text-gray-700">{t.sub}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {error && <p className="text-xs text-red-400">{error}</p>}
+
+      <div className="flex gap-3 pt-1">
+        <button
+          onClick={onCancel}
+          className="px-4 py-2.5 rounded-xl text-sm text-gray-500 hover:text-gray-300 transition-colors"
+          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex-1 py-2.5 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+          style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
+        >
+          {saving ? "Saving..." : "Save my week →"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 type View = "workout" | "moment" | "done";
 
 type Props = {
@@ -36,13 +229,13 @@ function getWeekDates(today: string): string[] {
   return Array.from({ length: 7 }, (_, i) => {
     const day = new Date(monday);
     day.setDate(monday.getDate() + i);
-    return day.toISOString().slice(0, 10);
+    // toLocaleDateString("en-CA") gives YYYY-MM-DD in the browser's local timezone.
+    // toISOString() would shift the date back by the UTC offset (e.g. UTC+2 → previous day).
+    return day.toLocaleDateString("en-CA");
   });
 }
 
 // ── WeekCalendar ──────────────────────────────────────────────────────────────
-
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function WeekCalendar({
   plan,
@@ -177,29 +370,9 @@ function TodayCard({
   const dayName = new Date(today + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" });
   const dateFormatted = new Date(today + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric" });
 
-  // No plan set yet
+  // No plan — handled by WorkoutSetupBanner above, just show a quiet message here
   if (!plan) {
-    return (
-      <div
-        className="rounded-2xl p-6"
-        style={{ background: "rgba(255,107,53,0.04)", border: "1px solid rgba(255,107,53,0.15)" }}
-      >
-        <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: "rgba(255,107,53,0.6)" }}>
-          Get started
-        </p>
-        <h3 className="text-lg font-black text-white mb-2">Design your first week</h3>
-        <p className="text-sm text-gray-500 mb-4 leading-relaxed">
-          Add your exercises, pick your training days, and Zenkai handles the rest.
-        </p>
-        <a
-          href="/onboarding"
-          className="inline-block px-5 py-2.5 rounded-xl text-sm font-black text-white transition-all hover:opacity-90"
-          style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
-        >
-          Set up my week
-        </a>
-      </div>
-    );
+    return null;
   }
 
   // Already done today
@@ -410,7 +583,7 @@ export default function DashboardClient({
   characterClass: _characterClass,
   xp: _xp,
   streak: initialStreak,
-  workoutPlan,
+  workoutPlan: initialWorkoutPlan,
   thisWeekLogs,
   isLoggedToday: initialLoggedToday,
   today,
@@ -425,6 +598,10 @@ export default function DashboardClient({
   const [isLoggedToday, setIsLoggedToday] = useState(initialLoggedToday);
   const [lastWorkoutDate, setLastWorkoutDate] = useState(initialLastWorkoutDate);
   const [loading, setLoading] = useState(false);
+  const [workoutPlan, setWorkoutPlan] = useState<WorkoutPlan | null>(initialWorkoutPlan);
+  const [showSetup, setShowSetup] = useState(false);
+
+  const hasNoPlan = !workoutPlan || workoutPlan.exercises.length === 0;
 
   async function completeWorkout() {
     if (loading || isLoggedToday) return;
@@ -442,6 +619,10 @@ export default function DashboardClient({
       setLoading(false);
     }
   }
+
+  const currentWeekLogs = isLoggedToday
+    ? [...thisWeekLogs, today].filter((v, i, a) => a.indexOf(v) === i)
+    : thisWeekLogs;
 
   return (
     <>
@@ -468,22 +649,64 @@ export default function DashboardClient({
                 {characterName}
               </h1>
             </div>
-            {isZenkaiBoost && (
-              <span
-                className="text-xs font-black px-3 py-1.5 rounded-full"
-                style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)", color: "#fff" }}
-              >
-                ZENKAI
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {isZenkaiBoost && (
+                <span
+                  className="text-xs font-black px-3 py-1.5 rounded-full"
+                  style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)", color: "#fff" }}
+                >
+                  ZENKAI
+                </span>
+              )}
+              {!hasNoPlan && !showSetup && (
+                <button
+                  onClick={() => setShowSetup(true)}
+                  className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+                >
+                  Edit workouts
+                </button>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* No-plan banner — Design your workouts */}
+        {hasNoPlan && !showSetup && (
+          <div
+            className="rounded-2xl p-5"
+            style={{ background: "rgba(255,107,53,0.06)", border: "1px solid rgba(255,107,53,0.2)" }}
+          >
+            <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: "rgba(255,107,53,0.7)" }}>
+              Get started
+            </p>
+            <h3 className="text-base font-black text-white mb-2">Design your workouts</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Add your exercises and pick your training days. Takes 60 seconds.
+            </p>
+            <button
+              onClick={() => setShowSetup(true)}
+              className="px-5 py-2.5 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{ background: "linear-gradient(135deg, #FF6B35, #7C3AED)" }}
+            >
+              Design your workouts
+            </button>
+          </div>
+        )}
+
+        {/* Inline setup / edit form */}
+        {showSetup && (
+          <WorkoutSetupForm
+            initial={workoutPlan}
+            onSave={(plan) => { setWorkoutPlan(plan); setShowSetup(false); }}
+            onCancel={() => setShowSetup(false)}
+          />
+        )}
 
         {/* Stats */}
         <StatsRow streak={streak} lastWorkoutDate={lastWorkoutDate} today={today} />
 
         {/* Weekly calendar */}
-        <WeekCalendar plan={workoutPlan} thisWeekLogs={isLoggedToday ? [...thisWeekLogs, today].filter((v, i, a) => a.indexOf(v) === i) : thisWeekLogs} today={today} />
+        <WeekCalendar plan={workoutPlan} thisWeekLogs={currentWeekLogs} today={today} />
 
         {/* Today's workout card */}
         <TodayCard
