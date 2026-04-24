@@ -140,6 +140,16 @@ export default async function DashboardPage() {
           UNIQUE(user_id, log_date)
         )
       `,
+      sql`
+        CREATE TABLE IF NOT EXISTS exit_surveys (
+          id          SERIAL PRIMARY KEY,
+          user_id     INTEGER NOT NULL,
+          survey_date DATE NOT NULL,
+          reason      TEXT NOT NULL,
+          created_at  TIMESTAMPTZ DEFAULT NOW(),
+          UNIQUE(user_id, survey_date)
+        )
+      `,
     ]);
 
     // Data fix: correct "squads" typo in any workout plan exercises
@@ -159,7 +169,7 @@ export default async function DashboardPage() {
     // Fetch workout plan + this week's logs in parallel
     const weekStart = getWeekStart(today);
     const weekDates = getWeekDates(weekStart);
-    const [planRows, logRows, lastLogRows, graceRows] = await Promise.all([
+    const [planRows, logRows, lastLogRows, graceRows, patternLogRows] = await Promise.all([
       sql`SELECT exercises, day_indices, time_of_day FROM workout_plans WHERE user_id = ${user.id}`,
       sql`
         SELECT log_date::text FROM workout_logs
@@ -174,6 +184,12 @@ export default async function DashboardPage() {
       `,
       sql`
         SELECT grace_days_used, grace_week_start::text FROM users WHERE id = ${user.id}
+      `,
+      sql`
+        SELECT log_date::text FROM workout_logs
+        WHERE user_id = ${user.id}
+        AND log_date >= (CURRENT_DATE - INTERVAL '28 days')::date
+        AND log_date < ${today}::date
       `,
     ]);
 
@@ -206,6 +222,49 @@ export default async function DashboardPage() {
     const lastLogDate = (lastLogRows as { log_date: string }[])[0]?.log_date
       ? String((lastLogRows as { log_date: string }[])[0].log_date).slice(0, 10)
       : null;
+
+    // Weekly pattern: detect most-skipped scheduled day over past 4 weeks
+    const recentLogs = (patternLogRows as { log_date: string }[]).map((r) =>
+      String(r.log_date).slice(0, 10)
+    );
+    let skippedDayIndex: number | null = null;
+    if (workoutPlan && workoutPlan.dayIndices.length > 0) {
+      const weekStartDate = new Date(weekStart + "T00:00:00");
+      const stats = workoutPlan.dayIndices.map((dayIdx) => {
+        let scheduled = 0;
+        let missed = 0;
+        for (let w = 1; w <= 4; w++) {
+          const pastMonday = new Date(weekStartDate);
+          pastMonday.setDate(weekStartDate.getDate() - w * 7);
+          const pastDay = new Date(pastMonday);
+          pastDay.setDate(pastMonday.getDate() + dayIdx);
+          const dateStr = pastDay.toISOString().slice(0, 10);
+          if (dateStr < today) {
+            scheduled++;
+            if (!recentLogs.includes(dateStr)) missed++;
+          }
+        }
+        return { dayIdx, scheduled, missed };
+      });
+      const worst = stats
+        .filter((s) => s.scheduled >= 2 && s.missed / s.scheduled >= 0.5)
+        .sort((a, b) => b.missed / b.scheduled - a.missed / a.scheduled)[0];
+      skippedDayIndex = worst?.dayIdx ?? null;
+    }
+
+    // Sunday: show weekly summary
+    const isSunday = new Date(today + "T00:00:00").getDay() === 0;
+
+    // Exit survey: check if already submitted for missed date
+    let surveyDoneForMissedDate = false;
+    if (missedWorkoutDate) {
+      const surveyRows = (await sql`
+        SELECT 1 FROM exit_surveys
+        WHERE user_id = ${user.id} AND survey_date = ${missedWorkoutDate}::date
+        LIMIT 1
+      `) as unknown[];
+      surveyDoneForMissedDate = surveyRows.length > 0;
+    }
 
     // Zenkai Boost: has a plan, has logged before, and last log was 3+ days ago
     const isZenkaiBoost = !!(
@@ -245,6 +304,9 @@ export default async function DashboardPage() {
           lastWorkoutDate={lastLogDate}
           graceAvailable={graceAvailable}
           missedWorkoutDate={missedWorkoutDate}
+          skippedDayIndex={skippedDayIndex}
+          surveyDoneForMissedDate={surveyDoneForMissedDate}
+          isSunday={isSunday}
         />
 
         <footer

@@ -215,6 +215,9 @@ type Props = {
   lastWorkoutDate: string | null;
   graceAvailable: boolean;
   missedWorkoutDate: string | null;
+  skippedDayIndex: number | null;
+  surveyDoneForMissedDate: boolean;
+  isSunday: boolean;
 };
 
 // 0=Mon, 6=Sun in our system. JS Date.getDay(): 0=Sun → our 6, 1=Mon → our 0
@@ -595,6 +598,140 @@ function GraceDayCard({
   );
 }
 
+// ── ExitSurveyCard ────────────────────────────────────────────────────────────
+
+const SURVEY_OPTIONS = [
+  { id: "too_busy",      label: "Too busy" },
+  { id: "too_tired",     label: "Too tired" },
+  { id: "forgot",        label: "I forgot" },
+  { id: "no_motivation", label: "Didn't feel like it" },
+];
+
+function ExitSurveyCard({
+  missedDate,
+  onSubmit,
+}: {
+  missedDate: string;
+  onSubmit: () => void;
+}) {
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const dayName = new Date(missedDate + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" });
+
+  async function submit(reason: string) {
+    setLoading(true);
+    try {
+      await fetch("/api/workout/survey", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason, surveyDate: missedDate }),
+      });
+      setSubmitted(true);
+      onSubmit();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div
+        className="rounded-2xl p-5"
+        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <p className="text-sm text-gray-500">Got it. Kael is paying attention.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="rounded-2xl p-5"
+      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "rgba(255,255,255,0.25)" }}>
+        {dayName} — what got in the way?
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        {SURVEY_OPTIONS.map((opt) => (
+          <button
+            key={opt.id}
+            onClick={() => submit(opt.id)}
+            disabled={loading}
+            className="px-3 py-2.5 rounded-xl text-sm font-bold text-left transition-all hover:opacity-80 disabled:opacity-50"
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "#9ca3af",
+            }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── PatternInsightCard ────────────────────────────────────────────────────────
+
+const DAY_FULL = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function PatternInsightCard({ dayIndex }: { dayIndex: number }) {
+  return (
+    <div
+      className="rounded-2xl p-5"
+      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}
+    >
+      <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: "rgba(255,107,53,0.5)" }}>
+        Pattern spotted
+      </p>
+      <h3 className="text-sm font-black text-white mb-1">You tend to skip {DAY_FULL[dayIndex]}s.</h3>
+      <p className="text-sm text-gray-600 leading-relaxed">
+        Consider making it a rest day — or try something shorter on {DAY_LABELS[dayIndex]}s.
+      </p>
+    </div>
+  );
+}
+
+// ── WeeklySummaryCard ─────────────────────────────────────────────────────────
+
+function WeeklySummaryCard({
+  plan,
+  thisWeekLogs,
+  today,
+}: {
+  plan: WorkoutPlan;
+  thisWeekLogs: string[];
+  today: string;
+}) {
+  const weekDates = getWeekDates(today);
+  const total = plan.dayIndices.length;
+  const done = plan.dayIndices.filter((i) => thisWeekLogs.includes(weekDates[i])).length;
+
+  const message =
+    done === total
+      ? "Perfect week. Every workout landed. Kael is impressed."
+      : done >= Math.ceil(total * 0.75)
+      ? `Strong week — ${done} out of ${total}. Consistency is building.`
+      : done >= 1
+      ? `${done} out of ${total} this week. Every rep counts. New week starts tomorrow.`
+      : "Tough week. The new week is a clean slate.";
+
+  return (
+    <div
+      className="rounded-2xl p-5"
+      style={{ background: "rgba(255,107,53,0.04)", border: "1px solid rgba(255,107,53,0.12)" }}
+    >
+      <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: "rgba(255,107,53,0.6)" }}>
+        Week wrap-up · Sunday
+      </p>
+      <p className="text-2xl font-black text-white mb-2">{done}/{total} workouts</p>
+      <p className="text-sm text-gray-500 leading-relaxed">{message}</p>
+    </div>
+  );
+}
+
 // ── StatsRow ──────────────────────────────────────────────────────────────────
 
 function StatsRow({ streak, lastWorkoutDate, today }: { streak: number; lastWorkoutDate: string | null; today: string }) {
@@ -649,6 +786,9 @@ export default function DashboardClient({
   lastWorkoutDate: initialLastWorkoutDate,
   graceAvailable,
   missedWorkoutDate,
+  skippedDayIndex,
+  surveyDoneForMissedDate,
+  isSunday,
 }: Props) {
   const [view, setView] = useState<View>(initialLoggedToday ? "done" : "workout");
   const [streak, setStreak] = useState(initialStreak);
@@ -659,11 +799,16 @@ export default function DashboardClient({
   const [showSetup, setShowSetup] = useState(false);
   const [graceUsed, setGraceUsed] = useState(false);
   const [graceLoading, setGraceLoading] = useState(false);
+  const [surveySubmitted, setSurveySubmitted] = useState(false);
 
   const hasNoPlan = !workoutPlan || workoutPlan.exercises.length === 0;
 
-  const showGraceCard =
-    !!missedWorkoutDate && graceAvailable && !graceUsed;
+  const showGraceCard = !!missedWorkoutDate && graceAvailable && !graceUsed;
+  const showExitSurvey =
+    !!missedWorkoutDate &&
+    !graceUsed &&
+    !surveySubmitted &&
+    !surveyDoneForMissedDate;
 
   async function useGraceDay() {
     setGraceLoading(true);
@@ -777,6 +922,11 @@ export default function DashboardClient({
         {/* Stats */}
         <StatsRow streak={streak} lastWorkoutDate={lastWorkoutDate} today={today} />
 
+        {/* Sunday weekly summary */}
+        {isSunday && workoutPlan && (
+          <WeeklySummaryCard plan={workoutPlan} thisWeekLogs={currentWeekLogs} today={today} />
+        )}
+
         {/* Grace day */}
         {(showGraceCard || graceUsed) && missedWorkoutDate && (
           <GraceDayCard
@@ -787,8 +937,21 @@ export default function DashboardClient({
           />
         )}
 
+        {/* Exit survey — only when grace not available or not used */}
+        {showExitSurvey && !showGraceCard && missedWorkoutDate && (
+          <ExitSurveyCard
+            missedDate={missedWorkoutDate}
+            onSubmit={() => setSurveySubmitted(true)}
+          />
+        )}
+
         {/* Weekly calendar */}
         <WeekCalendar plan={workoutPlan} thisWeekLogs={currentWeekLogs} today={today} />
+
+        {/* Pattern insight */}
+        {skippedDayIndex !== null && !hasNoPlan && (
+          <PatternInsightCard dayIndex={skippedDayIndex} />
+        )}
 
         {/* Today's workout card */}
         <TodayCard
