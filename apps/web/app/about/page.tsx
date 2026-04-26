@@ -62,11 +62,11 @@ export default function AboutPage() {
             color: "rgba(245,243,236,0.3)",
             marginBottom: "32px",
           }}>
-            Over de maker — Joshua Pole
+            Joshua Pole — Security Analyst & Maker
           </p>
           <h1 style={{
             fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: "clamp(48px, 9vw, 96px)",
+            fontSize: "clamp(44px, 8vw, 88px)",
             fontWeight: 900,
             lineHeight: 0.95,
             letterSpacing: "-0.04em",
@@ -78,14 +78,15 @@ export default function AboutPage() {
           </h1>
           <p style={{
             fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: "clamp(18px, 3vw, 24px)",
+            fontSize: "clamp(17px, 2.5vw, 22px)",
             fontWeight: 300,
-            lineHeight: 1.6,
+            lineHeight: 1.65,
             color: "rgba(245,243,236,0.6)",
-            maxWidth: "620px",
+            maxWidth: "600px",
           }}>
-            Security analyst, 27 jaar, OSCP gecertificeerd. Geen VC-funding,
-            geen team — alleen goede tools voor mensen die geen tijd verspillen.
+            Ik ben Joshua — security analyst, ethical hacker, en maker van Zenkai.
+            Overdag werk ik als security analyst bij Enreach. In het weekend bouw ik
+            tools die ik zelf wilde maar niet kon betalen.
           </p>
         </div>
       </section>
@@ -110,9 +111,9 @@ export default function AboutPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1px", background: "rgba(15,14,14,0.08)" }}>
             {[
               { num: "01", label: "Certificering", value: "OSCP", sub: "Offensive Security Certified Professional" },
-              { num: "02", label: "Rol", value: "Security Analyst", sub: "Pentesting, vulnerability assessment, hardening" },
-              { num: "03", label: "Leeftijd", value: "27 jaar", sub: "Amsterdam, Nederland" },
-              { num: "04", label: "Actief", value: "2023 →", sub: "Zenkai Platform in productie" },
+              { num: "02", label: "Ervaring", value: "5+ jaar", sub: "Security analyst @ Enreach. Pentesting, hardening, vulnerability assessment." },
+              { num: "03", label: "Funding", value: "€0 VC", sub: "Geen investeerders. Gebouwd in vrije tijd, voor echte mensen." },
+              { num: "04", label: "Locatie", value: "Nederland", sub: "Amsterdam. Tools voor studenten, freelancers en zzp'ers." },
             ].map((c, i) => (
               <Reveal key={c.num} delay={i * 0.08}>
                 <div style={{
@@ -173,10 +174,10 @@ export default function AboutPage() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
             {[
-              "Scan ontstond omdat ik als security analyst geen betaalbaar tool kende waarmee ik snel een domein kon doorlichten. Niet voor €400/maand. Niet met een enterprise demo request.",
-              "Goals omdat ik zelf als student niet begreep waarom mijn geld elke maand op was. Geen app gaf mij een eerlijk antwoord.",
-              "Job omdat ik zag hoeveel mensen sollicitatiebrieven schrijven die niemand leest. AI kan dat beter — als je het goed inzet.",
-              "Workout omdat consistentie moeilijker is dan motivatie. De streak-mechanic met grace days bestaat omdat ik hem zelf nodig had.",
+              "Elk tool op Zenkai is gebouwd omdat het probleem echt is en de bestaande oplossingen te duur, te complex, of gewoon slecht zijn.",
+              "Scan: geen security scanner was betaalbaar voor een freelancer. Job: ik zag hoeveel mensen CV's sturen die niemand leest. Goals: niemand legde studenten eerlijk uit waar hun geld bleef.",
+              "Workout: consistentie is moeilijker dan motivatie. De grace day mechanic bestaat omdat ik hem zelf nodig had — niet om perfect te zijn, maar om niet te stoppen.",
+              "OSCP gecertificeerd. Geen VC funding. Geen team. Gewoon bouwen.",
             ].map((p, i) => (
               <Reveal key={i} delay={i * 0.07}>
                 <p style={{

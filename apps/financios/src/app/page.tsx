@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { getSession } from "@/lib/session";
-import MobileMenu from "@/components/MobileMenu";
 import JsonLd from "@/components/JsonLd";
 
 export const metadata: Metadata = {
@@ -82,48 +80,6 @@ export default async function LandingPage() {
   return (
     <main className="flex flex-col min-h-screen">
       <JsonLd />
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-border px-6 py-4 flex items-center justify-between max-w-5xl mx-auto w-full backdrop-blur-md bg-background/80">
-        <Image
-          src="/logo.png"
-          alt="Financios"
-          width={140}
-          height={36}
-          priority
-        />
-        {/* Desktop nav */}
-        <div className="hidden sm:flex items-center gap-4 sm:gap-6">
-          <Link href="/blog" className="text-sm text-muted hover:text-foreground transition-colors">Blog</Link>
-          <Link href="/upgrade" className="text-sm text-muted hover:text-foreground transition-colors">Prijzen</Link>
-          {session ? (
-            <Link href="/dashboard" className="text-sm font-semibold text-accent hover:text-accent-hover transition-colors">
-              Dashboard →
-            </Link>
-          ) : (
-            <Link href="/login" className="text-sm font-semibold bg-card border border-border hover:border-accent/40 text-foreground px-4 py-2 rounded-xl transition-all">
-              Inloggen
-            </Link>
-          )}
-          <Link href="/scan" className="text-sm font-semibold bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-xl transition-all shadow-lg shadow-accent/20">
-            Start scan →
-          </Link>
-        </div>
-
-        {/* Mobile: scan knop + hamburger */}
-        <div className="flex sm:hidden items-center gap-2 relative">
-          <Link href="/scan" className="text-sm font-semibold bg-accent hover:bg-accent-hover text-white px-3 py-2 rounded-xl transition-all shadow-lg shadow-accent/20">
-            Scan →
-          </Link>
-          <MobileMenu
-            items={[
-              { href: "/blog", label: "Blog" },
-              { href: "/upgrade", label: "Prijzen" },
-              session ? { href: "/dashboard", label: "Dashboard →", accent: false } : { href: "/login", label: "Inloggen" },
-            ]}
-          />
-        </div>
-      </nav>
-
       {/* Hero */}
       <section className="flex flex-col items-center justify-center text-center px-6 pt-28 pb-20 max-w-3xl mx-auto w-full">
         <div className="inline-flex items-center gap-2 bg-card-hover border border-border rounded-full px-4 py-1.5 text-sm text-muted mb-8 tracking-wide">

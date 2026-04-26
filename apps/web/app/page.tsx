@@ -58,21 +58,21 @@ const PRODUCTS = [
 const POSTS = [
   {
     date: "2026-04-01", cat: "SECURITY",
-    title: "Why I built Scan instead of using existing tools",
-    excerpt: "Most security scanners are either too expensive, too complex, or built for enterprises. I wanted something a freelancer could run on their own domain in 30 seconds.",
+    title: "Waarom ik Scan bouwde terwijl er al 100 security scanners bestaan",
+    excerpt: "De meeste scanners kosten €400/maand of vragen een enterprise demo. Ik wilde iets waarmee een freelancer in 30 seconden zijn eigen domein kan doorlichten.",
     accent: "#0284C7",
   },
   {
-    date: "2026-03-12", cat: "BUILDING IN PUBLIC",
-    title: "One year building Zenkai: what worked, what didn't",
-    excerpt: "No co-founder, no investors, no marketing budget. Just shipping tools I actually use. Here's what the numbers look like after 12 months.",
-    accent: "#15803D",
+    date: "2026-03-12", cat: "CAREER",
+    title: "Hoe ik mijn CV score van 4.2 naar 8.1 haalde in 10 minuten",
+    excerpt: "Niet door het anders op te maken. Door de ATS-killer zinnen eruit te gooien en te focussen op wat recruiters in de eerste 6 seconden zien.",
+    accent: "#B45309",
   },
   {
-    date: "2026-02-28", cat: "OSCP",
-    title: "How getting OSCP changed how I build software",
-    excerpt: "OSCP isn't just a certification — it's a mindset shift. It changed how I think about every API, every form, and every login page I build.",
-    accent: "#B45309",
+    date: "2026-02-28", cat: "FINANCE",
+    title: "De reden waarom studenten altijd blut zijn op de 20ste",
+    excerpt: "Het heeft niets met discipline te maken. Het heeft alles te maken met hoe maandabonnementen, stilzwijgende verlengingen en 'kleine' vaste lasten oplopen.",
+    accent: "#15803D",
   },
 ];
 
@@ -548,19 +548,19 @@ export default function HubHome() {
                   die ik zelf wilde.
                 </em>
               </h2>
-              <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.5)", lineHeight: 1.8, maxWidth: "400px", margin: "0 0 20px" }}>
-                Ik ben Joshua Pole — OSCP-gecertificeerd security analyst en maker van Zenkai. Geen VC-funding, geen groei-team, geen dark patterns.
+              <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.5)", lineHeight: 1.8, maxWidth: "420px", margin: "0 0 16px" }}>
+                Ik ben Joshua — security analyst, ethical hacker, en maker van Zenkai. Overdag werk ik als security analyst bij Enreach. In het weekend bouw ik tools die ik zelf wilde maar niet kon betalen.
               </p>
-              <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.35)", lineHeight: 1.8, maxWidth: "400px", margin: 0 }}>
-                Elk tool is gebouwd omdat ik het zelf miste. Als het op Zenkai staat, werkt het.
+              <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.35)", lineHeight: 1.8, maxWidth: "420px", margin: 0 }}>
+                OSCP gecertificeerd. Geen VC funding. Geen team. Gewoon bouwen.
               </p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
               {[
-                { t: "OSCP Certified", d: "Offensive Security Certified Professional. The industry standard for penetration testing.", a: "#0284C7" },
-                { t: "Bootstrapped", d: "Nul VC-funding. Alle beslissingen zijn gebaseerd op wat goed is voor gebruikers — niet investeerders.", a: "#15803D" },
-                { t: "Privacy-first", d: "Jouw data blijft van jou. Geen advertenties, geen profiling, geen data-verkoop.", a: "#B45309" },
-                { t: "Eerlijke prijzen", d: "Gebouwd voor studenten en freelancers. Geen €300/maand enterprise-plannen.", a: "#C2410C" },
+                { t: "OSCP Certified", d: "Offensive Security Certified Professional — de standaard voor penetration testing.", a: "#0284C7" },
+                { t: "5+ jaar security", d: "Security analyst bij Enreach. Ervaring met pentesting, vulnerability assessment en hardening.", a: "#15803D" },
+                { t: "€0 VC funding", d: "Geen investeerders, geen groei-targets. Alle beslissingen zijn gebaseerd op wat goed is voor gebruikers.", a: "#B45309" },
+                { t: "Gebouwd in NL", d: "Amsterdam. Tools voor studenten, freelancers en zzp'ers — geen enterprise pricing.", a: "#C2410C" },
               ].map((item, i) => (
                 <div
                   key={item.t}

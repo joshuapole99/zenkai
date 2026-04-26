@@ -39,8 +39,16 @@ function WaitlistForm() {
     e.preventDefault();
     if (!email.trim()) return;
     setStatus("loading");
-    await new Promise(r => setTimeout(r, 800));
-    setStatus("done");
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), domain: domain.trim() || undefined }),
+      });
+      setStatus(res.ok ? "done" : "error");
+    } catch {
+      setStatus("error");
+    }
   }
 
   if (status === "done") {
@@ -96,6 +104,11 @@ function WaitlistForm() {
       >
         {status === "loading" ? "Even geduld..." : "Noteer mij →"}
       </button>
+      {status === "error" && (
+        <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "#C2410C", textAlign: "center" }}>
+          Er ging iets mis. Probeer het opnieuw.
+        </p>
+      )}
       <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.38)", textAlign: "center" }}>
         Geen spam. Je krijgt alleen een e-mail als het live gaat.
       </p>
@@ -126,32 +139,6 @@ export default function ScanPage() {
       `}</style>
 
       <main style={{ minHeight: "100vh", background: "#F5F3EC", color: "#0F0E0E" }}>
-
-        {/* ── NAV ── */}
-        <nav style={{
-          position: "sticky", top: 0, zIndex: 50,
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "0 40px", height: "60px",
-          background: "rgba(245,243,236,0.92)", backdropFilter: "blur(16px)",
-          borderBottom: "1px solid rgba(15,14,14,0.08)",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <a href="https://zenkai.nl" style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontStyle: "italic", fontSize: "18px", letterSpacing: "-0.03em", color: "#0F0E0E", textDecoration: "none" }}>
-              Zenkai
-            </a>
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", color: "rgba(15,14,14,0.4)", letterSpacing: "0.15em" }}>/ SCAN</span>
-          </div>
-          <a
-            href="#waitlist"
-            style={{
-              fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", fontWeight: 600,
-              padding: "8px 18px", background: "#0284C7", color: "#fff",
-              textDecoration: "none", letterSpacing: "0.05em", textTransform: "uppercase",
-            }}
-          >
-            Noteer mij
-          </a>
-        </nav>
 
         {/* ── HERO ── */}
         <section style={{ padding: "100px 40px 80px", maxWidth: "1100px", margin: "0 auto" }}>
