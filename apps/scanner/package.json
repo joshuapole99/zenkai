@@ -8,7 +8,7 @@
     "start": "next start --port 3001"
   },
   "dependencies": {
-    "@zenkai/ui": "*",
+    "@zenkai/ui": "file:../../packages/ui",
     "next": "16.2.4",
     "postgres": "^3.4.5",
     "react": "19.2.4",
