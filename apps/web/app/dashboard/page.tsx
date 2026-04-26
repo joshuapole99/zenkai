@@ -202,12 +202,12 @@ export default async function DashboardPage() {
         }
       : null;
 
-    const thisWeekLogs = (logRows as { log_date: string }[]).map((r) =>
+    const thisWeekLogs = (logRows as unknown as { log_date: string }[]).map((r) =>
       String(r.log_date).slice(0, 10)
     );
     const isLoggedToday = thisWeekLogs.includes(today);
 
-    const graceRow = (graceRows as { grace_days_used: number; grace_week_start: string | null }[])[0];
+    const graceRow = (graceRows as unknown as { grace_days_used: number; grace_week_start: string | null }[])[0];
     const graceWeekStart = graceRow?.grace_week_start ? String(graceRow.grace_week_start).slice(0, 10) : null;
     const isNewWeek = !graceWeekStart || graceWeekStart < weekStart;
     const graceAvailable = isNewWeek || (graceRow?.grace_days_used ?? 0) < 1;
@@ -219,12 +219,12 @@ export default async function DashboardPage() {
           .pop() ?? null)
       : null;
 
-    const lastLogDate = (lastLogRows as { log_date: string }[])[0]?.log_date
-      ? String((lastLogRows as { log_date: string }[])[0].log_date).slice(0, 10)
+    const lastLogDate = (lastLogRows as unknown as { log_date: string }[])[0]?.log_date
+      ? String((lastLogRows as unknown as { log_date: string }[])[0].log_date).slice(0, 10)
       : null;
 
     // Weekly pattern: detect most-skipped scheduled day over past 4 weeks
-    const recentLogs = (patternLogRows as { log_date: string }[]).map((r) =>
+    const recentLogs = (patternLogRows as unknown as { log_date: string }[]).map((r) =>
       String(r.log_date).slice(0, 10)
     );
     let skippedDayIndex: number | null = null;
