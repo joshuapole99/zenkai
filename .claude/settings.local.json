@@ -42,7 +42,8 @@
       "Bash(pip install *)",
       "Bash(set PYTHONIOENCODING=utf-8)",
       "Skill(update-config)",
-      "Bash(npx skills *)"
+      "Bash(npx skills *)",
+      "Bash(grep *)"
     ]
   },
   "skillOverrides": {

@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #0B0F14;
+  --color-card: #111827;
+  --color-card-hover: #1a2235;
+  --color-accent: #6366F1;
+  --color-accent-hover: #4f51d1;
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-foreground: #E5E7EB;
+  --color-muted: #6B7280;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --font-sans: var(--font-inter);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+body {
+  background: #0B0F14;
+  color: #E5E7EB;
+  font-family: var(--font-inter), system-ui, Arial, sans-serif;
+}
+
+/* Ambient gradient orbs — Stripe/Linear style subtle background */
+.gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+}
+
+.gradient-orb-1 {
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.10) 0%, transparent 70%);
+  top: -180px;
+  left: -180px;
+  animation: orb-drift-1 22s ease-in-out infinite;
+}
+
+.gradient-orb-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.06) 0%, transparent 70%);
+  bottom: 0;
+  right: -120px;
+  animation: orb-drift-2 28s ease-in-out infinite;
+}
+
+@keyframes orb-drift-1 {
+  0%, 100% { transform: translate(0, 0); }
+  33%       { transform: translate(80px, 60px); }
+  66%       { transform: translate(30px, -50px); }
+}
+
+@keyframes orb-drift-2 {
+  0%, 100% { transform: translate(0, 0); }
+  33%       { transform: translate(-60px, -50px); }
+  66%       { transform: translate(-20px, 40px); }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.25);
+  color: #E5E7EB;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
