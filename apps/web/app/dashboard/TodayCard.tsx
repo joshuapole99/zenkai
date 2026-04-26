@@ -137,6 +137,7 @@ export default function TodayCard({
   weakSpot,
   isZenkaiBoost,
   onComplete,
+  onJustLogToday,
   loading,
 }: Props) {
   const [workoutStarted, setWorkoutStarted] = useState(false);
