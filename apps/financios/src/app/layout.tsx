@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { ZenkaiNav, ZenkaiFooter } from "@zenkai/ui";
 import PostHogProvider from "./PostHogProvider";
 import InstallBanner from "@/components/InstallBanner";
 import "./globals.css";
@@ -12,13 +13,13 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://financios.nl"),
   title: {
-    default: "Financios – Waarom ben jij altijd blut?",
-    template: "%s – Financios",
+    default: "Goals — Financiële duidelijkheid voor studenten en Gen Z",
+    template: "%s — Zenkai Goals",
   },
   description:
     "Ontdek in 60 seconden waar jouw geld naartoe gaat en fix je spaardoel met een persoonlijk plan.",
   openGraph: {
-    siteName: "Financios",
+    siteName: "Zenkai Goals",
     locale: "nl_NL",
     type: "website",
   },
@@ -50,13 +51,16 @@ export default function RootLayout({
       className={`${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {/* Ambient gradient background — visible on every page */}
+        <ZenkaiNav currentApp="goals" />
         <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
           <div className="gradient-orb gradient-orb-1" />
           <div className="gradient-orb gradient-orb-2" />
         </div>
-        <PostHogProvider>{children}</PostHogProvider>
+        <PostHogProvider>
+          <main style={{ flex: 1 }}>{children}</main>
+        </PostHogProvider>
         <InstallBanner />
+        <ZenkaiFooter />
       </body>
     </html>
   );

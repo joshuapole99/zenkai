@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["@zenkai/ui"],
   reactCompiler: true,
   async headers() {
     return [

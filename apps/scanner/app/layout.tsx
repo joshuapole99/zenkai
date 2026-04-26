@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ZenkaiNav, ZenkaiFooter } from "@zenkai/ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -9,8 +10,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="nl">
+      <body style={{ margin: 0, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <ZenkaiNav currentApp="scan" />
+        <main style={{ flex: 1 }}>{children}</main>
+        <ZenkaiFooter />
+      </body>
     </html>
   );
 }

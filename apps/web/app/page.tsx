@@ -337,23 +337,21 @@ export default function HubHome() {
           borderBottom: "1px solid rgba(15,14,14,0.08)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontStyle: "italic", fontSize: "21px", letterSpacing: "-0.03em" }}>
+            <svg width="24" height="20" viewBox="0 0 44 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0" y="0" width="44" height="6" fill="#0F0E0E"/>
+              <polygon points="44,6 44,13 6,30 0,30 0,23 38,6" fill="#0F0E0E"/>
+              <rect x="0" y="30" width="44" height="6" fill="#0F0E0E"/>
+            </svg>
+            <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontSize: "17px", letterSpacing: "-0.03em" }}>
               Zenkai
-            </span>
-            <span style={{
-              fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", fontWeight: 500,
-              letterSpacing: "0.15em", padding: "3px 7px",
-              border: "1px solid rgba(15,14,14,0.15)", color: "rgba(15,14,14,0.35)",
-              textTransform: "uppercase",
-            }}>
-              Platform
             </span>
           </div>
 
           <div className="nav-links" style={{ display: "flex", gap: "28px", alignItems: "center" }}>
             {[
-              { l: "Goals", h: "https://goals.zenkai.nl" },
-              { l: "Job", h: "https://job.zenkai.nl" },
+              { l: "Goals",   h: "https://goals.zenkai.nl" },
+              { l: "Job",     h: "https://job.zenkai.nl" },
+              { l: "About",   h: "/about" },
             ].map((x) => (
               <a key={x.l} href={x.h} style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.4)", textDecoration: "none" }}>
                 {x.l}

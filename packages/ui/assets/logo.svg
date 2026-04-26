@@ -1,0 +1,6 @@
+<svg viewBox="0 0 44 36" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+  <!-- Z mark: top bar, diagonal, bottom bar -->
+  <rect x="0" y="0" width="44" height="6"/>
+  <polygon points="44,6 44,13 6,30 0,30 0,23 38,6"/>
+  <rect x="0" y="30" width="44" height="6"/>
+</svg>

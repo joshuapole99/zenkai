@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@zenkai/ui": "*",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.0",
     "jspdf": "^4.2.1",
