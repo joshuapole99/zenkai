@@ -346,9 +346,12 @@ export default function ScanPage() {
               <br />
               <em style={{ fontWeight: 300, color: "rgba(245,243,236,0.38)" }}>lanceert binnenkort.</em>
             </h2>
-            <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.45)", lineHeight: 1.75, marginBottom: "40px" }}>
+            <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.45)", lineHeight: 1.75, marginBottom: "28px" }}>
               Vul je e-mail in en je domein (optioneel). Je krijgt als eerste toegang en een korting bij lancering.
             </p>
+            <a href="/scan" style={{ display: "inline-block", marginBottom: "32px", padding: "12px 24px", background: "#0284C7", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.06em", textDecoration: "none", textTransform: "uppercase" }}>
+              Beta scan proberen →
+            </a>
             {/* Waitlist form on dark bg — override input styles */}
             <style>{`
               .wl-form input {
