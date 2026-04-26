@@ -11,6 +11,7 @@ type Props = {
   weakSpot: string | null;
   isZenkaiBoost: boolean;
   onComplete: () => void;
+  onJustLogToday: () => void;
   loading: boolean;
 };
 
@@ -243,7 +244,7 @@ export default function TodayCard({
                 Start comeback workout
               </button>
               <button
-                onClick={onComplete}
+                onClick={onJustLogToday}
                 disabled={loading}
                 className="w-full py-2.5 rounded-xl text-sm text-gray-500 hover:text-gray-300 transition-colors disabled:opacity-50"
                 style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}

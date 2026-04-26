@@ -17,9 +17,9 @@ export const visuals = {
     },
   },
   npc: {
-    kael:           "/images/npc/master-kael.png",
-    kaelProud:      "/images/npc/master-kael-proud.png",
-    kaelSurprised:  "/images/npc/master-kael-surprised.png",
+    kael:           "/images/master-kael-avatar.png",
+    kaelProud:      "/images/master-kael-avatar.png",
+    kaelSurprised:  "/images/master-kael-avatar.png",
     ryo:            "/images/npc/ryo.png",
     ryoShocked:     "/images/npc/ryo-shocked.png",
   },
@@ -29,7 +29,7 @@ export const visuals = {
     nightCity:      "/images/bg/night-city.png",
     storm:          "/images/bg/storm.png",
     mountain:       "/images/bg/mountain.png",
-    zenkai:         "/images/bg/zenkai.png",
+    zenkai:         "/images/zenkai-boost-bg.png",
     void:           "/images/bg/void.png",
   },
   enemies: {

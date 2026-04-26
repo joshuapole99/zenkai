@@ -615,7 +615,19 @@ function WeeklySummaryCard({
 
 // ── StatsRow ──────────────────────────────────────────────────────────────────
 
-function StatsRow({ streak, lastWorkoutDate, today }: { streak: number; lastWorkoutDate: string | null; today: string }) {
+function StatsRow({
+  streak,
+  lastWorkoutDate,
+  today,
+  graceAvailable,
+  graceUsed,
+}: {
+  streak: number;
+  lastWorkoutDate: string | null;
+  today: string;
+  graceAvailable: boolean;
+  graceUsed: boolean;
+}) {
   const lastDateFormatted = lastWorkoutDate
     ? (() => {
         const d = new Date(lastWorkoutDate + "T00:00:00");
@@ -626,8 +638,11 @@ function StatsRow({ streak, lastWorkoutDate, today }: { streak: number; lastWork
       })()
     : "Never";
 
+  const graceLabel = graceUsed ? "Used" : graceAvailable ? "Available" : "—";
+  const graceColor = graceUsed ? "rgba(255,255,255,0.15)" : graceAvailable ? "#22c55e" : "rgba(255,255,255,0.15)";
+
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-3 gap-3">
       <div
         className="rounded-xl p-4 text-center"
         style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
@@ -644,6 +659,13 @@ function StatsRow({ streak, lastWorkoutDate, today }: { streak: number; lastWork
       >
         <p className="text-xs text-gray-600 mb-1">Last workout</p>
         <p className="text-sm font-black text-white">{lastDateFormatted}</p>
+      </div>
+      <div
+        className="rounded-xl p-4 text-center"
+        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
+      >
+        <p className="text-xs text-gray-600 mb-1">Grace day</p>
+        <p className="text-sm font-black" style={{ color: graceColor }}>{graceLabel}</p>
       </div>
     </div>
   );
@@ -705,6 +727,27 @@ export default function DashboardClient({
     if (loading || isLoggedToday) return;
     setLoading(true);
     try {
+      const res = await fetch("/api/workout/complete", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setStreak(data.newStreak ?? streak + 1);
+        setIsLoggedToday(true);
+        setLastWorkoutDate(today);
+        setView("moment");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function justLogToday() {
+    if (loading || isLoggedToday) return;
+    setLoading(true);
+    try {
+      if (graceAvailable && !graceUsed) {
+        const res = await fetch("/api/workout/grace", { method: "POST" });
+        if (res.ok) setGraceUsed(true);
+      }
       const res = await fetch("/api/workout/complete", { method: "POST" });
       const data = await res.json();
       if (res.ok) {
@@ -801,7 +844,7 @@ export default function DashboardClient({
         )}
 
         {/* Stats */}
-        <StatsRow streak={streak} lastWorkoutDate={lastWorkoutDate} today={today} />
+        <StatsRow streak={streak} lastWorkoutDate={lastWorkoutDate} today={today} graceAvailable={graceAvailable} graceUsed={graceUsed} />
 
         {/* Sunday weekly summary */}
         {isSunday && workoutPlan && (
@@ -835,6 +878,7 @@ export default function DashboardClient({
           weakSpot={weakSpot}
           isZenkaiBoost={isZenkaiBoost}
           onComplete={completeWorkout}
+          onJustLogToday={justLogToday}
           loading={loading}
         />
 

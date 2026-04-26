@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+:root {
+  --bg:      #F5F3EC;
+  --ink:     #0F0E0E;
+  --ink-2:   rgba(15,14,14,0.5);
+  --ink-3:   rgba(15,14,14,0.28);
+  --border:  rgba(15,14,14,0.1);
+  --cyan:    #0284C7;
+  --green:   #15803D;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: #0F0E0E; color: #F5F3EC; }

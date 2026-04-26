@@ -24,7 +24,36 @@
       "WebFetch(domain:api.github.com)",
       "Bash(node -e \"require\\('next/og'\\); console.log\\('ok'\\)\")",
       "Bash(grep -E \"^sharp$|^canvas$|^jimp$\")",
-      "Bash(node -e \"const s = require\\('sharp'\\); console.log\\('sharp ok', s.versions\\)\")"
+      "Bash(node -e \"const s = require\\('sharp'\\); console.log\\('sharp ok', s.versions\\)\")",
+      "mcp__lottiefiles-creator__get_rules",
+      "mcp__lottiefiles-creator__get_api_doc",
+      "mcp__lottiefiles-creator__run_script",
+      "Bash(node scripts/gen-placeholders.mjs)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(python3 -c \"import sys,gzip; sys.stdout.buffer.write\\(gzip.decompress\\(sys.stdin.buffer.read\\(\\)\\)\\)\")",
+      "Bash(python3 *)",
+      "Bash(py *)",
+      "Bash(npx tsc *)",
+      "Bash(npx context7 *)",
+      "Bash(npm list *)",
+      "Bash(python -c \"import PIL; print\\('PIL ok'\\)\")",
+      "Bash(python -c \"import importlib; [print\\(m\\) for m in ['PIL','cairo','reportlab','skia'] if importlib.util.find_spec\\(m\\)]\")",
+      "Bash(python *)",
+      "Bash(pip install *)",
+      "Bash(set PYTHONIOENCODING=utf-8)",
+      "Skill(update-config)",
+      "Bash(npx skills *)"
     ]
+  },
+  "skillOverrides": {
+    "canvas-design": "off",
+    "figma": "off",
+    "imagegen": "off",
+    "mobile-design": "off",
+    "premium-web-design": "off",
+    "remotion-best-practices": "off",
+    "ui-design-system": "off",
+    "ui-ux-pro-max": "off",
+    "ux-researcher-designer": "off"
   }
 }
