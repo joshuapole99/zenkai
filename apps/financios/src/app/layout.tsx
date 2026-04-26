@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ZenkaiNav, ZenkaiFooter } from "@zenkai/ui";
 import PostHogProvider from "./PostHogProvider";
 import InstallBanner from "@/components/InstallBanner";
+import GoalsAppBar from "@/components/GoalsAppBar";
 import "./globals.css";
 
 const inter = Inter({
@@ -52,6 +53,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ZenkaiNav currentApp="goals" />
+        <GoalsAppBar />
         <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
           <div className="gradient-orb gradient-orb-1" />
           <div className="gradient-orb gradient-orb-2" />

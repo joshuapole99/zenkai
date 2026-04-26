@@ -5,9 +5,9 @@ import Link from "next/link";
 
 const PRODUCTS = [
   { id: "scan",    name: "Scan",    sub: "Domein security",   href: "https://scan.zenkai.nl",    accent: "#0284C7", status: "Beta" },
-  { id: "goals",   name: "Goals",   sub: "Financiële helderheid", href: "https://goals.zenkai.nl", accent: "#15803D", status: "Live" },
-  { id: "job",     name: "Job",     sub: "CV + sollicitatiebegeleiding", href: "https://job.zenkai.nl",   accent: "#B45309", status: "Live" },
-  { id: "workout", name: "Workout", sub: "Fitness comeback mechanic", href: "https://workout.zenkai.nl", accent: "#C2410C", status: "Live" },
+  { id: "goals",   name: "Goals",   sub: "Financiële helderheid", href: "https://goals.zenkai.nl", accent: "#16A34A", status: "Live" },
+  { id: "job",     name: "Job",     sub: "CV + sollicitatiebegeleiding", href: "https://job.zenkai.nl",   accent: "#7C3AED", status: "Live" },
+  { id: "workout", name: "Workout", sub: "Fitness comeback mechanic", href: "https://workout.zenkai.nl", accent: "#EA580C", status: "Live" },
 ];
 
 function useInView(threshold = 0.15) {

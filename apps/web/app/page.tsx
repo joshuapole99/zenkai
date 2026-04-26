@@ -24,7 +24,7 @@ const PRODUCTS = [
     desc: "7-point security check: SSL, DNS, headers, open ports, email auth, vulnerabilities, reputation.",
     status: "coming-soon" as const,
     href: "https://scan.zenkai.nl",
-    accent: "#0284C7", accentBg: "rgba(2,132,199,0.06)", word: "Security.",
+    accent: "#0284C7", accentBg: "rgba(2,132,199,0.05)", word: "Security.",
   },
   {
     num: "02", id: "fin", category: "FINANCE",
@@ -33,7 +33,7 @@ const PRODUCTS = [
     desc: "Budgeting, subscription tracking, financial goals — built for people who want clarity, not complexity.",
     status: "live" as const,
     href: "https://goals.zenkai.nl",
-    accent: "#15803D", accentBg: "rgba(21,128,61,0.06)", word: "Finance.",
+    accent: "#16A34A", accentBg: "rgba(22,163,74,0.05)", word: "Finance.",
   },
   {
     num: "03", id: "job", category: "CAREER",
@@ -42,7 +42,7 @@ const PRODUCTS = [
     desc: "AI-powered Dutch job coaching. Get your CV scored, cover letter reviewed, and interview questions prepped.",
     status: "live" as const,
     href: "https://job.zenkai.nl",
-    accent: "#B45309", accentBg: "rgba(180,83,9,0.06)", word: "Career.",
+    accent: "#7C3AED", accentBg: "rgba(124,58,237,0.05)", word: "Career.",
   },
   {
     num: "04", id: "fit", category: "FITNESS",
@@ -51,7 +51,7 @@ const PRODUCTS = [
     desc: "Daily quest, XP system, streak tracking with a grace day mechanic. Level up your fitness — no shame.",
     status: "live" as const,
     href: "https://workout.zenkai.nl",
-    accent: "#C2410C", accentBg: "rgba(194,65,12,0.06)", word: "Fitness.",
+    accent: "#EA580C", accentBg: "rgba(234,88,12,0.05)", word: "Fitness.",
   },
 ];
 
@@ -66,13 +66,13 @@ const POSTS = [
     date: "2026-03-12", cat: "CAREER",
     title: "Hoe ik mijn CV score van 4.2 naar 8.1 haalde in 10 minuten",
     excerpt: "Niet door het anders op te maken. Door de ATS-killer zinnen eruit te gooien en te focussen op wat recruiters in de eerste 6 seconden zien.",
-    accent: "#B45309",
+    accent: "#7C3AED",
   },
   {
     date: "2026-02-28", cat: "FINANCE",
     title: "De reden waarom studenten altijd blut zijn op de 20ste",
     excerpt: "Het heeft niets met discipline te maken. Het heeft alles te maken met hoe maandabonnementen, stilzwijgende verlengingen en 'kleine' vaste lasten oplopen.",
-    accent: "#15803D",
+    accent: "#16A34A",
   },
 ];
 
@@ -88,15 +88,13 @@ function ScrollBar() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
   return (
-    <div
-      style={{
-        position: "fixed", top: 0, left: 0, zIndex: 999,
-        height: "2px", width: `${p * 100}%`,
-        background: "linear-gradient(to right, #15803D, #0284C7)",
-        transition: "width 0.08s linear",
-        pointerEvents: "none",
-      }}
-    />
+    <div style={{
+      position: "fixed", top: 0, left: 0, zIndex: 999,
+      height: "2px", width: `${p * 100}%`,
+      background: "#0284C7",
+      transition: "width 0.08s linear",
+      pointerEvents: "none",
+    }} />
   );
 }
 
@@ -114,20 +112,19 @@ function ProductCard({ p, i, visible }: { p: (typeof PRODUCTS)[0]; i: number; vi
         textDecoration: "none",
         color: "inherit",
         cursor: "pointer",
-        background: hovered ? p.accentBg : "rgba(15,14,14,0.02)",
-        border: "1px solid rgba(15,14,14,0.09)",
-        borderTop: `3px solid ${hovered ? p.accent : "rgba(15,14,14,0.09)"}`,
-        padding: "28px 28px 24px",
-        transition: "background 0.3s ease, border-color 0.3s ease",
+        background: hovered ? p.accentBg : "#ffffff",
+        borderTop: `3px solid ${hovered ? p.accent : "rgba(15,14,14,0.08)"}`,
+        padding: "32px 28px 28px",
+        transition: "background 0.25s ease, border-color 0.25s ease",
         opacity: visible ? 1 : 0,
         transform: visible ? "none" : "translateY(20px)",
         transitionProperty: "background, border-color, opacity, transform",
-        transitionDuration: `0.3s, 0.3s, 0.55s, 0.55s`,
+        transitionDuration: "0.25s, 0.25s, 0.55s, 0.55s",
         transitionTimingFunction: "ease, ease, cubic-bezier(.22,1,.36,1), cubic-bezier(.22,1,.36,1)",
         transitionDelay: `0s, 0s, ${i * 0.1 + 0.2}s, ${i * 0.1 + 0.2}s`,
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
         <span style={{
           fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", fontWeight: 600,
           letterSpacing: "0.12em", textTransform: "uppercase", color: p.accent,
@@ -138,15 +135,12 @@ function ProductCard({ p, i, visible }: { p: (typeof PRODUCTS)[0]; i: number; vi
           <span style={{
             fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", fontWeight: 600,
             padding: "3px 7px", letterSpacing: "0.08em",
-            border: p.status === "live" ? `1px solid ${p.accent}` : "1px solid rgba(15,14,14,0.15)",
-            color: p.status === "live" ? p.accent : "rgba(15,14,14,0.35)",
+            border: p.status === "live" ? `1px solid ${p.accent}` : "1px solid rgba(15,14,14,0.12)",
+            color: p.status === "live" ? p.accent : "rgba(15,14,14,0.3)",
           }}>
             {p.status === "live" ? "LIVE" : "SOON"}
           </span>
-          <span style={{
-            fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
-            color: "rgba(15,14,14,0.2)",
-          }}>
+          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.18)" }}>
             {p.num}
           </span>
         </div>
@@ -161,12 +155,12 @@ function ProductCard({ p, i, visible }: { p: (typeof PRODUCTS)[0]; i: number; vi
       </h3>
       <p style={{
         fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px",
-        color: "rgba(15,14,14,0.4)", margin: "0 0 16px", lineHeight: 1.5,
+        color: "rgba(15,14,14,0.38)", margin: "0 0 16px", lineHeight: 1.5,
       }}>
         {p.tagline}
       </p>
       <p style={{
-        fontSize: "13.5px", color: "rgba(15,14,14,0.45)", lineHeight: 1.7, margin: "0 0 24px",
+        fontSize: "13.5px", color: "rgba(15,14,14,0.42)", lineHeight: 1.7, margin: "0 0 24px",
       }}>
         {p.desc}
       </p>
@@ -174,7 +168,7 @@ function ProductCard({ p, i, visible }: { p: (typeof PRODUCTS)[0]; i: number; vi
       <div style={{
         display: "flex", alignItems: "center", gap: "6px",
         fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
-        color: hovered ? p.accent : "rgba(15,14,14,0.3)",
+        color: hovered ? p.accent : "rgba(15,14,14,0.28)",
         transition: "color 0.2s ease",
       }}>
         <span>{p.status === "live" ? "Open app" : "Join waitlist"}</span>
@@ -247,7 +241,7 @@ export default function HubHome() {
           from { opacity: 0; transform: translateY(-12px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        ::selection { background: #0F0E0E; color: #F5F3EC; }
+        ::selection { background: #0284C7; color: #ffffff; }
         @media (max-width: 720px) {
           .cards-grid { grid-template-columns: 1fr !important; }
           .cred-grid  { grid-template-columns: 1fr !important; gap: 48px !important; }
@@ -270,7 +264,7 @@ export default function HubHome() {
           className="mobile-menu"
           style={{
             position: "fixed", inset: 0, zIndex: 200,
-            background: "#F5F3EC",
+            background: "#ffffff",
             display: "flex", flexDirection: "column",
             padding: "80px 32px 40px",
             animation: "slideDown 0.25s ease both",
@@ -292,11 +286,11 @@ export default function HubHome() {
           </button>
           <nav style={{ display: "flex", flexDirection: "column", gap: "0" }}>
             {[
-              { l: "Tools", h: "#tools", internal: false },
-              { l: "Scan", h: "https://scan.zenkai.nl", internal: false },
-              { l: "Goals", h: "https://goals.zenkai.nl", internal: false },
-              { l: "Job", h: "https://job.zenkai.nl", internal: false },
-              { l: "Workout", h: "https://workout.zenkai.nl", internal: false },
+              { l: "Tools", h: "#tools" },
+              { l: "Scan", h: "https://scan.zenkai.nl" },
+              { l: "Goals", h: "https://goals.zenkai.nl" },
+              { l: "Job", h: "https://job.zenkai.nl" },
+              { l: "Workout", h: "https://workout.zenkai.nl" },
             ].map((x) => (
               <a
                 key={x.l}
@@ -326,15 +320,15 @@ export default function HubHome() {
         </div>
       )}
 
-      <main style={{ minHeight: "100vh", background: "#F5F3EC", color: "#0F0E0E", overflowX: "hidden" }}>
+      <main style={{ minHeight: "100vh", background: "#ffffff", color: "#0F0E0E", overflowX: "hidden" }}>
 
         {/* ── NAV ─────────────────────────────────────────────────────────── */}
         <nav style={{
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
           height: "60px", display: "flex", alignItems: "center",
           justifyContent: "space-between", padding: "0 40px",
-          background: "rgba(245,243,236,0.92)", backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(15,14,14,0.08)",
+          background: "rgba(255,255,255,0.94)", backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(15,14,14,0.07)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <svg width="24" height="20" viewBox="0 0 44 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -358,9 +352,10 @@ export default function HubHome() {
               </a>
             ))}
             <a href="#tools" style={{
-              fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
-              color: "#0F0E0E", textDecoration: "none",
-              padding: "8px 16px", border: "1px solid rgba(15,14,14,0.2)",
+              fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", fontWeight: 600,
+              color: "#ffffff", textDecoration: "none",
+              padding: "8px 18px", background: "#0284C7",
+              letterSpacing: "0.04em",
             }}>
               Explore Tools ↓
             </a>
@@ -392,8 +387,8 @@ export default function HubHome() {
             display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px",
             opacity: mounted ? 1 : 0, animation: mounted ? "hf .6s ease .05s both" : "none",
           }}>
-            <div style={{ width: "28px", height: "1px", background: "rgba(15,14,14,0.3)" }} />
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", letterSpacing: "0.2em", color: "rgba(15,14,14,0.4)", textTransform: "uppercase" }}>
+            <div style={{ width: "28px", height: "1px", background: "#0284C7" }} />
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", letterSpacing: "0.2em", color: "#0284C7", textTransform: "uppercase" }}>
               zenkai.nl — platform
             </span>
           </div>
@@ -409,7 +404,7 @@ export default function HubHome() {
               <span style={{
                 fontFamily: "'Fraunces',Georgia,serif", fontWeight: 300, fontStyle: "italic",
                 fontSize: "clamp(3.5rem, 9vw, 8.5rem)", lineHeight: 0.92, letterSpacing: "-0.04em",
-                color: "rgba(15,14,14,0.28)",
+                color: "rgba(15,14,14,0.22)",
               }}>
                 for
               </span>
@@ -440,16 +435,16 @@ export default function HubHome() {
             </p>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               <a href="#tools" style={{
-                padding: "13px 26px", background: "#0F0E0E", color: "#F5F3EC",
+                padding: "13px 26px", background: "#0284C7", color: "#ffffff",
                 fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600,
                 letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase",
                 display: "inline-block",
               }}>
                 Explore Tools ↓
               </a>
-              <a href="#about" style={{
-                padding: "13px 26px", border: "1px solid rgba(15,14,14,0.18)",
-                color: "rgba(15,14,14,0.55)", fontFamily: "'IBM Plex Mono',monospace",
+              <a href="/about" style={{
+                padding: "13px 26px", border: "1px solid rgba(15,14,14,0.15)",
+                color: "rgba(15,14,14,0.5)", fontFamily: "'IBM Plex Mono',monospace",
                 fontSize: "12px", letterSpacing: "0.05em", textDecoration: "none",
                 textTransform: "uppercase", display: "inline-block",
               }}>
@@ -462,7 +457,7 @@ export default function HubHome() {
             className="stats-row"
             style={{
               display: "flex", gap: "0", marginTop: "64px",
-              paddingTop: "32px", borderTop: "1px solid rgba(15,14,14,0.1)",
+              paddingTop: "32px", borderTop: "1px solid rgba(15,14,14,0.08)",
               opacity: mounted ? 1 : 0, animation: mounted ? "hf .6s ease .48s both" : "none",
             }}
           >
@@ -474,12 +469,12 @@ export default function HubHome() {
             ].map((s, i) => (
               <div key={s.l} style={{
                 flex: 1, paddingLeft: i ? "32px" : 0,
-                borderLeft: i ? "1px solid rgba(15,14,14,0.1)" : "none",
+                borderLeft: i ? "1px solid rgba(15,14,14,0.08)" : "none",
               }}>
                 <p style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontSize: "1.8rem", letterSpacing: "-0.03em", color: "#0F0E0E", margin: "0 0 4px" }}>
                   {s.v}
                 </p>
-                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", color: "rgba(15,14,14,0.33)", letterSpacing: "0.1em", textTransform: "uppercase", margin: 0 }}>
+                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", color: "rgba(15,14,14,0.3)", letterSpacing: "0.1em", textTransform: "uppercase", margin: 0 }}>
                   {s.l}
                 </p>
               </div>
@@ -496,10 +491,10 @@ export default function HubHome() {
             paddingBottom: "20px", marginBottom: "32px",
             borderBottom: "2px solid #0F0E0E",
           }}>
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", fontWeight: 600, letterSpacing: "0.2em", color: "rgba(15,14,14,0.4)", textTransform: "uppercase" }}>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", fontWeight: 600, letterSpacing: "0.2em", color: "rgba(15,14,14,0.35)", textTransform: "uppercase" }}>
               Tools
             </span>
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.3)" }}>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.28)" }}>
               3 live · 1 launching 2026
             </span>
           </div>
@@ -509,8 +504,8 @@ export default function HubHome() {
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
               gap: "1px",
-              background: "rgba(15,14,14,0.09)",
-              border: "1px solid rgba(15,14,14,0.09)",
+              background: "rgba(15,14,14,0.07)",
+              border: "1px solid rgba(15,14,14,0.07)",
             }}
           >
             {PRODUCTS.map((p, i) => (
@@ -532,7 +527,7 @@ export default function HubHome() {
             <div>
               <span style={{
                 fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
-                letterSpacing: "0.2em", color: "rgba(245,243,236,0.35)",
+                letterSpacing: "0.2em", color: "rgba(245,243,236,0.3)",
                 textTransform: "uppercase", display: "block", marginBottom: "20px",
               }}>
                 About
@@ -544,30 +539,30 @@ export default function HubHome() {
               }}>
                 Ik bouw tools
                 <br />
-                <em style={{ fontWeight: 300, color: "rgba(245,243,236,0.35)" }}>
+                <em style={{ fontWeight: 300, color: "rgba(245,243,236,0.3)" }}>
                   die ik zelf wilde.
                 </em>
               </h2>
-              <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.5)", lineHeight: 1.8, maxWidth: "420px", margin: "0 0 16px" }}>
+              <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.48)", lineHeight: 1.8, maxWidth: "420px", margin: "0 0 16px" }}>
                 Ik ben Joshua — security analyst, ethical hacker, en maker van Zenkai. Overdag werk ik als security analyst bij Enreach. In het weekend bouw ik tools die ik zelf wilde maar niet kon betalen.
               </p>
-              <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.35)", lineHeight: 1.8, maxWidth: "420px", margin: 0 }}>
+              <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.3)", lineHeight: 1.8, maxWidth: "420px", margin: 0 }}>
                 OSCP gecertificeerd. Geen VC funding. Geen team. Gewoon bouwen.
               </p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
               {[
                 { t: "OSCP Certified", d: "Offensive Security Certified Professional — de standaard voor penetration testing.", a: "#0284C7" },
-                { t: "5+ jaar security", d: "Security analyst bij Enreach. Ervaring met pentesting, vulnerability assessment en hardening.", a: "#15803D" },
-                { t: "€0 VC funding", d: "Geen investeerders, geen groei-targets. Alle beslissingen zijn gebaseerd op wat goed is voor gebruikers.", a: "#B45309" },
-                { t: "Gebouwd in NL", d: "Amsterdam. Tools voor studenten, freelancers en zzp'ers — geen enterprise pricing.", a: "#C2410C" },
+                { t: "5+ jaar security", d: "Security analyst bij Enreach. Ervaring met pentesting, vulnerability assessment en hardening.", a: "#16A34A" },
+                { t: "€0 VC funding", d: "Geen investeerders, geen groei-targets. Alle beslissingen zijn gebaseerd op wat goed is voor gebruikers.", a: "#7C3AED" },
+                { t: "Gebouwd in NL", d: "Amsterdam. Tools voor studenten, freelancers en zzp'ers — geen enterprise pricing.", a: "#EA580C" },
               ].map((item, i) => (
                 <div
                   key={item.t}
                   style={{
                     display: "flex", gap: "0", overflow: "hidden",
-                    background: "rgba(245,243,236,0.04)",
-                    border: "1px solid rgba(245,243,236,0.07)",
+                    background: "rgba(245,243,236,0.03)",
+                    border: "1px solid rgba(245,243,236,0.06)",
                     opacity: credVisible ? 1 : 0,
                     transform: credVisible ? "none" : "translateX(20px)",
                     transition: `opacity 0.5s ease ${i * 0.1}s, transform 0.5s ease ${i * 0.1}s`,
@@ -578,7 +573,7 @@ export default function HubHome() {
                     <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, color: "#F5F3EC", margin: "0 0 4px" }}>
                       {item.t}
                     </p>
-                    <p style={{ fontSize: "13px", color: "rgba(245,243,236,0.38)", lineHeight: 1.6, margin: 0 }}>
+                    <p style={{ fontSize: "13px", color: "rgba(245,243,236,0.35)", lineHeight: 1.6, margin: 0 }}>
                       {item.d}
                     </p>
                   </div>
@@ -595,10 +590,10 @@ export default function HubHome() {
             paddingBottom: "20px", marginBottom: "40px",
             borderBottom: "2px solid #0F0E0E",
           }}>
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", fontWeight: 600, letterSpacing: "0.2em", color: "rgba(15,14,14,0.4)", textTransform: "uppercase" }}>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", fontWeight: 600, letterSpacing: "0.2em", color: "rgba(15,14,14,0.35)", textTransform: "uppercase" }}>
               Writing
             </span>
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.3)" }}>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.28)" }}>
               Building in public
             </span>
           </div>
@@ -608,8 +603,8 @@ export default function HubHome() {
               display: "grid",
               gridTemplateColumns: "1fr 1fr 1fr",
               gap: "1px",
-              background: "rgba(15,14,14,0.09)",
-              border: "1px solid rgba(15,14,14,0.09)",
+              background: "rgba(15,14,14,0.07)",
+              border: "1px solid rgba(15,14,14,0.07)",
             }}
           >
             {POSTS.map((post, i) => (
@@ -617,7 +612,7 @@ export default function HubHome() {
                 key={post.title}
                 style={{
                   padding: "32px 28px",
-                  background: "#F5F3EC",
+                  background: "#ffffff",
                   borderTop: `3px solid ${post.accent}`,
                   opacity: blogVisible ? 1 : 0,
                   transform: blogVisible ? "none" : "translateY(16px)",
@@ -632,7 +627,7 @@ export default function HubHome() {
                   }}>
                     {post.cat}
                   </span>
-                  <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", color: "rgba(15,14,14,0.25)" }}>
+                  <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", color: "rgba(15,14,14,0.22)" }}>
                     {post.date}
                   </span>
                 </div>
@@ -643,12 +638,12 @@ export default function HubHome() {
                 }}>
                   {post.title}
                 </h3>
-                <p style={{ fontSize: "13.5px", color: "rgba(15,14,14,0.45)", lineHeight: 1.7, margin: "0 0 24px" }}>
+                <p style={{ fontSize: "13.5px", color: "rgba(15,14,14,0.42)", lineHeight: 1.7, margin: "0 0 24px" }}>
                   {post.excerpt}
                 </p>
                 <span style={{
                   fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
-                  color: "rgba(15,14,14,0.28)",
+                  color: "rgba(15,14,14,0.25)",
                 }}>
                   Read →
                 </span>
@@ -662,7 +657,7 @@ export default function HubHome() {
           <div style={{ maxWidth: "640px", margin: "0 auto" }}>
             <span style={{
               fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
-              letterSpacing: "0.2em", color: "rgba(245,243,236,0.3)",
+              letterSpacing: "0.2em", color: "rgba(245,243,236,0.28)",
               textTransform: "uppercase", display: "block", marginBottom: "20px",
             }}>
               Get started
@@ -674,19 +669,19 @@ export default function HubHome() {
             }}>
               Pick a tool.
               <br />
-              <em style={{ fontWeight: 300, fontStyle: "italic", color: "rgba(245,243,236,0.35)" }}>Start for free.</em>
+              <em style={{ fontWeight: 300, fontStyle: "italic", color: "rgba(245,243,236,0.3)" }}>Start for free.</em>
             </h2>
-            <p style={{ fontSize: "16px", color: "rgba(245,243,236,0.38)", lineHeight: 1.75, marginBottom: "44px" }}>
+            <p style={{ fontSize: "16px", color: "rgba(245,243,236,0.35)", lineHeight: 1.75, marginBottom: "44px" }}>
               All tools have a free tier. No credit card. No bullshit.
             </p>
             <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="https://goals.zenkai.nl" style={{ padding: "14px 30px", background: "#15803D", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
+              <a href="https://goals.zenkai.nl" style={{ padding: "14px 30px", background: "#16A34A", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
                 Goals
               </a>
-              <a href="https://job.zenkai.nl" style={{ padding: "14px 30px", background: "#B45309", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
+              <a href="https://job.zenkai.nl" style={{ padding: "14px 30px", background: "#7C3AED", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
                 Job
               </a>
-              <a href="https://scan.zenkai.nl" style={{ padding: "14px 30px", border: "1px solid rgba(245,243,236,0.2)", color: "rgba(245,243,236,0.6)", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
+              <a href="https://scan.zenkai.nl" style={{ padding: "14px 30px", border: "1px solid rgba(245,243,236,0.18)", color: "rgba(245,243,236,0.55)", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
                 Scan waitlist
               </a>
             </div>
@@ -694,7 +689,7 @@ export default function HubHome() {
         </section>
 
         {/* ── FOOTER ──────────────────────────────────────────────────────── */}
-        <footer style={{ borderTop: "1px solid rgba(245,243,236,0.08)", background: "#0F0E0E", padding: "36px 40px" }}>
+        <footer style={{ borderTop: "1px solid rgba(245,243,236,0.07)", background: "#0F0E0E", padding: "36px 40px" }}>
           <div
             className="footer-inner"
             style={{
@@ -707,21 +702,21 @@ export default function HubHome() {
               <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontStyle: "italic", fontSize: "19px", letterSpacing: "-0.03em", color: "#F5F3EC" }}>
                 Zenkai
               </span>
-              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.2)" }}>
+              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.18)" }}>
                 © 2026
               </span>
             </div>
             <div style={{ display: "flex", gap: "28px", flexWrap: "wrap" }}>
               {PRODUCTS.map((p) => (
-                <a key={p.id} href={p.href} style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.28)", textDecoration: "none" }}>
+                <a key={p.id} href={p.href} style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.25)", textDecoration: "none" }}>
                   {p.name}
                 </a>
               ))}
             </div>
             <div style={{ display: "flex", gap: "22px" }}>
-              <Link href="/privacy" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.2)", textDecoration: "none" }}>Privacy</Link>
-              <Link href="/terms" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.2)", textDecoration: "none" }}>Terms</Link>
-              <a href="mailto:hi@zenkai.nl" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.2)", textDecoration: "none" }}>Contact</a>
+              <Link href="/privacy" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.18)", textDecoration: "none" }}>Privacy</Link>
+              <Link href="/terms" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.18)", textDecoration: "none" }}>Terms</Link>
+              <a href="mailto:hi@zenkai.nl" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.18)", textDecoration: "none" }}>Contact</a>
             </div>
           </div>
         </footer>
