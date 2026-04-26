@@ -19,47 +19,46 @@ function FontLoader() {
 const PRODUCTS = [
   {
     num: "01", id: "scan", category: "SECURITY",
-    name: "SenseiScan",
+    name: "Scan",
     tagline: "Automated domain security audit. PDF report in minutes.",
     desc: "7-point security check: SSL, DNS, headers, open ports, email auth, vulnerabilities, reputation.",
     status: "coming-soon" as const,
-    href: "https://scanner.zenkai.nl",
+    href: "https://scan.zenkai.nl",
     accent: "#0284C7", accentBg: "rgba(2,132,199,0.06)", word: "Security.",
   },
   {
     num: "02", id: "fin", category: "FINANCE",
-    name: "Financios",
+    name: "Goals",
     tagline: "Financial clarity for students and Gen Z.",
     desc: "Budgeting, subscription tracking, financial goals — built for people who want clarity, not complexity.",
     status: "live" as const,
-    href: "https://financios.zenkai.nl",
+    href: "https://goals.zenkai.nl",
     accent: "#15803D", accentBg: "rgba(21,128,61,0.06)", word: "Finance.",
   },
   {
     num: "03", id: "job", category: "CAREER",
-    name: "Sollicitatie Coach",
+    name: "Job",
     tagline: "CV score, cover letter, interview prep.",
     desc: "AI-powered Dutch job coaching. Get your CV scored, cover letter reviewed, and interview questions prepped.",
     status: "live" as const,
-    href: "https://jobs.zenkai.nl",
+    href: "https://job.zenkai.nl",
     accent: "#B45309", accentBg: "rgba(180,83,9,0.06)", word: "Career.",
   },
   {
     num: "04", id: "fit", category: "FITNESS",
-    name: "Zenkai Workout",
+    name: "Workout",
     tagline: "The comeback fitness app. No guilt trips.",
     desc: "Daily quest, XP system, streak tracking with a grace day mechanic. Level up your fitness — no shame.",
     status: "live" as const,
-    href: "/dashboard",
+    href: "https://workout.zenkai.nl",
     accent: "#C2410C", accentBg: "rgba(194,65,12,0.06)", word: "Fitness.",
-    internal: true,
   },
 ];
 
 const POSTS = [
   {
     date: "2026-04-01", cat: "SECURITY",
-    title: "Why I built SenseiScan instead of using existing tools",
+    title: "Why I built Scan instead of using existing tools",
     excerpt: "Most security scanners are either too expensive, too complex, or built for enterprises. I wanted something a freelancer could run on their own domain in 30 seconds.",
     accent: "#0284C7",
   },
@@ -299,10 +298,10 @@ export default function HubHome() {
           <nav style={{ display: "flex", flexDirection: "column", gap: "0" }}>
             {[
               { l: "Tools", h: "#tools", internal: false },
-              { l: "SenseiScan", h: "https://scanner.zenkai.nl", internal: false },
-              { l: "Financios", h: "https://financios.zenkai.nl", internal: false },
-              { l: "Sollicitatie Coach", h: "https://jobs.zenkai.nl", internal: false },
-              { l: "Zenkai Workout", h: "/dashboard", internal: true },
+              { l: "Scan", h: "https://scan.zenkai.nl", internal: false },
+              { l: "Goals", h: "https://goals.zenkai.nl", internal: false },
+              { l: "Job", h: "https://job.zenkai.nl", internal: false },
+              { l: "Workout", h: "https://workout.zenkai.nl", internal: false },
             ].map((x) => (
               <a
                 key={x.l}
@@ -358,8 +357,8 @@ export default function HubHome() {
 
           <div className="nav-links" style={{ display: "flex", gap: "28px", alignItems: "center" }}>
             {[
-              { l: "Financios", h: "https://financios.zenkai.nl" },
-              { l: "Jobs", h: "https://jobs.zenkai.nl" },
+              { l: "Goals", h: "https://goals.zenkai.nl" },
+              { l: "Job", h: "https://job.zenkai.nl" },
             ].map((x) => (
               <a key={x.l} href={x.h} style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.4)", textDecoration: "none" }}>
                 {x.l}
@@ -688,14 +687,14 @@ export default function HubHome() {
               All tools have a free tier. No credit card. No bullshit.
             </p>
             <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="https://financios.zenkai.nl" style={{ padding: "14px 30px", background: "#15803D", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
-                Financios
+              <a href="https://goals.zenkai.nl" style={{ padding: "14px 30px", background: "#15803D", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
+                Goals
               </a>
-              <a href="https://jobs.zenkai.nl" style={{ padding: "14px 30px", background: "#B45309", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
-                Sollicitatie Coach
+              <a href="https://job.zenkai.nl" style={{ padding: "14px 30px", background: "#B45309", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
+                Job
               </a>
-              <a href="https://scanner.zenkai.nl" style={{ padding: "14px 30px", border: "1px solid rgba(245,243,236,0.2)", color: "rgba(245,243,236,0.6)", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
-                SenseiScan waitlist
+              <a href="https://scan.zenkai.nl" style={{ padding: "14px 30px", border: "1px solid rgba(245,243,236,0.2)", color: "rgba(245,243,236,0.6)", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
+                Scan waitlist
               </a>
             </div>
           </div>

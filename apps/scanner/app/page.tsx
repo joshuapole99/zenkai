@@ -50,7 +50,7 @@ function WaitlistForm() {
           Je staat op de lijst.
         </p>
         <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "rgba(15,14,14,0.45)" }}>
-          We sturen je een e-mail zodra SenseiScan live gaat.
+          We sturen je een e-mail zodra Scan live gaat.
         </p>
       </div>
     );
@@ -103,7 +103,7 @@ function WaitlistForm() {
   );
 }
 
-export default function SenseiScanPage() {
+export default function ScanPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { const t = setTimeout(() => setMounted(true), 60); return () => clearTimeout(t); }, []);
 
@@ -139,7 +139,7 @@ export default function SenseiScanPage() {
             <a href="https://zenkai.nl" style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontStyle: "italic", fontSize: "18px", letterSpacing: "-0.03em", color: "#0F0E0E", textDecoration: "none" }}>
               Zenkai
             </a>
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", color: "rgba(15,14,14,0.4)", letterSpacing: "0.15em" }}>/ SENSORSCAN</span>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", color: "rgba(15,14,14,0.4)", letterSpacing: "0.15em" }}>/ SCAN</span>
           </div>
           <a
             href="#waitlist"
@@ -164,7 +164,7 @@ export default function SenseiScanPage() {
               animation: "scanPulse 2s ease-in-out infinite",
             }} />
             <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", letterSpacing: "0.2em", color: "rgba(15,14,14,0.45)", textTransform: "uppercase" }}>
-              Coming soon — scanner.zenkai.nl
+              Coming soon — scan.zenkai.nl
             </span>
           </div>
 
@@ -174,7 +174,7 @@ export default function SenseiScanPage() {
               fontSize: "clamp(3rem, 8vw, 7rem)", lineHeight: 0.92,
               letterSpacing: "-0.04em", color: "#0F0E0E", margin: "0 0 8px",
             }}>
-              SenseiScan.
+              Scan.
             </h1>
             <h2 style={{
               fontFamily: "'Fraunces',Georgia,serif", fontWeight: 300, fontStyle: "italic",
@@ -222,7 +222,7 @@ export default function SenseiScanPage() {
                   <div key={c} style={{ width: "10px", height: "10px", borderRadius: "50%", background: c }} />
                 ))}
                 <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.3)", marginLeft: "8px" }}>
-                  sensorscan — jouwdomein.nl
+                  scan — jouwdomein.nl
                 </span>
               </div>
               {[
@@ -355,7 +355,7 @@ export default function SenseiScanPage() {
               Wachtlijst
             </span>
             <h2 style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 900, fontSize: "clamp(2.2rem,5vw,4rem)", letterSpacing: "-0.04em", lineHeight: 0.93, color: "#F5F3EC", margin: "0 0 16px" }}>
-              SenseiScan
+              Scan
               <br />
               <em style={{ fontWeight: 300, color: "rgba(245,243,236,0.38)" }}>lanceert binnenkort.</em>
             </h2>
@@ -383,7 +383,7 @@ export default function SenseiScanPage() {
           <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <a href="https://zenkai.nl" style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontStyle: "italic", fontSize: "18px", letterSpacing: "-0.03em", color: "#0F0E0E", textDecoration: "none" }}>Zenkai</a>
-              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", color: "rgba(15,14,14,0.3)" }}>/ SenseiScan</span>
+              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", color: "rgba(15,14,14,0.3)" }}>/ Scan</span>
             </div>
             <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.25)" }}>
               © 2026 Zenkai — Gebouwd door een OSCP-gecertificeerde analyst.

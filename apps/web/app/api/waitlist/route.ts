@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless";
+import { getDb } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -8,8 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid email address." }, { status: 400 });
   }
 
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
+  if (!process.env.DATABASE_URL) {
     return NextResponse.json(
       { error: "Database not configured. Add DATABASE_URL to .env.local." },
       { status: 503 }
@@ -17,7 +16,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const sql = neon(connectionString);
+    const sql = getDb();
 
     await sql`
       CREATE TABLE IF NOT EXISTS waitlist_zenkai (
