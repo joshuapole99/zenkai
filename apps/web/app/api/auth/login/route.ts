@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       SELECT id, email, username, password_hash
       FROM users
       WHERE email = ${email.toLowerCase().trim()}
-    `) as { id: number; email: string; username: string; password_hash: string }[];
+    `) as unknown as { id: number; email: string; username: string; password_hash: string }[];
 
     if (!user || !(await comparePasswords(password, user.password_hash))) {
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });

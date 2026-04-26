@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     WHERE difficulty = ${difficulty}
     ORDER BY md5(id::text || ${today} || ${String(user.userId)})
     LIMIT 10
-  `) as { id: number; name: string; sets_reps: string | null; duration: string | null }[];
+  `) as unknown as { id: number; name: string; sets_reps: string | null; duration: string | null }[];
 
   const quests = rows
     .filter((e) => !excludeNames.includes(e.name))

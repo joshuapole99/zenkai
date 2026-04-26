@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   const sql = getDb();
   const rows = (await sql`
     SELECT email FROM waitlist_zenkai ORDER BY created_at
-  `) as { email: string }[];
+  `) as unknown as { email: string }[];
 
   if (rows.length === 0) {
     return NextResponse.json({ success: true, sent: 0, failed: 0, total: 0 });

@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 
   const [updated] = (await sql`
     UPDATE users SET xp = COALESCE(xp, 0) + 25 WHERE id = ${user.userId} RETURNING xp
-  `) as { xp: number }[];
+  `) as unknown as { xp: number }[];
 
   return NextResponse.json({ success: true, newXp: updated.xp });
 }

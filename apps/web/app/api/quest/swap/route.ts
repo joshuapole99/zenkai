@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
   const [exercise] = (await sql`
     SELECT name, sets_reps, duration FROM exercises WHERE id = ${exerciseId}
-  `) as { name: string; sets_reps: string | null; duration: string | null }[];
+  `) as unknown as { name: string; sets_reps: string | null; duration: string | null }[];
 
   if (!exercise) return NextResponse.json({ error: "Exercise not found" }, { status: 404 });
 

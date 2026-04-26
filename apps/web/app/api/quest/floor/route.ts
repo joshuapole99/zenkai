@@ -39,7 +39,7 @@ export async function POST(_req: NextRequest) {
   const existing = (await sql`
     SELECT quest_id FROM quest_completions
     WHERE user_id = ${user.userId} AND completed_date = ${today}::date
-  `) as { quest_id: number }[];
+  `) as unknown as { quest_id: number }[];
   const existingIds = existing.map((r) => Number(r.quest_id));
   const alreadyAllDone = dailyQuestIds.every((id) => existingIds.includes(id));
 
@@ -63,12 +63,12 @@ export async function POST(_req: NextRequest) {
           last_streak_date = ${today}::date
       WHERE id = ${user.userId}
       RETURNING xp, streak
-    `) as { xp: number; streak: number }[];
+    `) as unknown as { xp: number; streak: number }[];
 
     return NextResponse.json({ success: true, completedIds: dailyQuestIds, newXp: updated.xp, newStreak: updated.streak });
   }
 
   // Already done — return current values without double-awarding XP
-  const [cur] = (await sql`SELECT xp, streak FROM users WHERE id = ${user.userId}`) as { xp: number; streak: number }[];
+  const [cur] = (await sql`SELECT xp, streak FROM users WHERE id = ${user.userId}`) as unknown as { xp: number; streak: number }[];
   return NextResponse.json({ success: true, completedIds: dailyQuestIds, newXp: cur.xp, newStreak: cur.streak });
 }

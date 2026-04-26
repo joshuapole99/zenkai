@@ -57,12 +57,12 @@ export async function POST(req: NextRequest) {
       INSERT INTO users (email, username, password_hash)
       VALUES (${normalizedEmail}, ${username.trim()}, ${passwordHash})
       RETURNING id, email, username
-    `) as { id: number; email: string; username: string }[];
+    `) as unknown as { id: number; email: string; username: string }[];
 
     // Auto-detect founding member: email on waitlist gets the status immediately
     const waitlistRows = (await sql`
       SELECT 1 FROM waitlist_zenkai WHERE email = ${normalizedEmail} LIMIT 1
-    `) as unknown[];
+    `) as unknown as unknown[];
     if (waitlistRows.length > 0) {
       await sql`
         UPDATE users SET is_founding_member = true, founding_member_since = NOW()

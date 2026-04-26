@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   const completions = (await sql`
     SELECT quest_id FROM quest_completions
     WHERE user_id = ${user.userId} AND completed_date = ${today}::date
-  `) as { quest_id: number }[];
+  `) as unknown as { quest_id: number }[];
 
   // Coerce to number — Neon can return integer columns as strings
   const completedIds = completions.map((r) => Number(r.quest_id));
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
           last_streak_date = ${today}::date
       WHERE id = ${user.userId}
       RETURNING xp, streak
-    `) as { xp: number; streak: number }[];
+    `) as unknown as { xp: number; streak: number }[];
     newXp = updated.xp;
     newStreak = updated.streak;
   }

@@ -56,7 +56,7 @@ export async function POST() {
 
   const planRows = (await sql`
     SELECT day_indices FROM workout_plans WHERE user_id = ${session.userId}
-  `) as { day_indices: number[] }[];
+  `) as unknown as { day_indices: number[] }[];
   if (!planRows[0]) return NextResponse.json({ error: "No workout plan" }, { status: 400 });
 
   const monday = new Date(weekStart + "T00:00:00");
@@ -71,7 +71,7 @@ export async function POST() {
     WHERE user_id = ${session.userId}
     AND log_date >= ${weekStart}::date
     AND log_date < ${today}::date
-  `) as { log_date: string }[];
+  `) as unknown as { log_date: string }[];
   const weekLogs = logRows.map((r) => String(r.log_date).slice(0, 10));
 
   const missedDate =

@@ -22,7 +22,7 @@ export async function POST() {
     SET story_day = CASE WHEN COALESCE(story_day, 1) < 7 THEN COALESCE(story_day, 1) + 1 ELSE 7 END
     WHERE id = ${user.userId}
     RETURNING story_day
-  `) as { story_day: number }[];
+  `) as unknown as { story_day: number }[];
 
   return NextResponse.json({ success: true, storyDay: updated?.story_day ?? 1 });
 }
