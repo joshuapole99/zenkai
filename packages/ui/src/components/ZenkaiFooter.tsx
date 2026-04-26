@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 
 function ZMark({ size = 20, color = "#F5F3EC" }: { size?: number; color?: string }) {
   return (
