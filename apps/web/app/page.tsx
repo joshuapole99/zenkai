@@ -102,14 +102,9 @@ function ScrollBar() {
 
 function ProductCard({ p, i, visible }: { p: (typeof PRODUCTS)[0]; i: number; visible: boolean }) {
   const [hovered, setHovered] = useState(false);
-  const El = p.internal ? Link : "a";
-  const elProps = p.internal
-    ? { href: p.href }
-    : { href: p.href };
-
   return (
-    <El
-      {...(elProps as any)}
+    <a
+      href={p.href}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -185,7 +180,7 @@ function ProductCard({ p, i, visible }: { p: (typeof PRODUCTS)[0]; i: number; vi
         <span>{p.status === "live" ? "Open app" : "Join waitlist"}</span>
         <span style={{ transform: hovered ? "translateX(4px)" : "none", transition: "transform 0.2s ease", display: "inline-block" }}>→</span>
       </div>
-    </El>
+    </a>
   );
 }
 
