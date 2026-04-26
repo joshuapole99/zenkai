@@ -266,7 +266,7 @@ export default async function DashboardPage() {
         SELECT 1 FROM exit_surveys
         WHERE user_id = ${user.id} AND survey_date = ${missedWorkoutDate}::date
         LIMIT 1
-      `) as unknown[];
+      `) as unknown as unknown[];
       surveyDoneForMissedDate = surveyRows.length > 0;
     }
 
