@@ -1,0 +1,124 @@
+/**
+ * Zenkai Design Tokens
+ * Use on any subdomain: import this file or copy these variables into :root.
+ * Fonts: load Syne (800) + Geist Sans from Google Fonts on each subdomain.
+ */
+
+:root {
+  /* ── Background ── */
+  --z-bg:        #09090f;
+  --z-surface:   rgba(255, 255, 255, 0.018);
+  --z-surface2:  rgba(255, 255, 255, 0.04);
+  --z-border:    rgba(255, 255, 255, 0.06);
+  --z-border2:   rgba(255, 255, 255, 0.12);
+
+  /* ── Text ── */
+  --z-text:         #e4e4f0;
+  --z-text-secondary: rgba(228, 228, 240, 0.5);
+  --z-text-muted:   rgba(228, 228, 240, 0.28);
+  --z-text-label:   rgba(255, 107, 53, 0.7);    /* section eyebrow labels */
+
+  /* ── Core brand colors ── */
+  --z-orange:        #FF6B35;
+  --z-orange-dim:    rgba(255, 107, 53, 0.12);
+  --z-orange-border: rgba(255, 107, 53, 0.30);
+  --z-purple:        #7C3AED;
+  --z-purple-dim:    rgba(124, 58, 237, 0.12);
+  --z-purple-border: rgba(124, 58, 237, 0.30);
+
+  /* ── Product accent colors ── */
+  --z-sensorscan:        #06B6D4;   /* SenseiScan — cyan */
+  --z-sensorscan-dim:    rgba(6, 182, 212, 0.12);
+  --z-sensorscan-border: rgba(6, 182, 212, 0.30);
+
+  --z-financios:         #10B981;   /* Financios — emerald */
+  --z-financios-dim:     rgba(16, 185, 129, 0.12);
+  --z-financios-border:  rgba(16, 185, 129, 0.30);
+
+  --z-jobs:              #F59E0B;   /* Sollicitatie Coach — amber */
+  --z-jobs-dim:          rgba(245, 158, 11, 0.12);
+  --z-jobs-border:       rgba(245, 158, 11, 0.30);
+
+  --z-workout:           #FF6B35;   /* Zenkai Workout — orange (same as brand) */
+  --z-workout-dim:       rgba(255, 107, 53, 0.12);
+  --z-workout-border:    rgba(255, 107, 53, 0.30);
+
+  /* ── Status colors ── */
+  --z-green: #22C55E;
+  --z-red:   oklch(0.58 0.22 20);
+
+  /* ── Spacing scale ── */
+  --z-space-xs:  4px;
+  --z-space-sm:  8px;
+  --z-space-md:  16px;
+  --z-space-lg:  32px;
+  --z-space-xl:  64px;
+  --z-space-2xl: 120px;
+
+  /* ── Typography ── */
+  --z-font-display: 'Syne', sans-serif;    /* headers — weight 800 */
+  --z-font-body:    'Geist', sans-serif;   /* body — weight 400/500 */
+  --z-font-mono:    'Geist Mono', monospace; /* labels, code */
+
+  /* ── Radius ── */
+  --z-radius-sm: 4px;
+  --z-radius-md: 8px;
+  --z-radius-lg: 16px;
+
+  /* ── Shadows / glows ── */
+  --z-glow-orange: 0 0 20px rgba(255, 107, 53, 0.35);
+  --z-glow-cyan:   0 0 20px rgba(6, 182, 212, 0.35);
+  --z-glow-green:  0 0 20px rgba(16, 185, 129, 0.35);
+}
+
+/* ── Base styles ── */
+body {
+  background: var(--z-bg);
+  color: var(--z-text);
+  font-family: var(--z-font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Utility classes ── */
+.z-label {
+  font-family: var(--z-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--z-text-label);
+}
+
+.z-heading {
+  font-family: var(--z-font-display);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--z-text);
+  line-height: 1;
+}
+
+.z-card {
+  background: var(--z-surface);
+  border: 1px solid var(--z-border);
+}
+
+.z-card:hover {
+  background: var(--z-surface2);
+  border-color: var(--z-border2);
+}
+
+/* ── Animations ── */
+@keyframes z-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes z-gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+@keyframes z-glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
