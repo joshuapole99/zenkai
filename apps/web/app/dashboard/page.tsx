@@ -101,7 +101,7 @@ export default async function DashboardPage() {
       SELECT id, username, character_name, character_class, xp, streak,
              onboarding_complete, is_founding_member, weak_spot, fighter_type
       FROM users WHERE id = ${session.userId}
-    `) as UserRow[];
+    `) as unknown as UserRow[];
     if (!rows[0]) redirect("/login");
     user = rows[0];
   } catch (e) {
@@ -193,7 +193,7 @@ export default async function DashboardPage() {
       `,
     ]);
 
-    const rawPlan = (planRows as PlanRow[])[0] ?? null;
+    const rawPlan = (planRows as unknown as PlanRow[])[0] ?? null;
     const workoutPlan: WorkoutPlan | null = rawPlan
       ? {
           exercises: rawPlan.exercises ?? [],

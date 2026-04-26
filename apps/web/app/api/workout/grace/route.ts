@@ -41,7 +41,7 @@ export async function POST() {
   const rows = (await sql`
     SELECT streak, last_streak_date::text, grace_days_used, grace_week_start::text
     FROM users WHERE id = ${session.userId}
-  `) as UserRow[];
+  `) as unknown as UserRow[];
   const user = rows[0];
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 

@@ -25,7 +25,7 @@ export default async function OnboardingPage() {
 
   const [user] = (await sql`
     SELECT onboarding_complete, is_founding_member FROM users WHERE id = ${session.userId}
-  `) as { onboarding_complete: boolean | null; is_founding_member: boolean | null }[];
+  `) as unknown as { onboarding_complete: boolean | null; is_founding_member: boolean | null }[];
 
   if (!user) redirect("/login");
   if (user.onboarding_complete) redirect("/dashboard");

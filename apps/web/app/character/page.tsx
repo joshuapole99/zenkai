@@ -25,7 +25,7 @@ export default async function CharacterPage() {
   const rows = (await sql`
     SELECT character_name, character_class, avatar_config
     FROM users WHERE id = ${session.userId}
-  `) as { character_name: string | null; character_class: string | null; avatar_config: AvatarConfig | null }[];
+  `) as unknown as { character_name: string | null; character_class: string | null; avatar_config: AvatarConfig | null }[];
 
   const user = rows[0];
   if (!user) redirect("/login");

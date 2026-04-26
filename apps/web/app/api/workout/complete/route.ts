@@ -38,7 +38,7 @@ export async function POST() {
   type UserRow = { streak: number | null; last_streak_date: string | null };
   const rows = (await sql`
     SELECT streak, last_streak_date FROM users WHERE id = ${session.userId}
-  `) as UserRow[];
+  `) as unknown as UserRow[];
   const user = rows[0];
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
