@@ -1,1112 +1,518 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type ProductStatus = "live" | "coming-soon";
-
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  tagline: string;
-  desc: string;
-  status: ProductStatus;
-  href: string;
-  accent: string;
-  accentDim: string;
-  accentBorder: string;
-  index: number;
+function FontLoader() {
+  useEffect(() => {
+    if (document.querySelector("[data-zk-f]")) return;
+    const l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href =
+      "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700;1,9..144,900&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
+    l.setAttribute("data-zk-f", "");
+    document.head.appendChild(l);
+  }, []);
+  return null;
 }
 
-// ── Data ──────────────────────────────────────────────────────────────────────
-
-const PRODUCTS: Product[] = [
+const PRODUCTS = [
   {
-    id: "sensorscan",
+    num: "01", id: "scan", category: "SECURITY",
     name: "SenseiScan",
-    category: "SECURITY",
-    tagline: "Automated domain security audit — delivered as a PDF.",
-    desc: "Open ports, leaked credentials, SPF/DMARC/DKIM, VirusTotal reputation, SSL health, and OWASP indicators. One report. Plain Dutch.",
-    status: "coming-soon",
+    tagline: "Automated domain security audit. PDF report in minutes.",
+    status: "coming-soon" as const,
     href: "https://scanner.zenkai.nl",
-    accent: "#06B6D4",
-    accentDim: "rgba(6,182,212,0.10)",
-    accentBorder: "rgba(6,182,212,0.30)",
-    index: 0,
+    accent: "#0284C7", accentBg: "rgba(2,132,199,0.06)", word: "Security.",
   },
   {
-    id: "financios",
+    num: "02", id: "fin", category: "FINANCE",
     name: "Financios",
-    category: "FINANCE",
     tagline: "Financial clarity for students and Gen Z.",
-    desc: "Track spending, set goals, and understand your money — without a finance degree or €300/year subscription.",
-    status: "live",
+    status: "live" as const,
     href: "https://financios.zenkai.nl",
-    accent: "#10B981",
-    accentDim: "rgba(16,185,129,0.10)",
-    accentBorder: "rgba(16,185,129,0.30)",
-    index: 1,
+    accent: "#15803D", accentBg: "rgba(21,128,61,0.06)", word: "Finance.",
   },
   {
-    id: "jobs",
+    num: "03", id: "job", category: "CAREER",
     name: "Sollicitatie Coach",
-    category: "CAREER",
     tagline: "CV score, cover letter, interview prep.",
-    desc: "Upload your CV, get a score and concrete improvements. Generate a targeted cover letter in one click. Built for the Dutch job market.",
-    status: "live",
+    status: "live" as const,
     href: "https://jobs.zenkai.nl",
-    accent: "#F59E0B",
-    accentDim: "rgba(245,158,11,0.10)",
-    accentBorder: "rgba(245,158,11,0.30)",
-    index: 2,
+    accent: "#B45309", accentBg: "rgba(180,83,9,0.06)", word: "Career.",
   },
   {
-    id: "workout",
+    num: "04", id: "fit", category: "FITNESS",
     name: "Zenkai Workout",
-    category: "FITNESS",
     tagline: "The comeback fitness app. No guilt trips.",
-    desc: "Design your own workouts. Track streaks. When you miss a week, Zenkai adapts your comeback session instead of punishing you.",
-    status: "coming-soon",
+    status: "coming-soon" as const,
     href: "https://workout.zenkai.nl",
-    accent: "#FF6B35",
-    accentDim: "rgba(255,107,53,0.10)",
-    accentBorder: "rgba(255,107,53,0.30)",
-    index: 3,
+    accent: "#C2410C", accentBg: "rgba(194,65,12,0.06)", word: "Fitness.",
   },
 ];
 
-// ── Background ────────────────────────────────────────────────────────────────
-
-function HubBackground() {
+function ScrollBar() {
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    const fn = () => {
+      const s = window.scrollY;
+      const t = document.documentElement.scrollHeight - window.innerHeight;
+      setP(t > 0 ? s / t : 0);
+    };
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
-      {/* Dot grid */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-          maskImage:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 100%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 100%)",
-        }}
-      />
-      {/* Orange glow top-left */}
-      <div
-        className="absolute"
-        style={{
-          top: "-200px",
-          left: "-100px",
-          width: "600px",
-          height: "500px",
-          background:
-            "radial-gradient(ellipse, rgba(255,107,53,0.07) 0%, transparent 65%)",
-        }}
-      />
-      {/* Cyan glow top-right */}
-      <div
-        className="absolute"
-        style={{
-          top: "-100px",
-          right: "-80px",
-          width: "500px",
-          height: "400px",
-          background:
-            "radial-gradient(ellipse, rgba(6,182,212,0.06) 0%, transparent 65%)",
-        }}
-      />
-      {/* Vignette */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 50%, rgba(9,9,15,0.6) 100%)",
-        }}
-      />
-    </div>
+    <div
+      style={{
+        position: "fixed", top: 0, left: 0, zIndex: 999,
+        height: "2px", width: `${p * 100}%`,
+        background: "linear-gradient(to right, #15803D, #0284C7)",
+        transition: "width 0.08s linear",
+        pointerEvents: "none",
+      }}
+    />
   );
 }
 
-// ── Product Card ──────────────────────────────────────────────────────────────
-
-function ProductCard({ product, visible }: { product: Product; visible: boolean }) {
+function ProductRow({
+  p, i, visible,
+}: {
+  p: (typeof PRODUCTS)[0]; i: number; visible: boolean;
+}) {
   const [hovered, setHovered] = useState(false);
-
   return (
     <a
-      href={product.href}
+      href={p.href}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         display: "block",
-        padding: "40px 36px 36px",
-        background: hovered ? product.accentDim : "rgba(255,255,255,0.018)",
-        border: `1px solid ${hovered ? product.accentBorder : "rgba(255,255,255,0.07)"}`,
-        textDecoration: "none",
         position: "relative",
         overflow: "hidden",
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(28px)",
-        transition: `opacity 0.65s cubic-bezier(0.22,1,0.36,1) ${product.index * 0.1 + 0.15}s, transform 0.65s cubic-bezier(0.22,1,0.36,1) ${product.index * 0.1 + 0.15}s, background 0.25s ease, border-color 0.25s ease`,
+        textDecoration: "none",
+        color: "inherit",
         cursor: "pointer",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "none" : "translateX(-16px)",
+        transition: `opacity 0.55s cubic-bezier(.22,1,.36,1) ${i * 0.09 + 0.3}s, transform 0.55s cubic-bezier(.22,1,.36,1) ${i * 0.09 + 0.3}s`,
       }}
     >
-      {/* Top accent bar */}
+      {/* hover fill slides in from left */}
       <div
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "2px",
-          background: product.accent,
-          opacity: hovered ? 1 : 0.6,
-          transition: "opacity 0.25s ease",
+          position: "absolute", inset: 0,
+          background: p.accentBg,
+          transform: hovered ? "scaleX(1)" : "scaleX(0)",
+          transformOrigin: "left",
+          transition: "transform 0.35s cubic-bezier(.22,1,.36,1)",
+          zIndex: 0,
         }}
       />
-
-      {/* Card header */}
       <div
+        className="pr-grid"
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: "36px",
-        }}
-      >
-        <span
-          style={{
-            fontSize: "10px",
-            fontWeight: 700,
-            letterSpacing: "0.25em",
-            color: product.accent,
-            textTransform: "uppercase",
-            fontFamily: "monospace",
-          }}
-        >
-          {product.category}
-        </span>
-        <span
-          style={{
-            fontSize: "10px",
-            fontWeight: 700,
-            padding: "3px 9px",
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            border:
-              product.status === "live"
-                ? "1px solid rgba(34,197,94,0.35)"
-                : "1px solid rgba(255,255,255,0.1)",
-            color:
-              product.status === "live"
-                ? "#22c55e"
-                : "rgba(255,255,255,0.3)",
-          }}
-        >
-          {product.status === "live" ? "Live" : "Coming soon"}
-        </span>
-      </div>
-
-      {/* Name */}
-      <h2
-        style={{
-          fontFamily: "var(--font-syne), sans-serif",
-          fontWeight: 800,
-          fontSize: "clamp(1.6rem, 2.5vw, 2rem)",
-          letterSpacing: "-0.03em",
-          color: "#fff",
-          marginBottom: "12px",
-          lineHeight: 1.05,
-        }}
-      >
-        {product.name}
-      </h2>
-
-      {/* Tagline */}
-      <p
-        style={{
-          fontSize: "14px",
-          color: "rgba(228,228,240,0.55)",
-          lineHeight: 1.6,
-          marginBottom: "14px",
-          fontWeight: 500,
-        }}
-      >
-        {product.tagline}
-      </p>
-
-      {/* Description */}
-      <p
-        style={{
-          fontSize: "13px",
-          color: "rgba(228,228,240,0.3)",
-          lineHeight: 1.65,
-          marginBottom: "36px",
-        }}
-      >
-        {product.desc}
-      </p>
-
-      {/* CTA */}
-      <div
-        style={{
-          display: "flex",
+          position: "relative", zIndex: 1,
+          display: "grid",
+          gridTemplateColumns: "48px 90px 1fr 1fr auto",
           alignItems: "center",
-          gap: "8px",
-          fontSize: "12px",
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-          color: product.accent,
-          textTransform: "uppercase",
+          gap: "24px",
+          padding: "28px 0",
+          borderBottom: "1px solid rgba(15,14,14,0.09)",
         }}
       >
-        <span>{product.status === "live" ? "Open →" : "Notify me →"}</span>
+        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", fontWeight: 500, color: "rgba(15,14,14,0.3)" }}>
+          {p.num}
+        </span>
+        <span className="pr-cat" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: p.accent }}>
+          {p.category}
+        </span>
+        <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontSize: "clamp(1.2rem,2.2vw,1.9rem)", letterSpacing: "-0.025em", color: "#0F0E0E", lineHeight: 1 }}>
+          {p.name}
+        </span>
+        <span className="pr-tag" style={{ fontSize: "14px", color: "rgba(15,14,14,0.5)", lineHeight: 1.5 }}>
+          {p.tagline}
+        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "14px", flexShrink: 0 }}>
+          <span style={{
+            fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", fontWeight: 600,
+            padding: "3px 8px", letterSpacing: "0.08em", whiteSpace: "nowrap",
+            border: p.status === "live" ? `1px solid ${p.accent}` : "1px solid rgba(15,14,14,0.15)",
+            color: p.status === "live" ? p.accent : "rgba(15,14,14,0.35)",
+          }}>
+            {p.status === "live" ? "LIVE" : "SOON"}
+          </span>
+          <span style={{
+            fontSize: "16px",
+            color: hovered ? p.accent : "rgba(15,14,14,0.22)",
+            transition: "color 0.2s ease, transform 0.2s ease",
+            transform: hovered ? "translateX(4px)" : "none",
+            display: "inline-block",
+          }}>
+            →
+          </span>
+        </div>
       </div>
     </a>
   );
 }
 
-// ── Stats Row ─────────────────────────────────────────────────────────────────
-
-function StatsRow({ visible }: { visible: boolean }) {
-  const stats = [
-    { value: "4", label: "Tools" },
-    { value: "2", label: "Live now" },
-    { value: "OSCP", label: "Certified builder" },
-    { value: "0", label: "VC funding" },
-  ];
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: "0",
-        marginTop: "64px",
-        borderTop: "1px solid rgba(255,255,255,0.07)",
-        borderBottom: "1px solid rgba(255,255,255,0.07)",
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(16px)",
-        transition: "opacity 0.7s cubic-bezier(0.22,1,0.36,1) 0.55s, transform 0.7s cubic-bezier(0.22,1,0.36,1) 0.55s",
-      }}
-    >
-      {stats.map((s, i) => (
-        <div
-          key={s.label}
-          style={{
-            flex: 1,
-            padding: "24px 0",
-            paddingLeft: i === 0 ? 0 : "32px",
-            borderLeft: i === 0 ? "none" : "1px solid rgba(255,255,255,0.07)",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "var(--font-syne), sans-serif",
-              fontWeight: 800,
-              fontSize: "1.5rem",
-              color: "#fff",
-              letterSpacing: "-0.02em",
-              marginBottom: "4px",
-            }}
-          >
-            {s.value}
-          </p>
-          <p
-            style={{
-              fontSize: "12px",
-              color: "rgba(228,228,240,0.35)",
-              fontWeight: 500,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-            }}
-          >
-            {s.label}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ── Page ──────────────────────────────────────────────────────────────────────
-
 export default function HubHome() {
-  const [visible, setVisible] = useState(false);
-  const [navScrolled, setNavScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [activeWord, setActiveWord] = useState(0);
+  const [credVisible, setCredVisible] = useState(false);
+  const credRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 80);
-    const onScroll = () => setNavScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      clearTimeout(t);
-      window.removeEventListener("scroll", onScroll);
-    };
+    const t = setTimeout(() => setMounted(true), 60);
+    const iv = setInterval(() => setActiveWord((w) => (w + 1) % PRODUCTS.length), 2400);
+    return () => { clearTimeout(t); clearInterval(iv); };
   }, []);
 
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setCredVisible(true); },
+      { threshold: 0.15 }
+    );
+    if (credRef.current) obs.observe(credRef.current);
+    return () => obs.disconnect();
+  }, []);
+
+  const ap = PRODUCTS[activeWord];
+
   return (
-    <main style={{ minHeight: "100vh", background: "#09090f", color: "#e4e4f0" }}>
+    <>
+      <FontLoader />
+      <ScrollBar />
+      <style>{`
+        @keyframes wordCycle {
+          0%   { opacity: 0; transform: translateY(10px); clip-path: inset(0 0 100% 0); }
+          15%  { opacity: 1; transform: translateY(0);    clip-path: inset(0 0 0% 0); }
+          80%  { opacity: 1; transform: translateY(0);    clip-path: inset(0 0 0% 0); }
+          100% { opacity: 0; transform: translateY(-7px); clip-path: inset(0 0 0% 0); }
+        }
+        @keyframes hf {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        ::selection { background: #0F0E0E; color: #F5F3EC; }
+        .pr-grid { transition: background 0.25s ease; }
+        @media (max-width: 720px) {
+          .pr-grid { grid-template-columns: 36px 1fr auto !important; gap: 10px !important; }
+          .pr-cat  { display: none !important; }
+          .pr-tag  { display: none !important; }
+          .cred-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
+          .hero-bottom { flex-direction: column !important; align-items: flex-start !important; }
+          .stats-row { flex-wrap: wrap; }
+          .footer-inner { flex-direction: column !important; gap: 20px !important; }
+          .nav-links { display: none !important; }
+        }
+      `}</style>
 
-      {/* ── NAV ─────────────────────────────────────────────────────────── */}
-      <nav
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 40px",
-          height: "64px",
-          background: navScrolled
-            ? "rgba(9,9,15,0.92)"
-            : "transparent",
-          backdropFilter: navScrolled ? "blur(20px)" : "none",
-          borderBottom: navScrolled
-            ? "1px solid rgba(255,255,255,0.06)"
-            : "1px solid transparent",
-          transition: "background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span
-            style={{
-              fontFamily: "var(--font-syne), sans-serif",
-              fontWeight: 800,
-              fontSize: "18px",
-              letterSpacing: "-0.03em",
-              color: "#fff",
-            }}
-          >
-            ZENKAI
-          </span>
-          <span
-            style={{
-              fontSize: "9px",
-              fontWeight: 700,
-              letterSpacing: "0.2em",
-              padding: "3px 7px",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: "rgba(255,255,255,0.35)",
+      <main style={{ minHeight: "100vh", background: "#F5F3EC", color: "#0F0E0E", overflowX: "hidden" }}>
+
+        {/* ── NAV ─────────────────────────────────────────────────────────── */}
+        <nav style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+          height: "60px", display: "flex", alignItems: "center",
+          justifyContent: "space-between", padding: "0 40px",
+          background: "rgba(245,243,236,0.9)", backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(15,14,14,0.08)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontStyle: "italic", fontSize: "21px", letterSpacing: "-0.03em" }}>
+              Zenkai
+            </span>
+            <span style={{
+              fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", fontWeight: 500,
+              letterSpacing: "0.15em", padding: "3px 7px",
+              border: "1px solid rgba(15,14,14,0.15)", color: "rgba(15,14,14,0.35)",
               textTransform: "uppercase",
-            }}
-          >
-            PLATFORM
-          </span>
-        </div>
-
-        <div
-          className="hidden sm:flex"
-          style={{ gap: "32px", alignItems: "center" }}
-        >
-          {[
-            { label: "SenseiScan", href: "https://scanner.zenkai.nl" },
-            { label: "Financios", href: "https://financios.zenkai.nl" },
-            { label: "Jobs", href: "https://jobs.zenkai.nl" },
-            { label: "Workout", href: "https://workout.zenkai.nl" },
-          ].map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              style={{
-                fontSize: "13px",
-                color: "rgba(255,255,255,0.38)",
-                textDecoration: "none",
-                transition: "color 0.2s ease",
-              }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLElement).style.color = "#fff")
-              }
-              onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLElement).style.color =
-                  "rgba(255,255,255,0.38)")
-              }
-            >
-              {l.label}
+            }}>
+              Platform
+            </span>
+          </div>
+          <div className="nav-links" style={{ display: "flex", gap: "28px", alignItems: "center" }}>
+            {[
+              { l: "Financios", h: "https://financios.zenkai.nl" },
+              { l: "Jobs", h: "https://jobs.zenkai.nl" },
+            ].map((x) => (
+              <a key={x.l} href={x.h} style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.4)", textDecoration: "none" }}>
+                {x.l}
+              </a>
+            ))}
+            <a href="#tools" style={{
+              fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
+              color: "#0F0E0E", textDecoration: "none",
+              padding: "8px 16px", border: "1px solid rgba(15,14,14,0.2)",
+            }}>
+              04 tools
             </a>
-          ))}
-        </div>
-      </nav>
+          </div>
+        </nav>
 
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section
-        style={{
-          position: "relative",
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          padding: "120px 40px 80px",
-          maxWidth: "1200px",
-          margin: "0 auto",
-          boxSizing: "border-box",
-        }}
-      >
-        <HubBackground />
-
-        {/* Eyebrow */}
-        <p
-          style={{
-            fontFamily: "monospace",
-            fontSize: "11px",
-            fontWeight: 700,
-            letterSpacing: "0.3em",
-            textTransform: "uppercase",
-            color: "rgba(255,107,53,0.7)",
-            marginBottom: "28px",
-            position: "relative",
-            zIndex: 1,
-            opacity: visible ? 1 : 0,
-            transform: visible ? "translateY(0)" : "translateY(12px)",
-            transition: "opacity 0.6s ease 0.05s, transform 0.6s ease 0.05s",
-          }}
-        >
-          zenkai.nl — one platform. four tools.
-        </p>
-
-        {/* Headline */}
-        <h1
-          style={{
-            fontFamily: "var(--font-syne), sans-serif",
-            fontWeight: 800,
-            fontSize: "clamp(3.2rem, 8vw, 7.5rem)",
-            lineHeight: 0.93,
-            letterSpacing: "-0.04em",
-            color: "#fff",
-            marginBottom: "36px",
-            maxWidth: "800px",
-            position: "relative",
-            zIndex: 1,
-            opacity: visible ? 1 : 0,
-            transform: visible ? "translateY(0)" : "translateY(20px)",
-            transition: "opacity 0.7s cubic-bezier(0.22,1,0.36,1) 0.12s, transform 0.7s cubic-bezier(0.22,1,0.36,1) 0.12s",
-          }}
-        >
-          One platform.
-          <br />
-          <span style={{ color: "#FF6B35" }}>Zero</span>
-          <br />
-          bullshit.
-        </h1>
-
-        {/* Subtext */}
-        <p
-          style={{
-            fontSize: "clamp(15px, 2vw, 18px)",
-            color: "rgba(228,228,240,0.5)",
-            maxWidth: "460px",
-            lineHeight: 1.72,
-            marginBottom: "44px",
-            position: "relative",
-            zIndex: 1,
-            opacity: visible ? 1 : 0,
-            transform: visible ? "translateY(0)" : "translateY(16px)",
-            transition: "opacity 0.7s cubic-bezier(0.22,1,0.36,1) 0.22s, transform 0.7s cubic-bezier(0.22,1,0.36,1) 0.22s",
-          }}
-        >
-          Security scans, finance, job coaching, fitness — built for students, freelancers, and ambitious people. No enterprise pricing. No VC bullshit.
-        </p>
-
-        {/* CTAs */}
-        <div
-          style={{
-            display: "flex",
-            gap: "12px",
-            flexWrap: "wrap",
-            position: "relative",
-            zIndex: 1,
-            opacity: visible ? 1 : 0,
-            transform: visible ? "translateY(0)" : "translateY(14px)",
-            transition: "opacity 0.7s cubic-bezier(0.22,1,0.36,1) 0.32s, transform 0.7s cubic-bezier(0.22,1,0.36,1) 0.32s",
-          }}
-        >
-          <a
-            href="https://financios.zenkai.nl"
-            style={{
-              padding: "14px 28px",
-              background: "#10B981",
-              color: "#000",
-              fontWeight: 800,
-              fontSize: "13px",
-              letterSpacing: "0.06em",
-              textDecoration: "none",
-              textTransform: "uppercase",
-              display: "inline-block",
-              transition: "opacity 0.2s ease",
-            }}
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLElement).style.opacity = "0.85")
-            }
-            onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLElement).style.opacity = "1")
-            }
-          >
-            Try Financios →
-          </a>
-          <a
-            href="#tools"
-            style={{
-              padding: "14px 28px",
-              border: "1px solid rgba(255,255,255,0.14)",
-              color: "rgba(255,255,255,0.55)",
-              fontWeight: 600,
-              fontSize: "13px",
-              letterSpacing: "0.06em",
-              textDecoration: "none",
-              textTransform: "uppercase",
-              display: "inline-block",
-              transition: "border-color 0.2s ease, color 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor =
-                "rgba(255,255,255,0.35)";
-              (e.currentTarget as HTMLElement).style.color = "#fff";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor =
-                "rgba(255,255,255,0.14)";
-              (e.currentTarget as HTMLElement).style.color =
-                "rgba(255,255,255,0.55)";
-            }}
-          >
-            All tools ↓
-          </a>
-        </div>
-
-        <StatsRow visible={visible} />
-
-        {/* Scroll indicator */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "40px",
-            right: "40px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "8px",
-            opacity: visible ? 0.35 : 0,
-            transition: "opacity 0.7s ease 1s",
-          }}
-        >
-          <div
-            style={{
-              width: "1px",
-              height: "48px",
-              background:
-                "linear-gradient(to bottom, rgba(255,255,255,0.5), transparent)",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "9px",
-              fontWeight: 700,
-              letterSpacing: "0.2em",
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.5)",
-              fontFamily: "monospace",
-              writingMode: "vertical-rl",
-              textOrientation: "mixed",
-            }}
-          >
-            Scroll
-          </span>
-        </div>
-      </section>
-
-      {/* ── TOOLS GRID ───────────────────────────────────────────────────── */}
-      <section
-        id="tools"
-        style={{
-          padding: "80px 40px 120px",
-          maxWidth: "1200px",
-          margin: "0 auto",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            marginBottom: "40px",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "monospace",
-              fontSize: "11px",
-              fontWeight: 700,
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.2)",
-            }}
-          >
-            04 tools
-          </p>
-          <p
-            style={{
-              fontSize: "12px",
-              color: "rgba(255,255,255,0.18)",
-              fontFamily: "monospace",
-            }}
-          >
-            2 live · 2 launching 2026
-          </p>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "1px",
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.05)",
-          }}
-        >
-          {PRODUCTS.map((p) => (
-            <ProductCard key={p.id} product={p} visible={visible} />
-          ))}
-        </div>
-      </section>
-
-      {/* ── CREDIBILITY ──────────────────────────────────────────────────── */}
-      <section
-        style={{
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-          background: "rgba(255,255,255,0.012)",
-          padding: "100px 40px",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "80px",
-            alignItems: "center",
-          }}
-          className="grid-cols-1 sm:grid-cols-2"
-        >
-          {/* Left */}
-          <div>
-            <p
-              style={{
-                fontFamily: "monospace",
-                fontSize: "11px",
-                fontWeight: 700,
-                letterSpacing: "0.25em",
-                textTransform: "uppercase",
-                color: "rgba(255,107,53,0.7)",
-                marginBottom: "20px",
-              }}
-            >
-              Built by
-            </p>
-            <h2
-              style={{
-                fontFamily: "var(--font-syne), sans-serif",
-                fontWeight: 800,
-                fontSize: "clamp(2rem, 4vw, 3rem)",
-                letterSpacing: "-0.04em",
-                color: "#fff",
-                lineHeight: 1.05,
-                marginBottom: "28px",
-              }}
-            >
-              A security analyst.
-              <br />
-              <span style={{ color: "rgba(228,228,240,0.4)" }}>
-                Not a startup.
-              </span>
-            </h2>
-            <p
-              style={{
-                fontSize: "15px",
-                color: "rgba(228,228,240,0.48)",
-                lineHeight: 1.78,
-                maxWidth: "420px",
-              }}
-            >
-              Every tool on this platform is built by one person — OSCP certified, years in security consulting. No investors, no growth team, no dark patterns. If it&apos;s here, it&apos;s because it&apos;s actually useful.
-            </p>
+        {/* ── HERO ────────────────────────────────────────────────────────── */}
+        <section style={{
+          minHeight: "100vh", display: "flex", flexDirection: "column",
+          justifyContent: "center", padding: "100px 40px 80px",
+          maxWidth: "1280px", margin: "0 auto",
+        }}>
+          {/* Eyebrow */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px",
+            opacity: mounted ? 1 : 0, animation: mounted ? "hf .6s ease .05s both" : "none",
+          }}>
+            <div style={{ width: "28px", height: "1px", background: "rgba(15,14,14,0.3)" }} />
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", letterSpacing: "0.2em", color: "rgba(15,14,14,0.4)", textTransform: "uppercase" }}>
+              zenkai.nl — platform
+            </span>
           </div>
 
-          {/* Right */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            {[
-              {
-                title: "OSCP Certified",
-                desc: "Offensive Security Certified Professional — the industry standard for penetration testing.",
-                accent: "#06B6D4",
-              },
-              {
-                title: "Bootstrapped",
-                desc: "Zero VC funding. No investors to answer to. Decisions based on what's actually good for users.",
-                accent: "#10B981",
-              },
-              {
-                title: "Privacy-first",
-                desc: "No surveillance capitalism. Your data is yours. No ads, no selling, no profiling.",
-                accent: "#F59E0B",
-              },
-              {
-                title: "Fair pricing",
-                desc: "Tools priced for students and freelancers. Not €500/month enterprise tiers.",
-                accent: "#FF6B35",
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
+          {/* Headline */}
+          <div style={{ opacity: mounted ? 1 : 0, animation: mounted ? "hf .75s ease .12s both" : "none" }}>
+            <h1 style={{
+              fontFamily: "'Fraunces',Georgia,serif", fontWeight: 900, margin: 0,
+              fontSize: "clamp(3.5rem, 9vw, 8.5rem)", lineHeight: 0.92, letterSpacing: "-0.04em",
+            }}>
+              One platform.
+            </h1>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "0.18em", flexWrap: "wrap" }}>
+              <span style={{
+                fontFamily: "'Fraunces',Georgia,serif", fontWeight: 300, fontStyle: "italic",
+                fontSize: "clamp(3.5rem, 9vw, 8.5rem)", lineHeight: 0.92, letterSpacing: "-0.04em",
+                color: "rgba(15,14,14,0.28)",
+              }}>
+                for
+              </span>
+              <span
+                key={activeWord}
                 style={{
-                  padding: "20px 24px",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                  display: "flex",
-                  gap: "18px",
-                  alignItems: "flex-start",
-                  background: "rgba(255,255,255,0.015)",
+                  fontFamily: "'Fraunces',Georgia,serif", fontWeight: 900,
+                  fontSize: "clamp(3.5rem, 9vw, 8.5rem)", lineHeight: 0.92, letterSpacing: "-0.04em",
+                  color: ap.accent, display: "inline-block",
+                  animation: "wordCycle 2.4s ease forwards",
                 }}
               >
-                <div
-                  style={{
-                    width: "6px",
-                    height: "6px",
-                    borderRadius: "50%",
-                    background: item.accent,
-                    flexShrink: 0,
-                    marginTop: "5px",
-                    boxShadow: `0 0 8px ${item.accent}`,
-                  }}
-                />
-                <div>
-                  <p
-                    style={{
-                      fontSize: "13px",
-                      fontWeight: 700,
-                      color: "#fff",
-                      marginBottom: "4px",
-                      letterSpacing: "-0.01em",
-                    }}
-                  >
-                    {item.title}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      color: "rgba(228,228,240,0.32)",
-                      lineHeight: 1.6,
-                    }}
-                  >
-                    {item.desc}
-                  </p>
-                </div>
+                {ap.word}
+              </span>
+            </div>
+          </div>
+
+          {/* Sub + CTAs */}
+          <div
+            className="hero-bottom"
+            style={{
+              display: "flex", alignItems: "flex-end", justifyContent: "space-between",
+              marginTop: "48px", flexWrap: "wrap", gap: "24px",
+              opacity: mounted ? 1 : 0, animation: mounted ? "hf .7s ease .3s both" : "none",
+            }}
+          >
+            <p style={{ fontSize: "16px", color: "rgba(15,14,14,0.48)", maxWidth: "380px", lineHeight: 1.78, margin: 0 }}>
+              Security scans, finance, job coaching, fitness — built by an OSCP-certified analyst for real people. No enterprise pricing.
+            </p>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <a href="https://financios.zenkai.nl" style={{
+                padding: "13px 26px", background: "#15803D", color: "#fff",
+                fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600,
+                letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase",
+                display: "inline-block",
+              }}>
+                Try Financios →
+              </a>
+              <a href="#tools" style={{
+                padding: "13px 26px", border: "1px solid rgba(15,14,14,0.18)",
+                color: "rgba(15,14,14,0.55)", fontFamily: "'IBM Plex Mono',monospace",
+                fontSize: "12px", letterSpacing: "0.05em", textDecoration: "none",
+                textTransform: "uppercase", display: "inline-block",
+              }}>
+                All tools ↓
+              </a>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div
+            className="stats-row"
+            style={{
+              display: "flex", gap: "0", marginTop: "64px",
+              paddingTop: "32px", borderTop: "1px solid rgba(15,14,14,0.1)",
+              opacity: mounted ? 1 : 0, animation: mounted ? "hf .6s ease .48s both" : "none",
+            }}
+          >
+            {[
+              { v: "4", l: "Tools" },
+              { v: "2", l: "Live now" },
+              { v: "OSCP", l: "Certified" },
+              { v: "€0", l: "VC funding" },
+            ].map((s, i) => (
+              <div key={s.l} style={{
+                flex: 1, paddingLeft: i ? "32px" : 0,
+                borderLeft: i ? "1px solid rgba(15,14,14,0.1)" : "none",
+              }}>
+                <p style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontSize: "1.8rem", letterSpacing: "-0.03em", color: "#0F0E0E", margin: "0 0 4px" }}>
+                  {s.v}
+                </p>
+                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", color: "rgba(15,14,14,0.33)", letterSpacing: "0.1em", textTransform: "uppercase", margin: 0 }}>
+                  {s.l}
+                </p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── BOTTOM CTA ───────────────────────────────────────────────────── */}
-      <section style={{ padding: "120px 40px" }}>
-        <div
-          style={{
-            maxWidth: "700px",
-            margin: "0 auto",
-            textAlign: "center",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "monospace",
-              fontSize: "11px",
-              fontWeight: 700,
-              letterSpacing: "0.3em",
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.2)",
-              marginBottom: "24px",
-            }}
-          >
-            Get started
-          </p>
-          <h2
-            style={{
-              fontFamily: "var(--font-syne), sans-serif",
-              fontWeight: 800,
-              fontSize: "clamp(2rem, 5vw, 3.5rem)",
-              letterSpacing: "-0.04em",
-              color: "#fff",
-              lineHeight: 1.05,
-              marginBottom: "24px",
-            }}
-          >
-            Pick a tool.
-            <br />
-            Start for free.
-          </h2>
-          <p
-            style={{
-              fontSize: "16px",
-              color: "rgba(228,228,240,0.45)",
-              lineHeight: 1.7,
-              marginBottom: "48px",
-            }}
-          >
-            All tools have a free tier. No credit card required. No bullshit.
-          </p>
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <a
-              href="https://financios.zenkai.nl"
-              style={{
-                padding: "14px 28px",
-                background: "#10B981",
-                color: "#000",
-                fontWeight: 800,
-                fontSize: "13px",
-                letterSpacing: "0.06em",
-                textDecoration: "none",
-                textTransform: "uppercase",
-              }}
-            >
-              Financios →
-            </a>
-            <a
-              href="https://jobs.zenkai.nl"
-              style={{
-                padding: "14px 28px",
-                background: "#F59E0B",
-                color: "#000",
-                fontWeight: 800,
-                fontSize: "13px",
-                letterSpacing: "0.06em",
-                textDecoration: "none",
-                textTransform: "uppercase",
-              }}
-            >
-              Sollicitatie Coach →
-            </a>
+        {/* ── TOOLS LEDGER ────────────────────────────────────────────────── */}
+        <section id="tools" style={{
+          padding: "80px 40px 100px", maxWidth: "1280px", margin: "0 auto",
+          borderTop: "1px solid rgba(15,14,14,0.08)",
+        }}>
+          <div style={{
+            display: "flex", justifyContent: "space-between", alignItems: "baseline",
+            paddingBottom: "20px", borderBottom: "2px solid #0F0E0E",
+          }}>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", fontWeight: 600, letterSpacing: "0.2em", color: "rgba(15,14,14,0.4)", textTransform: "uppercase" }}>
+              Tools
+            </span>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.3)" }}>
+              2 live · 2 launching 2026
+            </span>
           </div>
-        </div>
-      </section>
+          {PRODUCTS.map((p, i) => (
+            <ProductRow key={p.id} p={p} i={i} visible={mounted} />
+          ))}
+        </section>
 
-      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer
-        style={{
-          borderTop: "1px solid rgba(255,255,255,0.07)",
-          padding: "48px 40px",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            display: "flex",
-            flexDirection: "column",
-            gap: "32px",
-          }}
-        >
-          {/* Top row */}
+        {/* ── CREDIBILITY ─────────────────────────────────────────────────── */}
+        <section ref={credRef} style={{ background: "#0F0E0E", padding: "100px 40px" }}>
           <div
+            className="cred-grid"
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              flexWrap: "wrap",
-              gap: "32px",
+              maxWidth: "1280px", margin: "0 auto",
+              display: "grid", gridTemplateColumns: "1fr 1fr",
+              gap: "80px", alignItems: "center",
             }}
           >
             <div>
-              <span
-                style={{
-                  fontFamily: "var(--font-syne), sans-serif",
-                  fontWeight: 800,
-                  fontSize: "20px",
-                  letterSpacing: "-0.03em",
-                  color: "#fff",
-                }}
-              >
-                ZENKAI
+              <span style={{
+                fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
+                letterSpacing: "0.2em", color: "rgba(245,243,236,0.35)",
+                textTransform: "uppercase", display: "block", marginBottom: "20px",
+              }}>
+                Built by
               </span>
-              <p
-                style={{
-                  fontSize: "12px",
-                  color: "rgba(255,255,255,0.25)",
-                  marginTop: "6px",
-                  maxWidth: "240px",
-                  lineHeight: 1.6,
-                }}
-              >
-                One platform. Security, finance, career, fitness — built by a security analyst for real people.
+              <h2 style={{
+                fontFamily: "'Fraunces',Georgia,serif", fontWeight: 900,
+                fontSize: "clamp(2.5rem,5vw,4.5rem)", letterSpacing: "-0.04em",
+                lineHeight: 0.93, color: "#F5F3EC", margin: "0 0 28px",
+              }}>
+                A security analyst.
+                <br />
+                <em style={{ fontWeight: 300, color: "rgba(245,243,236,0.35)" }}>
+                  Not a startup.
+                </em>
+              </h2>
+              <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.5)", lineHeight: 1.8, maxWidth: "380px", margin: 0 }}>
+                Every tool is built by one OSCP-certified person. No investors, no growth team, no dark patterns. If it&apos;s on Zenkai, it works.
               </p>
             </div>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "48px",
-                flexWrap: "wrap",
-              }}
-            >
-              <div>
-                <p
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 700,
-                    letterSpacing: "0.2em",
-                    textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.2)",
-                    marginBottom: "14px",
-                    fontFamily: "monospace",
-                  }}
-                >
-                  Tools
-                </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              {[
+                { t: "OSCP Certified", d: "Offensive Security Certified Professional. The industry standard for penetration testing.", a: "#0284C7" },
+                { t: "Bootstrapped", d: "Zero VC funding. All decisions based on what's good for users — not investors.", a: "#15803D" },
+                { t: "Privacy-first", d: "Your data stays yours. No ads, no profiling, no data selling.", a: "#B45309" },
+                { t: "Fair pricing", d: "Built for students and freelancers. Not €300/month enterprise plans.", a: "#C2410C" },
+              ].map((item, i) => (
                 <div
+                  key={item.t}
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "10px",
+                    display: "flex", gap: "0", overflow: "hidden",
+                    background: "rgba(245,243,236,0.04)",
+                    border: "1px solid rgba(245,243,236,0.07)",
+                    opacity: credVisible ? 1 : 0,
+                    transform: credVisible ? "none" : "translateX(20px)",
+                    transition: `opacity 0.5s ease ${i * 0.1}s, transform 0.5s ease ${i * 0.1}s`,
                   }}
                 >
-                  {PRODUCTS.map((p) => (
-                    <a
-                      key={p.id}
-                      href={p.href}
-                      style={{
-                        fontSize: "13px",
-                        color: "rgba(255,255,255,0.35)",
-                        textDecoration: "none",
-                        transition: "color 0.2s ease",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                      onMouseEnter={(e) =>
-                        ((e.currentTarget as HTMLElement).style.color = "#fff")
-                      }
-                      onMouseLeave={(e) =>
-                        ((e.currentTarget as HTMLElement).style.color =
-                          "rgba(255,255,255,0.35)")
-                      }
-                    >
-                      <span
-                        style={{
-                          width: "5px",
-                          height: "5px",
-                          borderRadius: "50%",
-                          background: p.accent,
-                          flexShrink: 0,
-                        }}
-                      />
-                      {p.name}
-                    </a>
-                  ))}
+                  <div style={{ width: "3px", background: item.a, flexShrink: 0 }} />
+                  <div style={{ padding: "18px 22px" }}>
+                    <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, color: "#F5F3EC", margin: "0 0 4px" }}>
+                      {item.t}
+                    </p>
+                    <p style={{ fontSize: "13px", color: "rgba(245,243,236,0.38)", lineHeight: 1.6, margin: 0 }}>
+                      {item.d}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <p
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 700,
-                    letterSpacing: "0.2em",
-                    textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.2)",
-                    marginBottom: "14px",
-                    fontFamily: "monospace",
-                  }}
-                >
-                  Legal
-                </p>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "10px",
-                  }}
-                >
-                  {[
-                    { label: "Privacy", href: "/privacy" },
-                    { label: "Terms", href: "/terms" },
-                    { label: "Contact", href: "mailto:hi@zenkai.nl" },
-                  ].map((l) =>
-                    l.href.startsWith("/") ? (
-                      <Link
-                        key={l.label}
-                        href={l.href}
-                        style={{
-                          fontSize: "13px",
-                          color: "rgba(255,255,255,0.35)",
-                          textDecoration: "none",
-                        }}
-                      >
-                        {l.label}
-                      </Link>
-                    ) : (
-                      <a
-                        key={l.label}
-                        href={l.href}
-                        style={{
-                          fontSize: "13px",
-                          color: "rgba(255,255,255,0.35)",
-                          textDecoration: "none",
-                        }}
-                      >
-                        {l.label}
-                      </a>
-                    )
-                  )}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
+        </section>
 
-          {/* Bottom row */}
+        {/* ── CTA ─────────────────────────────────────────────────────────── */}
+        <section style={{ padding: "120px 40px", textAlign: "center" }}>
+          <div style={{ maxWidth: "640px", margin: "0 auto" }}>
+            <span style={{
+              fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
+              letterSpacing: "0.2em", color: "rgba(15,14,14,0.28)",
+              textTransform: "uppercase", display: "block", marginBottom: "20px",
+            }}>
+              Get started
+            </span>
+            <h2 style={{
+              fontFamily: "'Fraunces',Georgia,serif", fontWeight: 900,
+              fontSize: "clamp(2.5rem,6vw,5rem)", letterSpacing: "-0.04em",
+              lineHeight: 0.9, color: "#0F0E0E", margin: "0 0 24px",
+            }}>
+              Pick a tool.
+              <br />
+              <em style={{ fontWeight: 300, fontStyle: "italic" }}>Start for free.</em>
+            </h2>
+            <p style={{ fontSize: "16px", color: "rgba(15,14,14,0.43)", lineHeight: 1.75, marginBottom: "44px" }}>
+              All tools have a free tier. No credit card. No bullshit.
+            </p>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+              <a href="https://financios.zenkai.nl" style={{ padding: "14px 30px", background: "#15803D", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
+                Financios
+              </a>
+              <a href="https://jobs.zenkai.nl" style={{ padding: "14px 30px", background: "#B45309", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
+                Sollicitatie Coach
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FOOTER ──────────────────────────────────────────────────────── */}
+        <footer style={{ borderTop: "2px solid #0F0E0E", padding: "36px 40px" }}>
           <div
+            className="footer-inner"
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "12px",
-              paddingTop: "24px",
-              borderTop: "1px solid rgba(255,255,255,0.06)",
+              maxWidth: "1280px", margin: "0 auto",
+              display: "flex", justifyContent: "space-between",
+              alignItems: "center", flexWrap: "wrap", gap: "20px",
             }}
           >
-            <p
-              style={{
-                fontSize: "12px",
-                color: "rgba(255,255,255,0.18)",
-              }}
-            >
-              © 2026 Zenkai — All tools, one platform.
-            </p>
-            <p
-              style={{
-                fontSize: "12px",
-                color: "rgba(255,255,255,0.12)",
-                fontFamily: "monospace",
-              }}
-            >
-              zenkai.nl
-            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontStyle: "italic", fontSize: "19px", letterSpacing: "-0.03em" }}>
+                Zenkai
+              </span>
+              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.28)" }}>
+                © 2026
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: "28px", flexWrap: "wrap" }}>
+              {PRODUCTS.map((p) => (
+                <a key={p.id} href={p.href} style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.35)", textDecoration: "none" }}>
+                  {p.name}
+                </a>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: "22px" }}>
+              <Link href="/privacy" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.28)", textDecoration: "none" }}>Privacy</Link>
+              <Link href="/terms" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.28)", textDecoration: "none" }}>Terms</Link>
+              <a href="mailto:hi@zenkai.nl" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.28)", textDecoration: "none" }}>Contact</a>
+            </div>
           </div>
-        </div>
-      </footer>
-    </main>
+        </footer>
+      </main>
+    </>
   );
 }
