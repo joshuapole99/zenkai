@@ -70,6 +70,71 @@ If not, we don't build it.
 
 ## Zenkai Scanner Backlog (scan.zenkai.nl)
 
+### Pricing & Plans
+
+**Abonnement model — maandelijks**
+
+| Plan | Doelgroep | Prijs |
+|---|---|---|
+| Free | Iedereen — lead magnet | €0 |
+| Starter | ZZP, developer, kleine ondernemer | €19/mnd |
+| Pro | MKB, IT team, agencies | €49/mnd |
+| Enterprise | Grote bedrijven, pentesters, security teams | Op aanvraag |
+
+**Feature vergelijking per plan**
+
+| Feature | Free | Starter | Pro | Enterprise |
+|---|---|---|---|---|
+| Domeinen | 1 | 1 | 5 | Onbeperkt |
+| Scans/mnd | 1 | 3 | Onbeperkt | Onbeperkt |
+| Scan type | Basis (6 checks) | Quick Scan | Full Scan | Full + IP ranges |
+| PDF rapport | ❌ | ✅ | ✅ | ✅ Custom |
+| JSON output | ❌ | ❌ | ✅ | ✅ |
+| API toegang | ❌ | ❌ | ❌ | ✅ |
+| Rapport bewaren | ❌ | 30 dagen | 1 jaar | Onbeperkt |
+| Gelijktijdige scans | 1 | 1 | 3 | 10 |
+| IP ranges | ❌ | ❌ | ❌ | ✅ /24 max |
+| Support | ❌ | Email | Prioriteit | Dedicated |
+
+**Tool limieten per plan**
+
+Nmap:
+| | Free | Starter | Pro | Enterprise |
+|---|---|---|---|---|
+| Poorten | Top 100 | Top 1000 | 1-65535 | 1-65535 + UDP |
+| Timeout | 30s | 2min | 10min | Onbeperkt |
+| Threads | 10 | 50 | 200 | 500 |
+
+Gobuster:
+| | Free | Starter | Pro | Enterprise |
+|---|---|---|---|---|
+| Wordlist | 100 woorden | common.txt | big.txt | custom + SecLists |
+| Max requests | 50 | 500 | 5000 | Onbeperkt |
+| Snelheid | 10 req/s | 30 req/s | 50 req/s | 100 req/s |
+
+ZAP:
+| | Free | Starter | Pro | Enterprise |
+|---|---|---|---|---|
+| Scan type | ❌ | Baseline/passief | Active scan | Full crawl + active |
+| Crawl depth | ❌ | 2 | 5 | 10 |
+| Max URLs | ❌ | 50 | 500 | Onbeperkt |
+| Timeout | ❌ | 3min | 15min | Onbeperkt |
+
+SQLMap:
+| | Free | Starter | Pro | Enterprise |
+|---|---|---|---|---|
+| Beschikbaar | ❌ | ❌ | Basis | Volledig |
+| Technieken | ❌ | ❌ | BEUSTQ | Alle + tamper scripts |
+| Timeout | ❌ | ❌ | 5min | Onbeperkt |
+
+Shodan / VirusTotal:
+| | Free | Starter | Pro | Enterprise |
+|---|---|---|---|---|
+| Shodan | ❌ | Basis host lookup | CVEs + banners | Volledig |
+| VirusTotal | ❌ | URL check | URL + IP + domain | Volledig |
+
+---
+
 ### Phase 1 — Free Checks ✓ (COMPLETE - April 2026)
 - [x] Security headers check (HSTS, CSP, X-Frame, X-Content, Referrer, Permissions)
 - [x] SSL/TLS validity & expiry check
@@ -80,43 +145,48 @@ If not, we don't build it.
 - [x] Streaming scan UI with real-time results
 - [x] Grade scoring (A–F) with per-check scores
 
-### Phase 2 — Quick Scan (NEXT)
+---
+
+### Phase 2 — Quick Scan / Starter Plan (NEXT)
 
 Goal: fast broad inventory without impacting the target.
 
 **Port & Service Discovery**
-- [ ] TCP port scan — top 1000 ports (nmap -sV or equivalent)
+- [ ] TCP port scan — top 1000 ports (nmap -sV)
 - [ ] UDP scan — selected ranges (DNS 53, SNMP 161, NTP 123)
 - [ ] Service fingerprinting on open ports
 
 **Web & Infrastructure**
-- [ ] Directory enumeration — small wordlist (max 50 req/s, 2 min timeout)
+- [ ] Directory enumeration — common.txt (max 30 req/s, 2 min timeout)
 - [ ] Webserver information gathering (Server header, X-Powered-By, framework detection)
 - [ ] Full DNS records (A, AAAA, MX, NS, TXT, CNAME, CAA)
 - [ ] URL/IP reputation via VirusTotal API
-- [ ] ZAP Proxy API — passive/baseline scan
+- [ ] ZAP Proxy API — passive/baseline scan (depth 2, max 50 URLs, 3min timeout)
 
-**Limits:**
-- Max ~1000 ports, 20–50 req/s, 1–2 min per module
+**Limits (Starter):**
+- Max 1000 ports, 30 req/s, 10 min total scan time
 - No active exploitation, no deep crawling
+- 1 domein, 3 scans/mnd
 - Input: one domain per scan, scope-validated
 
-### Phase 3 — Full Scan (AFTER PHASE 2)
+---
+
+### Phase 3 — Full Scan / Pro Plan (AFTER PHASE 2)
 
 Goal: full attack surface mapping + controlled vulnerability testing.
 
 **Deep Discovery**
-- [ ] Full TCP scan (1–65535)
+- [ ] Full TCP scan (1–65535) + UDP
 - [ ] Advanced DNS + subdomain enumeration (capped)
-- [ ] Full web crawling via ZAP Proxy API (depth-limited)
+- [ ] Full web crawling via ZAP Proxy API (depth 5, max 500 URLs, 15min timeout)
 - [ ] Endpoint + parameter discovery
 - [ ] SSL/TLS deep analysis (cipher suites, protocol versions)
 - [ ] Version-based vulnerability detection (CVE mapping)
-- [ ] Common misconfiguration detection
+- [ ] Common misconfiguration detection netwerk + applicatie niveau
 
-**Active Testing (only where relevant attack surface exists)**
-- [ ] SQL Injection — SQLMap, targeted only
-- [ ] XSS testing — browser-based / ZAP active scan
+**Active Testing**
+- [ ] SQL Injection — SQLMap basis (BEUSTQ technieken, 5min timeout)
+- [ ] XSS testing — ZAP active scan
 - [ ] SSRF detection
 - [ ] Server-Side Template Injection (SSTI)
 - [ ] Client-Side Prototype Pollution
@@ -124,42 +194,76 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 - [ ] ZAP API active scan + full crawl
 
 **Intelligence**
-- [ ] VirusTotal domain/IP reputation (expanded)
+- [ ] VirusTotal domain/IP/URL reputation (expanded)
 - [ ] Shodan enrichment (ports, CVEs, banners)
 
-**Limits:**
-- Hard caps: subdomain count, URLs crawled, request rate, scan depth
-- Concurrency limited per target
-- Per-module timeouts (not global)
-- No uncontrolled recursive crawling
+**Limits (Pro):**
+- Max 65535 ports, 50 req/s, 45 min total scan time
+- 5 domeinen, onbeperkte scans
+- Hard caps: max 500 URLs gecrawld, max 10 subdomains
 
-### Phase 4 — Output & Reporting
-- [ ] PDF report (client-ready, branded)
-- [ ] JSON output for API consumers
-- [ ] Risk score 0–100 with severity breakdown
+---
+
+### Phase 4 — Enterprise Plan (AFTER PRO)
+
+**Extra features bovenop Full Scan:**
+- [ ] IP ranges ondersteuning (max /24 per scan)
+- [ ] SQLMap volledig (alle technieken + tamper scripts, onbeperkt timeout)
+- [ ] Browser-based testing workflow (Playwright voor interactieve webanalyse)
+- [ ] Exploit validation pipeline — tool chaining: ZAP → SQLMap → custom scripts
+- [ ] Network-level config issues — firewall rules, exposed management interfaces
+- [ ] API toegang met eigen API key
+- [ ] Custom PDF rapport met eigen branding
+- [ ] 10 gelijktijdige scans
+- [ ] Dedicated support
+
+---
+
+### Phase 5 — Output & Reporting
+- [ ] PDF rapport — client-ready, Zenkai branded, met logo
+- [ ] JSON output voor API consumers
+- [ ] Risk score 0–100 met severity breakdown
+- [ ] Executive summary in plain Nederlands
+- [ ] CVE + CVSS score per finding
 - [ ] Top findings + actionable fixes + evidence per issue
+- [ ] Rapport bewaren per plan (30 dagen / 1 jaar / onbeperkt)
 
-### Phase 5 — Infrastructure (Wednesday+)
-- [ ] Deploy tool stack on Ubuntu VPS (nmap, ZAP, sqlmap)
+---
+
+### Phase 6 — Infrastructure
+- [ ] Deploy tool stack op Ubuntu VPS (nmap, ZAP, sqlmap, playwright)
 - [ ] Async job queue (scan runs isolated per job)
-- [ ] Module isolation (subprocess/container per tool)
-- [ ] GitHub CI/CD to VPS
+- [ ] Module isolation (subprocess per tool)
+- [ ] Plan-based limiet enforcement in API
+- [ ] GitHub CI/CD naar VPS
 - [ ] SaaS-ready rate limiting & queue management
+- [ ] Lemon Squeezy abonnement koppeling per plan
+- [ ] Gebruiker dashboard — scan geschiedenis, rapport downloads
+
+---
 
 ### Architecture Rules
-- One domain per scan — no IP ranges in Quick Scan
+- One domain per scan — geen IP ranges in Starter of Pro
 - All scans async via job queue
-- Modules run isolated — one failure never kills the whole scan
-- ZAP: always set crawl depth, URL cap, request rate, and scan timeout
-- Active testing only on confirmed attack surface — never full aggression mode
-- Target safety principle: scanner must never overload or crash target systems
+- Modules run isolated — één failure stopt nooit de hele scan
+- ZAP: altijd crawl depth, URL cap, request rate, en scan timeout instellen
+- Active testing alleen op bevestigd attack surface — nooit full aggression mode
+- Target safety principe: scanner mag nooit target overbelasten of crashen
+- Plan limieten worden afgedwongen in Flask API voor elke tool aanroep
+
+---
 
 ### Tool Stack
-| Tool | Role |
-|------|------|
-| nmap | Port scanning + service detection |
-| ZAP Proxy API | Crawling + passive/active web testing |
-| SQLMap | Targeted SQL injection validation |
-| VirusTotal API | URL/IP reputation |
-| Shodan API | External exposure intelligence |
-| urlscan.io API | Screenshot + web reputation |
+| Tool | Role | Plans |
+|---|---|---|
+| nmap | Port scanning + service detection | Alle plans |
+| ZAP Proxy API | Crawling + passive/active web testing | Starter+ |
+| SQLMap | Targeted SQL injection validation | Pro+ |
+| Playwright | Browser-based interactieve testing | Enterprise |
+| VirusTotal API | URL/IP reputation | Starter+ |
+| Shodan API | External exposure intelligence | Starter+ |
+| urlscan.io API | Screenshot + web reputation | Free+ |
+| gobuster | Directory enumeration | Alle plans |
+| nikto | OWASP baseline checks | Alle plans |
+| whatweb | Tech fingerprinting | Alle plans |
+| sslyze | SSL/TLS deep analysis | Pro+ |
