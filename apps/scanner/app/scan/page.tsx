@@ -15,24 +15,56 @@ function FontLoader() {
   return null;
 }
 
-type CheckStatus = "pass" | "warn" | "fail" | "error";
-type CheckResult = { status: CheckStatus; score: number; summary: string; details: string[] };
-type Results = Partial<Record<string, CheckResult>>;
+type Sev = "High" | "Medium" | "Low" | "Info";
+type StatusKey = "pass" | "warn" | "fail" | "error";
 
-const CHECKS = [
-  { id: "headers", label: "Security headers",   desc: "CSP, HSTS, X-Frame-Options" },
-  { id: "ssl",     label: "SSL / TLS",           desc: "Certificaat + TLS versie" },
-  { id: "dns",     label: "SPF / DMARC",         desc: "E-mail authenticatie" },
-  { id: "owasp",   label: "OWASP indicatoren",   desc: "Info disclosure + misconfiguraties" },
-  { id: "shodan",  label: "Open poorten",         desc: "Shodan host scan" },
-  { id: "urlscan", label: "URL reputatie",        desc: "Malware + phishing check" },
+interface Finding {
+  title: string;
+  severity: Sev;
+  description: string;
+  recommendation: string;
+}
+
+interface ModuleResult {
+  status: StatusKey;
+  score: number;
+  summary: string;
+  details: string[];
+  findings: Finding[];
+}
+
+type Results = Partial<Record<string, ModuleResult>>;
+
+// ── Free scan checks ──────────────────────────────────────────────────────────
+const FREE_CHECKS = [
+  { id: "headers", label: "Security headers",  desc: "CSP, HSTS, X-Frame-Options" },
+  { id: "ssl",     label: "SSL / TLS",          desc: "Certificaat + TLS versie" },
+  { id: "dns",     label: "SPF / DMARC",        desc: "E-mail authenticatie" },
+  { id: "owasp",   label: "OWASP indicatoren",  desc: "Info disclosure + misconfiguraties" },
+  { id: "shodan",  label: "Open poorten",        desc: "Shodan host scan" },
+  { id: "urlscan", label: "URL reputatie",       desc: "Malware + phishing check" },
 ];
 
-const STATUS: Record<CheckStatus, { color: string; label: string }> = {
+// ── Quick scan modules ─────────────────────────────────────────────────────────
+const QUICK_CHECKS = [
+  { id: "headers",  label: "Security headers",      desc: "CSP, HSTS, X-Frame-Options" },
+  { id: "ssl",      label: "SSL / TLS",              desc: "TLS versie + certificaat (openssl)" },
+  { id: "dns",      label: "SPF / DMARC",            desc: "DNS e-mail authenticatie (dig)" },
+  { id: "nmap",     label: "Poortscan",              desc: "Top 1000 TCP poorten + services (nmap)" },
+  { id: "gobuster", label: "Directory enum",         desc: "Verborgen paden (gobuster + dirb wordlist)" },
+  { id: "nikto",    label: "Nikto baseline",         desc: "OWASP Top 10 indicatoren (nikto)" },
+  { id: "whatweb",  label: "Tech fingerprint",       desc: "CMS, server, frameworks (whatweb)" },
+];
+
+const STATUS: Record<StatusKey, { color: string; label: string }> = {
   pass:  { color: "#16A34A", label: "PASS" },
   warn:  { color: "#D97706", label: "WARN" },
   fail:  { color: "#DC2626", label: "FAIL" },
   error: { color: "rgba(15,14,14,0.3)", label: "ERR" },
+};
+
+const SEV_COLOR: Record<Sev, string> = {
+  High: "#DC2626", Medium: "#D97706", Low: "#16A34A", Info: "rgba(15,14,14,0.4)",
 };
 
 const GRADE_COLOR: Record<string, string> = {
@@ -62,14 +94,17 @@ function Spinner() {
 }
 
 export default function ScanPage() {
-  const [domain, setDomain] = useState("");
-  const [scanning, setScanning] = useState(false);
-  const [results, setResults] = useState<Results>({});
-  const [score, setScore] = useState<number | null>(null);
-  const [scanGrade, setScanGrade] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [error, setError] = useState("");
+  const [domain, setDomain]           = useState("");
+  const [mode, setMode]               = useState<"free" | "quick">("free");
+  const [scanning, setScanning]       = useState(false);
+  const [results, setResults]         = useState<Results>({});
+  const [score, setScore]             = useState<number | null>(null);
+  const [scanGrade, setScanGrade]     = useState<string | null>(null);
+  const [expanded, setExpanded]       = useState<string | null>(null);
+  const [error, setError]             = useState("");
   const [scannedDomain, setScannedDomain] = useState("");
+
+  const CHECKS = mode === "quick" ? QUICK_CHECKS : FREE_CHECKS;
 
   async function runScan(e: React.FormEvent) {
     e.preventDefault();
@@ -85,13 +120,17 @@ export default function ScanPage() {
     setExpanded(null);
 
     try {
-      const res = await fetch("/api/scan", {
+      const endpoint = mode === "quick" ? "/api/quick-scan" : "/api/scan";
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ domain: d }),
       });
 
-      if (!res.ok || !res.body) throw new Error("Scan mislukt");
+      if (!res.ok || !res.body) {
+        const err = await res.text().catch(() => "Scan mislukt");
+        throw new Error(err.slice(0, 200));
+      }
 
       const reader = res.body.getReader();
       const dec = new TextDecoder();
@@ -103,16 +142,41 @@ export default function ScanPage() {
         buf += dec.decode(value, { stream: true });
         const lines = buf.split("\n");
         buf = lines.pop() ?? "";
+
         for (const line of lines) {
           if (!line.trim()) continue;
           try {
-            const p = JSON.parse(line) as { check?: string; result?: CheckResult; done?: boolean; score?: number; grade?: string };
+            const p = JSON.parse(line) as Record<string, unknown>;
+
+            // Free scan format: { check, result }
             if (p.check && p.result) {
-              setResults((prev) => ({ ...prev, [p.check!]: p.result! }));
+              const r = p.result as ModuleResult;
+              setResults((prev) => ({ ...prev, [p.check as string]: { ...r, findings: r.findings ?? [] } }));
             }
-            if (p.done && p.score !== undefined) {
-              setScore(p.score);
-              setScanGrade(p.grade ?? null);
+
+            // Quick scan format: { module, status, score, summary, details, findings }
+            if (p.module && p.status) {
+              setResults((prev) => ({
+                ...prev,
+                [p.module as string]: {
+                  status:   p.status as StatusKey,
+                  score:    p.score as number,
+                  summary:  p.summary as string,
+                  details:  (p.details ?? []) as string[],
+                  findings: (p.findings ?? []) as Finding[],
+                },
+              }));
+            }
+
+            // Done signal
+            if (p.done) {
+              if (p.score !== undefined) {
+                setScore(p.score as number);
+                setScanGrade((p.grade as string) ?? null);
+              } else {
+                // Quick scan: compute score from modules
+                setScore(null);
+              }
             }
           } catch {
             // partial chunk
@@ -126,32 +190,76 @@ export default function ScanPage() {
     }
   }
 
+  // Compute score for quick scan when done
+  const allDone = !scanning && Object.keys(results).length > 0;
+  const computedScore = allDone && score === null
+    ? Math.round(Object.values(results).reduce((s, r) => s + (r?.score ?? 0), 0) / Math.max(Object.keys(results).length, 1))
+    : score;
+  const computedGrade = computedScore !== null
+    ? (scanGrade ?? (computedScore >= 90 ? "A" : computedScore >= 75 ? "B" : computedScore >= 60 ? "C" : computedScore >= 45 ? "D" : "F"))
+    : null;
+
+  const totalFindings = Object.values(results).flatMap((r) => r?.findings ?? []);
+  const highCount   = totalFindings.filter((f) => f.severity === "High").length;
+  const mediumCount = totalFindings.filter((f) => f.severity === "Medium").length;
   const hasAnyResult = Object.keys(results).length > 0;
 
   return (
     <>
       <FontLoader />
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .check-row:hover { background: rgba(15,14,14,0.02) !important; }
+        @keyframes spin    { to { transform: rotate(360deg); } }
+        @keyframes fadeIn  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .check-row:hover   { background: rgba(15,14,14,0.02) !important; }
+        .mode-btn          { transition: all 0.15s; }
+        .mode-btn:hover    { border-color: rgba(2,132,199,0.4) !important; }
       `}</style>
 
       <main style={{ minHeight: "100vh", background: "#ffffff", color: "#0F0E0E", paddingTop: "104px" }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 24px 80px" }}>
 
           {/* ── Heading ── */}
-          <div style={{ marginBottom: "40px" }}>
+          <div style={{ marginBottom: "32px" }}>
             <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", letterSpacing: "0.2em", color: "#0284C7", textTransform: "uppercase", marginBottom: "12px" }}>
               Domain security scan
             </p>
             <h1 style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 900, fontSize: "clamp(2rem,5vw,3.5rem)", letterSpacing: "-0.04em", lineHeight: 1, margin: 0 }}>
               Scan jouw domein.
             </h1>
-            <p style={{ fontSize: "15px", color: "rgba(15,14,14,0.45)", marginTop: "12px", lineHeight: 1.7 }}>
-              6 checks in parallel: SSL, headers, DNS, OWASP, open poorten, reputatie.
-            </p>
           </div>
+
+          {/* ── Mode toggle ── */}
+          <div style={{ display: "flex", gap: "8px", marginBottom: "28px" }}>
+            {[
+              { key: "free",  label: "Gratis scan",   desc: "6 checks · serverless" },
+              { key: "quick", label: "Quick scan",     desc: "7 modules · Kali VM" },
+            ].map((m) => (
+              <button
+                key={m.key}
+                className="mode-btn"
+                onClick={() => { if (!scanning) setMode(m.key as "free" | "quick"); }}
+                style={{
+                  padding: "10px 20px", cursor: scanning ? "not-allowed" : "pointer",
+                  border: `1px solid ${mode === m.key ? "#0284C7" : "rgba(15,14,14,0.14)"}`,
+                  background: mode === m.key ? "rgba(2,132,199,0.06)" : "transparent",
+                  textAlign: "left",
+                }}
+              >
+                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, margin: 0, color: mode === m.key ? "#0284C7" : "#0F0E0E" }}>
+                  {m.label}
+                </p>
+                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", margin: "2px 0 0", color: "rgba(15,14,14,0.35)" }}>
+                  {m.desc}
+                </p>
+              </button>
+            ))}
+          </div>
+
+          {mode === "quick" && (
+            <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "#D97706", marginBottom: "20px", padding: "10px 14px", border: "1px solid rgba(217,119,6,0.2)", background: "rgba(217,119,6,0.04)" }}>
+              ⚠ Vereist: Flask API op Kali VM (192.168.178.36:5000). Lokaal netwerk only.
+            </p>
+          )}
 
           {/* ── Input form ── */}
           <form onSubmit={runScan} style={{ display: "flex", gap: "0", marginBottom: "48px", maxWidth: "560px" }}>
@@ -190,24 +298,42 @@ export default function ScanPage() {
             </p>
           )}
 
-          {/* ── Score ── */}
-          {(score !== null || (scanning && hasAnyResult)) && (
-            <div style={{ display: "flex", alignItems: "center", gap: "24px", marginBottom: "32px", padding: "24px 28px", border: "1px solid rgba(15,14,14,0.08)", animation: "fadeIn 0.4s ease" }}>
+          {/* ── Score header ── */}
+          {(computedScore !== null || (scanning && hasAnyResult)) && (
+            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "16px", marginBottom: "24px", padding: "24px 28px", border: "1px solid rgba(15,14,14,0.08)", animation: "fadeIn 0.4s ease" }}>
               <div>
                 <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", letterSpacing: "0.15em", color: "rgba(15,14,14,0.35)", textTransform: "uppercase", margin: "0 0 4px" }}>
                   Risk score
                 </p>
                 <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
                   <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 900, fontSize: "3rem", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                    {score ?? "—"}
+                    {computedScore ?? "—"}
                   </span>
-                  {scanGrade && (
-                    <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontSize: "1.8rem", color: GRADE_COLOR[scanGrade] ?? "#0F0E0E" }}>
-                      {scanGrade}
+                  {computedGrade && (
+                    <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontSize: "1.8rem", color: GRADE_COLOR[computedGrade] ?? "#0F0E0E" }}>
+                      {computedGrade}
                     </span>
                   )}
                 </div>
               </div>
+
+              {totalFindings.length > 0 && (
+                <div style={{ display: "flex", gap: "20px", marginLeft: "16px" }}>
+                  {highCount > 0 && (
+                    <div>
+                      <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "22px", fontWeight: 600, margin: 0, color: "#DC2626" }}>{highCount}</p>
+                      <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", letterSpacing: "0.1em", color: "rgba(15,14,14,0.35)", margin: "2px 0 0", textTransform: "uppercase" }}>Hoog</p>
+                    </div>
+                  )}
+                  {mediumCount > 0 && (
+                    <div>
+                      <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "22px", fontWeight: 600, margin: 0, color: "#D97706" }}>{mediumCount}</p>
+                      <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", letterSpacing: "0.1em", color: "rgba(15,14,14,0.35)", margin: "2px 0 0", textTransform: "uppercase" }}>Gemiddeld</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {scannedDomain && (
                 <div style={{ marginLeft: "auto" }}>
                   <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.35)", margin: 0 }}>
@@ -226,6 +352,7 @@ export default function ScanPage() {
                 const isLoading = scanning && !result;
                 const st = result ? STATUS[result.status] : null;
                 const isOpen = expanded === c.id;
+                const hasFindings = (result?.findings?.length ?? 0) > 0;
 
                 return (
                   <div key={c.id} style={{ borderTop: i === 0 ? "none" : "1px solid rgba(15,14,14,0.07)" }}>
@@ -239,10 +366,8 @@ export default function ScanPage() {
                         transition: "background 0.15s",
                       }}
                     >
-                      {/* Status indicator */}
                       <div style={{ width: "8px", height: "8px", borderRadius: "50%", flexShrink: 0, background: st ? st.color : "rgba(15,14,14,0.12)" }} />
 
-                      {/* Label */}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "13px", fontWeight: 600, margin: 0, color: "#0F0E0E" }}>
                           {c.label}
@@ -252,16 +377,10 @@ export default function ScanPage() {
                         </p>
                       </div>
 
-                      {/* Score bar or spinner */}
                       <div style={{ width: "160px", flexShrink: 0 }}>
-                        {isLoading ? (
-                          <Spinner />
-                        ) : result ? (
-                          <ScoreBar score={result.score} color={st!.color} />
-                        ) : null}
+                        {isLoading ? <Spinner /> : result ? <ScoreBar score={result.score} color={st!.color} /> : null}
                       </div>
 
-                      {/* Status badge */}
                       <div style={{ width: "42px", textAlign: "right", flexShrink: 0 }}>
                         {st && (
                           <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", fontWeight: 600, color: st.color, letterSpacing: "0.08em" }}>
@@ -270,22 +389,48 @@ export default function ScanPage() {
                         )}
                       </div>
 
-                      {/* Expand arrow */}
                       <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.25)", flexShrink: 0, transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 0.2s", display: "inline-block" }}>
                         ›
                       </span>
                     </button>
 
-                    {/* Details panel */}
+                    {/* Detail + findings panel */}
                     {isOpen && result && (
                       <div style={{ padding: "0 20px 20px 44px", animation: "fadeIn 0.2s ease" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                          {result.details.map((d, di) => (
-                            <p key={di} style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "rgba(15,14,14,0.55)", margin: 0, lineHeight: 1.6 }}>
-                              {d}
-                            </p>
-                          ))}
-                        </div>
+                        {/* Details */}
+                        {result.details.length > 0 && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: hasFindings ? "16px" : 0 }}>
+                            {result.details.map((d, di) => (
+                              <p key={di} style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "rgba(15,14,14,0.55)", margin: 0, lineHeight: 1.6 }}>
+                                {d}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Findings */}
+                        {hasFindings && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                            {result.findings.map((f, fi) => (
+                              <div key={fi} style={{ padding: "14px 16px", background: "rgba(15,14,14,0.02)", border: "1px solid rgba(15,14,14,0.07)" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "8px" }}>
+                                  <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, margin: 0, color: "#0F0E0E" }}>
+                                    {f.title}
+                                  </p>
+                                  <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", fontWeight: 600, color: SEV_COLOR[f.severity], letterSpacing: "0.1em", flexShrink: 0 }}>
+                                    {f.severity.toUpperCase()}
+                                  </span>
+                                </div>
+                                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.5)", margin: "0 0 6px", lineHeight: 1.6 }}>
+                                  {f.description}
+                                </p>
+                                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "#0284C7", margin: 0, lineHeight: 1.6 }}>
+                                  → {f.recommendation}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
