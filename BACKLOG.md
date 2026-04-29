@@ -153,7 +153,7 @@ Goal: fast broad inventory without impacting the target.
 
 **Port & Service Discovery**
 - [x] TCP port scan — top 1000 ports (nmap -sV)
-- [ ] UDP scan — selected ranges (DNS 53, SNMP 161, NTP 123)
+- [x] UDP scan — selected ranges (DNS 53, SNMP 161, NTP 123, IKE 500)
 - [x] Service fingerprinting on open ports
 
 **Web & Infrastructure**
@@ -161,7 +161,7 @@ Goal: fast broad inventory without impacting the target.
 - [x] Webserver information gathering (whatweb — framework, CMS, CDN, version)
 - [x] Full DNS records (A, AAAA, MX, NS, TXT, CNAME, CAA)
 - [x] URL/IP reputation via VirusTotal API
-- [ ] ZAP Proxy API — passive/baseline scan (depth 2, max 50 URLs, 3min timeout)
+- [x] ZAP Proxy API — passive/baseline scan (depth 2, max 50 URLs, 3min timeout)
 
 **Additional (built)**
 - [x] Nikto baseline checks (OWASP)

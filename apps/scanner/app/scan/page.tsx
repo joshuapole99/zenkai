@@ -55,6 +55,7 @@ const QUICK_CHECKS = [
   { id: "nikto",      label: "Nikto baseline",         desc: "OWASP Top 10 indicatoren (nikto)" },
   { id: "whatweb",    label: "Tech fingerprint",       desc: "CMS, server, frameworks (whatweb)" },
   { id: "virustotal", label: "VirusTotal reputatie",   desc: "Malicious + suspicious vendors" },
+  { id: "zap",        label: "ZAP baseline",           desc: "Passieve web crawl (OWASP ZAP)" },
 ];
 
 // ── Full scan modules ─────────────────────────────────────────────────────────

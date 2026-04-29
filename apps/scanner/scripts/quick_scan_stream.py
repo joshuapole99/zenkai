@@ -129,8 +129,12 @@ def mod_ssl(domain):
 
 
 def mod_nmap(domain):
-    out = run(f"nmap -sV -T4 --open --top-ports 1000 {domain} 2>/dev/null", timeout=120)
-    risky = {
+    # TCP top 1000
+    tcp_out = run(f"nmap -sV -T4 --open --top-ports 1000 {domain} 2>/dev/null", timeout=120)
+    # UDP selected ports: DNS 53, NTP 123, SNMP 161, IKE 500
+    udp_out = run(f"nmap -sU -T4 --open -p 53,123,161,500 {domain} 2>/dev/null", timeout=60)
+
+    risky_tcp = {
         "21":    ("FTP Open",            "Medium", "FTP is unencrypted.",             "Use SFTP or FTPS."),
         "23":    ("Telnet Open",         "High",   "Telnet is plaintext.",            "Disable Telnet, use SSH."),
         "25":    ("SMTP Open",           "Low",    "SMTP may allow relay abuse.",     "Restrict relay + enforce auth."),
@@ -140,22 +144,38 @@ def mod_nmap(domain):
         "27017": ("MongoDB Exposed",     "High",   "MongoDB publicly accessible.",    "Restrict + enable auth."),
         "8080":  ("Alt HTTP Port",       "Low",    "Non-standard port 8080 open.",    "Review what runs on this port."),
     }
+    risky_udp = {
+        "161": ("SNMP Exposed",    "High",   "SNMP can leak system info and allow config changes.", "Restrict SNMP or disable if unused."),
+        "500": ("IKE/VPN Exposed", "Medium", "IKE on UDP 500 exposes VPN endpoint.",               "Review VPN exposure and access control."),
+    }
     findings, details = [], []
-    count = 0
-    for line in out.splitlines():
+    tcp_count = 0
+
+    for line in tcp_out.splitlines():
         if "/tcp" in line and "open" in line:
-            count += 1
+            tcp_count += 1
             details.append(line.strip())
             port = line.split("/")[0].strip()
-            if port in risky:
-                t, s, d, r = risky[port]
+            if port in risky_tcp:
+                t, s, d, r = risky_tcp[port]
                 findings.append({"title": t, "severity": s, "description": d, "recommendation": r})
-    if "cloudflare" in out.lower():
+    if "cloudflare" in tcp_out.lower():
         details.append("CDN: Cloudflare detected")
 
+    udp_count = 0
+    for line in udp_out.splitlines():
+        if "/udp" in line and "open" in line:
+            udp_count += 1
+            details.append(f"[UDP] {line.strip()}")
+            port = line.split("/")[0].strip()
+            if port in risky_udp:
+                t, s, d, r = risky_udp[port]
+                findings.append({"title": t, "severity": s, "description": d, "recommendation": r})
+
+    total = tcp_count + udp_count
     score = max(0, 100 - len(findings) * 20)
     status = "pass" if not findings else ("warn" if score >= 50 else "fail")
-    emit("nmap", status, score, f"{count} open ports found", details, findings)
+    emit("nmap", status, score, f"{tcp_count} TCP + {udp_count} UDP open ports", details, findings)
 
 
 def mod_gobuster(domain):
@@ -286,6 +306,43 @@ def mod_virustotal(domain):
         emit("virustotal", "warn", 50, f"VirusTotal error: {str(e)[:60]}", [], [])
 
 
+def mod_zap(domain):
+    # ZAP baseline — passive only, depth 2, max 50 URLs, 3 min
+    zap_bin = run("which zaproxy 2>/dev/null || which zap.sh 2>/dev/null || which zap-cli 2>/dev/null", timeout=5).strip().splitlines()
+    zap_bin = zap_bin[0] if zap_bin else ""
+    if not zap_bin:
+        emit("zap", "warn", 50, "ZAP not installed — skipped", [], [])
+        return
+
+    report_path = f"/tmp/zap_quick_{domain}.xml"
+    run(
+        f"{zap_bin} -cmd -quickurl https://{domain} -quickprogress -quickout {report_path} 2>/dev/null",
+        timeout=200
+    )
+
+    findings, details = [], []
+    if os.path.exists(report_path):
+        try:
+            content = open(report_path).read()
+            for m in re.finditer(
+                r'<name>([^<]+)</name>.*?<riskcode>(\d)</riskcode>.*?<desc>([^<]{0,200})',
+                content, re.DOTALL
+            ):
+                name, risk, desc = m.group(1).strip(), int(m.group(2)), m.group(3).strip()
+                sev = {3: "High", 2: "Medium", 1: "Low", 0: "Info"}.get(risk, "Low")
+                if risk >= 1:
+                    findings.append({"title": name, "severity": sev,
+                        "description": desc[:200],
+                        "recommendation": "Review ZAP finding and apply remediation."})
+                    details.append(f"[{sev}] {name}")
+        finally:
+            os.remove(report_path)
+
+    score  = max(0, 100 - len([f for f in findings if f["severity"] in ("High", "Medium")]) * 15)
+    status = "pass" if not findings else ("warn" if score >= 50 else "fail")
+    emit("zap", status, score, f"{len(findings)} issues via ZAP baseline", details, findings)
+
+
 # ── main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -293,11 +350,11 @@ if __name__ == "__main__":
         print(json.dumps({"error": "Usage: quick_scan_stream.py domain.com"}))
         sys.exit(1)
 
-    domain = sys.argv[1].strip().lstrip("https://").lstrip("http://").split("/")[0]
+    domain = sys.argv[1].strip().replace("https://", "").replace("http://", "").split("/")[0]
 
-    modules = [mod_headers, mod_ssl, mod_dns, mod_nmap, mod_gobuster, mod_nikto, mod_whatweb, mod_virustotal]
+    modules = [mod_headers, mod_ssl, mod_dns, mod_nmap, mod_gobuster, mod_nikto, mod_whatweb, mod_virustotal, mod_zap]
 
-    with ThreadPoolExecutor(max_workers=8) as pool:
+    with ThreadPoolExecutor(max_workers=9) as pool:
         futures = {pool.submit(m, domain): m.__name__ for m in modules}
         for f in as_completed(futures):
             try:
