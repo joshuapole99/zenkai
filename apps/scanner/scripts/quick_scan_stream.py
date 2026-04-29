@@ -254,7 +254,7 @@ if __name__ == "__main__":
 
     modules = [mod_headers, mod_ssl, mod_dns, mod_nmap, mod_gobuster, mod_nikto, mod_whatweb]
 
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=7) as pool:
         futures = {pool.submit(m, domain): m.__name__ for m in modules}
         for f in as_completed(futures):
             try:

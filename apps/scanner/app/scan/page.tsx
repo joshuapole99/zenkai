@@ -96,6 +96,7 @@ function Spinner() {
 export default function ScanPage() {
   const [domain, setDomain]           = useState("");
   const [mode, setMode]               = useState<"free" | "quick">("free");
+  const [language, setLanguage]       = useState<"nl" | "en">("nl");
   const [scanning, setScanning]       = useState(false);
   const [results, setResults]         = useState<Results>({});
   const [score, setScore]             = useState<number | null>(null);
@@ -124,7 +125,7 @@ export default function ScanPage() {
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: d }),
+        body: JSON.stringify({ domain: d, language }),
       });
 
       if (!res.ok || !res.body) {
@@ -251,6 +252,28 @@ export default function ScanPage() {
                 <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px", margin: "2px 0 0", color: "rgba(15,14,14,0.35)" }}>
                   {m.desc}
                 </p>
+              </button>
+            ))}
+          </div>
+
+          {/* Language toggle */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.35)" }}>
+              Rapport taal:
+            </span>
+            {(["nl", "en"] as const).map((lang) => (
+              <button
+                key={lang}
+                onClick={() => { if (!scanning) setLanguage(lang); }}
+                style={{
+                  padding: "4px 12px", cursor: scanning ? "not-allowed" : "pointer",
+                  border: `1px solid ${language === lang ? "#0284C7" : "rgba(15,14,14,0.14)"}`,
+                  background: language === lang ? "rgba(2,132,199,0.06)" : "transparent",
+                  fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
+                  color: language === lang ? "#0284C7" : "rgba(15,14,14,0.4)",
+                }}
+              >
+                {lang === "nl" ? "🇳🇱 Nederlands" : "🇬🇧 English"}
               </button>
             ))}
           </div>

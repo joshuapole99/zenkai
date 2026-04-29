@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap');
+
+  :root {
+    --black:  #0a0a0a;
+    --white:  #f5f4f0;
+    --grey1:  #1a1a1a;
+    --grey2:  #2d2d2d;
+    --grey3:  #555;
+    --grey4:  #888;
+    --grey5:  #bbb;
+    --line:   #dddbd4;
+    --red:    #b83225;
+    --orange: #a05c08;
+    --green:  #1a5e28;
+    --blue:   #1a3a6e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--white);
+    color: var(--black);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+
+  /* ═══════════ COVER ═══════════ */
+  .cover {
+    padding: 52px 60px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    page-break-after: always;
+  }
+
+  .cover-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .cover-logo {
+    height: 64px;
+    width: auto;
+    display: block;
+  }
+
+  .cover-meta {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--grey4);
+    text-align: right;
+    line-height: 2;
+    text-transform: uppercase;
+  }
+
+  .cover-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 64px 0 40px;
+  }
+
+  .cover-eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--grey4);
+    margin-bottom: 16px;
+  }
+
+  .cover-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 56px;
+    line-height: 1.0;
+    letter-spacing: -0.01em;
+    color: var(--black);
+    margin-bottom: 6px;
+  }
+
+  .cover-domain {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--grey3);
+  }
+
+  .cover-rule {
+    width: 40px;
+    height: 1px;
+    background: var(--black);
+    margin: 30px 0;
+  }
+
+  /* Stats row: H/M/L counts + gauge */
+  .cover-stats {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+  }
+
+  .cover-stat {
+    padding-right: 32px;
+    margin-right: 32px;
+    border-right: 1px solid var(--line);
+  }
+  .cover-stat:last-of-type {
+    border-right: none;
+  }
+
+  .cstat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 40px;
+    font-weight: 300;
+    line-height: 1;
+  }
+  .cstat-num.high   { color: var(--red); }
+  .cstat-num.medium { color: var(--orange); }
+  .cstat-num.low    { color: var(--green); }
+  .cstat-num.total  { color: var(--black); }
+
+  .cstat-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--grey4);
+    margin-top: 3px;
+  }
+
+  /* Gauge block pushed to the right */
+  .gauge-block {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .cover-footer {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--grey4);
+  }
+
+  /* ═══════════ PAGE ═══════════ */
+  .page {
+    padding: 44px 60px 56px;
+    page-break-before: always;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--grey4);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 34px;
+  }
+
+  /* ═══════════ SECTION ═══════════ */
+  .section {
+    margin-bottom: 42px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--black);
+    margin-bottom: 20px;
+  }
+
+  .section-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--grey5);
+    line-height: 1;
+  }
+
+  .section-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-weight: 400;
+    color: var(--black);
+    line-height: 1;
+  }
+
+  /* ═══════════ EXECUTIVE SUMMARY ═══════════ */
+  .exec-grid {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 40px;
+    align-items: start;
+  }
+
+  .exec-paragraphs p {
+    font-size: 11px;
+    color: var(--grey2);
+    line-height: 1.75;
+    font-weight: 300;
+    margin-bottom: 14px;
+  }
+
+  .exec-paragraphs p:last-child { margin-bottom: 0; }
+
+  .exec-chart {
+    padding: 20px;
+    border: 1px solid var(--line);
+    background: var(--white);
+  }
+
+  .chart-title {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--grey4);
+    margin-bottom: 14px;
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .bar-row:last-child { margin-bottom: 0; }
+
+  .bar-label {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    width: 52px;
+    flex-shrink: 0;
+  }
+  .bar-label.high   { color: var(--red); }
+  .bar-label.medium { color: var(--orange); }
+  .bar-label.low    { color: var(--green); }
+
+  .bar-track {
+    flex: 1;
+    height: 6px;
+    background: #e8e6df;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    min-width: 2px;
+  }
+  .bar-fill.high   { background: var(--red); }
+  .bar-fill.medium { background: var(--orange); }
+  .bar-fill.low    { background: var(--green); }
+
+  .bar-count {
+    font-size: 9px;
+    color: var(--grey3);
+    width: 20px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ═══════════ TECH STACK ═══════════ */
+  .fp-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+
+  .fp-cell {
+    background: var(--white);
+    padding: 11px 16px;
+    min-width: 100px;
+    flex: 1;
+  }
+
+  .fp-cell-type {
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--grey4);
+    margin-bottom: 2px;
+  }
+
+  .fp-cell-value {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--black);
+  }
+
+  /* ═══════════ FINDINGS ═══════════ */
+  .finding {
+    border-top: 1px solid var(--line);
+    padding: 18px 0;
+    page-break-inside: avoid;
+  }
+
+  .finding:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .f-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 16px;
+  }
+
+  .f-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--black);
+    line-height: 1.2;
+    flex: 1;
+  }
+
+  .f-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .f-source {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--grey5);
+  }
+
+  .f-sev {
+    font-size: 8px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .f-sev::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  .f-sev.High   { color: var(--red);    }
+  .f-sev.High::before   { background: var(--red); }
+  .f-sev.Medium { color: var(--orange); }
+  .f-sev.Medium::before { background: var(--orange); }
+  .f-sev.Low    { color: var(--green);  }
+  .f-sev.Low::before    { background: var(--green); }
+  .f-sev.Info   { color: var(--grey4);  }
+  .f-sev.Info::before   { background: var(--grey4); }
+
+  /* CVSS + CWE tags */
+  .f-tags {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .f-tag {
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    padding: 2px 7px;
+    border: 1px solid var(--line);
+    color: var(--grey3);
+  }
+
+  .f-tag.cvss-critical { border-color: #b83225; color: #b83225; }
+  .f-tag.cvss-high     { border-color: #b83225; color: #b83225; }
+  .f-tag.cvss-medium   { border-color: #a05c08; color: #a05c08; }
+  .f-tag.cvss-low      { border-color: #1a5e28; color: #1a5e28; }
+
+  .f-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .f-field-label {
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--grey4);
+    margin-bottom: 3px;
+  }
+
+  .f-field-value {
+    font-size: 10px;
+    color: var(--grey2);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* ═══════════ EMPTY STATE ═══════════ */
+  .empty {
+    padding: 44px;
+    text-align: center;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--grey4);
+    border: 1px solid var(--line);
+  }
+
+  /* ═══════════ PAGE FOOTER ═══════════ */
+  .page-footer {
+    margin-top: 40px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--grey4);
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ COVER ═══════════════ -->
+<div class="cover">
+
+  <div class="cover-top">
+    <img src="zenkai-logo.jpg" class="cover-logo" alt="Zenkai">
+    <div class="cover-meta">
+      <div>{{ L.report_title }}</div>
+      <div>{{ L.confidential }}</div>
+      <div>{{ date }}</div>
+    </div>
+  </div>
+
+  <div class="cover-center">
+    <div class="cover-eyebrow">{{ L.eyebrow }}</div>
+    <div class="cover-title">{{ L.title_line1 }}<br>{{ L.title_line2 }}</div>
+    <div class="cover-domain">{{ target }}</div>
+    <div class="cover-rule"></div>
+
+    <div class="cover-stats">
+      <div class="cover-stat">
+        <div class="cstat-num high">{{ summary.high }}</div>
+        <div class="cstat-label">{{ L.high_risk }}</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cstat-num medium">{{ summary.medium }}</div>
+        <div class="cstat-label">{{ L.medium }}</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cstat-num low">{{ summary.low }}</div>
+        <div class="cstat-label">{{ L.low_risk }}</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cstat-num total">{{ summary.total }}</div>
+        <div class="cstat-label">{{ L.total }}</div>
+      </div>
+
+      <!-- Risk gauge -->
+      <div class="gauge-block">
+        <svg viewBox="0 0 200 120" width="180" height="108">
+          <!-- Track -->
+          <path d="M 20 100 A 80 80 0 0 1 180 100"
+                stroke="#dddbd4" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <!-- Value arc -->
+          <path d="M 20 100 A 80 80 0 0 1 180 100"
+                stroke="{{ gauge_color }}" stroke-width="10" fill="none" stroke-linecap="round"
+                stroke-dasharray="{{ gauge_dash }} 252"/>
+          <!-- Score -->
+          <text x="100" y="88"
+                text-anchor="middle"
+                font-family="Cormorant Garamond, serif"
+                font-size="34" font-weight="300" fill="#0a0a0a">{{ risk_score }}</text>
+          <text x="100" y="108"
+                text-anchor="middle"
+                font-family="DM Mono, monospace"
+                font-size="8" letter-spacing="3" fill="#888">{{ L.risk_score_label }}</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-footer">
+    <span>{{ L.footer_left }}</span>
+    <span>{{ L.footer_right }}</span>
+  </div>
+
+</div>
+
+<!-- ═══════════════ PAGE 2: EXECUTIVE SUMMARY ═══════════════ -->
+<div class="page">
+
+  <div class="page-header">
+    <span>Zenkai / {{ L.report_title }}</span>
+    <span>{{ target }}</span>
+  </div>
+
+  <!-- 1. Executive summary -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <div class="section-name">{{ L.section_summary }}</div>
+    </div>
+
+    <div class="exec-grid">
+      <div class="exec-paragraphs">
+        {% for para in executive_summary %}
+        <p>{{ para|safe }}</p>
+        {% endfor %}
+      </div>
+
+      <!-- Severity chart -->
+      <div class="exec-chart">
+        <div class="chart-title">{{ L.chart_title }}</div>
+
+        <div class="bar-row">
+          <span class="bar-label high">{{ L.bar_high }}</span>
+          <div class="bar-track">
+            <div class="bar-fill high" style="width: {{ bar_high }}px;"></div>
+          </div>
+          <span class="bar-count">{{ summary.high }}</span>
+        </div>
+
+        <div class="bar-row">
+          <span class="bar-label medium">{{ L.bar_medium }}</span>
+          <div class="bar-track">
+            <div class="bar-fill medium" style="width: {{ bar_medium }}px;"></div>
+          </div>
+          <span class="bar-count">{{ summary.medium }}</span>
+        </div>
+
+        <div class="bar-row">
+          <span class="bar-label low">{{ L.bar_low }}</span>
+          <div class="bar-track">
+            <div class="bar-fill low" style="width: {{ bar_low }}px;"></div>
+          </div>
+          <span class="bar-count">{{ summary.low }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Tech stack -->
+  {% if fingerprints %}
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">02</div>
+      <div class="section-name">{{ L.section_tech }}</div>
+    </div>
+    <div class="fp-grid">
+      {% for fp in fingerprints %}
+      <div class="fp-cell">
+        <div class="fp-cell-type">{{ fp.type }}</div>
+        <div class="fp-cell-value">{{ fp.value }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- 3. Findings -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">{% if fingerprints %}03{% else %}02{% endif %}</div>
+      <div class="section-name">{{ L.section_findings }}</div>
+    </div>
+
+    {% if findings %}
+      {% for f in findings %}
+      <div class="finding">
+        <div class="f-top">
+          <div class="f-title">{{ f.title }}</div>
+          <div class="f-badges">
+            <div class="f-source">{{ f.source }}</div>
+            <div class="f-sev {{ f.severity }}">{{ f.severity }}</div>
+          </div>
+        </div>
+
+        {% if f.cvss_score or f.cwe %}
+        <div class="f-tags">
+          {% if f.cvss_score %}
+          <span class="f-tag cvss-{{ f.cvss_severity|lower if f.cvss_severity else 'info' }}">
+            CVSS {{ f.cvss_score }}{% if f.cvss_severity %} · {{ f.cvss_severity }}{% endif %}
+          </span>
+          {% endif %}
+          {% if f.cwe and f.cwe != 'N/A' %}
+          <span class="f-tag">{{ f.cwe }}</span>
+          {% endif %}
+          {% if f.cve %}
+          <span class="f-tag">{{ f.cve }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="f-body">
+          <div>
+            <div class="f-field-label">{{ L.f_description_label }}</div>
+            <div class="f-field-value">{{ f.description }}</div>
+          </div>
+          <div>
+            <div class="f-field-label">{{ L.f_rec_label }}</div>
+            <div class="f-field-value">{{ f.recommendation }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty">{{ L.empty_findings }}</div>
+    {% endif %}
+  </div>
+
+  <div class="page-footer">
+    <span>{{ L.footer_generated }}</span>
+    <span>{{ L.footer_score }} {{ risk_score }} / 10</span>
+  </div>
+
+</div>
+
+</body>
+</html>
