@@ -7,32 +7,71 @@ if len(sys.argv) < 2:
     print("Usage: python render.py target.com [nl|en]")
     sys.exit(1)
 
-target   = sys.argv[1]
-language = (sys.argv[2] if len(sys.argv) > 2 else "nl").lower()
+target    = sys.argv[1]
+language  = (sys.argv[2] if len(sys.argv) > 2 else "nl").lower()
+scan_type = sys.argv[3] if len(sys.argv) > 3 else "full"
 if language not in ("nl", "en"):
     language = "nl"
 
 base = f"results/{target}/"
 
-report_path = base + "report.json"
-if not os.path.exists(report_path):
-    print(f"[!] report.json not found at {report_path}")
-    print("[!] Run parser.py first.")
+# Try scan-type specific report first, fall back to report.json
+candidate_files = {
+    "quick": ["quick_report.json", "report.json"],
+    "full":  ["full_report.json",  "report.json"],
+}.get(scan_type, ["report.json"])
+
+report_path = None
+for f in candidate_files:
+    p = base + f
+    if os.path.exists(p):
+        report_path = p
+        break
+
+if not report_path:
+    print(f"[!] No report found for {target} (tried: {candidate_files})")
     sys.exit(1)
 
 with open(report_path) as f:
-    data = json.load(f)
+    raw = json.load(f)
 
-data.setdefault("fingerprints", [])
-data.setdefault("findings", [])
-data.setdefault("risk_score", 0)
-data.setdefault("summary", {})
-data["summary"].setdefault("high",   0)
-data["summary"].setdefault("medium", 0)
-data["summary"].setdefault("low",    0)
-data["summary"].setdefault("info",   0)
-data["summary"].setdefault("total",  len(data["findings"]))
-data.setdefault("date", datetime.now().strftime("%d %B %Y"))
+# Normalise: quick/full scan output is {"domain":..., "modules":[...]}
+# Full scan report.json from parser is {"findings":[], "risk_score":...}
+if "modules" in raw:
+    modules = raw["modules"]
+    all_findings = []
+    for m in modules:
+        for fi in m.get("findings", []):
+            fi["module"] = m["module"]
+            all_findings.append(fi)
+    high   = sum(1 for fi in all_findings if fi.get("severity") == "High")
+    medium = sum(1 for fi in all_findings if fi.get("severity") == "Medium")
+    low    = sum(1 for fi in all_findings if fi.get("severity") == "Low")
+    # Risk score: weighted average of module scores
+    scores = [m["score"] for m in modules if isinstance(m.get("score"), (int, float))]
+    risk_score = round((sum(scores) / len(scores)) / 10) if scores else 5
+    data = {
+        "domain":       raw.get("domain", target),
+        "findings":     all_findings,
+        "fingerprints": [],
+        "risk_score":   risk_score,
+        "summary":      {"high": high, "medium": medium, "low": low, "info": 0, "total": len(all_findings)},
+        "date":         datetime.now().strftime("%d %B %Y"),
+        "scan_type":    scan_type,
+        "modules":      modules,
+    }
+else:
+    data = raw
+    data.setdefault("fingerprints", [])
+    data.setdefault("findings", [])
+    data.setdefault("risk_score", 0)
+    data.setdefault("summary", {})
+    data["summary"].setdefault("high",   0)
+    data["summary"].setdefault("medium", 0)
+    data["summary"].setdefault("low",    0)
+    data["summary"].setdefault("info",   0)
+    data["summary"].setdefault("total",  len(data["findings"]))
+    data.setdefault("date", datetime.now().strftime("%d %B %Y"))
 
 # ── NL / EN labels ────────────────────────────────────────────────────────────
 LABELS = {

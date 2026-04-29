@@ -186,6 +186,73 @@ def full_scan_stream():
     )
 
 
+@app.route("/generate-report", methods=["POST"])
+def generate_report():
+    key = request.headers.get("X-API-Key")
+    if key != API_KEY:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data      = request.json or {}
+    domain    = clean_domain(data.get("domain", ""))
+    language  = valid_language(data.get("language", "nl"))
+    scan_type = data.get("type", "quick")
+    email     = data.get("email", "").strip()
+
+    if not domain or not DOMAIN_RE.match(domain):
+        return jsonify({"error": "Invalid domain"}), 400
+    if not email or "@" not in email:
+        return jsonify({"error": "Valid email required"}), 400
+
+    report_file = "full_report.json" if scan_type == "full" else "quick_report.json"
+    report_path = os.path.join(SCRIPT_DIR, "results", domain, report_file)
+    if not os.path.exists(report_path):
+        return jsonify({"error": f"No {scan_type} scan results found for {domain}. Run a scan first."}), 404
+
+    result = subprocess.run(
+        ["python3", os.path.join(SCRIPT_DIR, "render.py"), domain, language, scan_type],
+        capture_output=True, text=True, cwd=SCRIPT_DIR, timeout=60
+    )
+
+    pdf_path = os.path.join(SCRIPT_DIR, "results", domain, "report.pdf")
+    if not os.path.exists(pdf_path):
+        return jsonify({"error": "PDF generation failed", "log": result.stderr[:300]}), 500
+
+    resend.api_key = RESEND_API_KEY
+    with open(pdf_path, "rb") as f:
+        pdf_b64 = base64.b64encode(f.read()).decode()
+
+    subject = {
+        "nl": f"Jouw Zenkai Security Rapport — {domain}",
+        "en": f"Your Zenkai Security Report — {domain}",
+    }.get(language, f"Zenkai Security Rapport — {domain}")
+
+    body_nl = f"""
+    <h2>Jouw beveiligingsrapport is klaar</h2>
+    <p>Domein: <strong>{domain}</strong></p>
+    <p>Het volledige rapport vind je als bijlage.</p>
+    <p>Zenkai Scan — scan.zenkai.nl</p>
+    """
+    body_en = f"""
+    <h2>Your security report is ready</h2>
+    <p>Domain: <strong>{domain}</strong></p>
+    <p>Find the full report attached.</p>
+    <p>Zenkai Scan — scan.zenkai.nl</p>
+    """
+
+    resend.Emails.send({
+        "from":    "scan@zenkai.nl",
+        "to":      email,
+        "subject": subject,
+        "html":    body_en if language == "en" else body_nl,
+        "attachments": [{
+            "filename": f"zenkai-rapport-{domain}.pdf",
+            "content":  pdf_b64,
+        }],
+    })
+
+    return jsonify({"status": "sent", "email": email, "domain": domain})
+
+
 @app.route("/report/<path:domain>", methods=["GET"])
 def get_report(domain):
     key = request.headers.get("X-API-Key")

@@ -160,7 +160,7 @@ Goal: fast broad inventory without impacting the target.
 - [x] Directory enumeration — common.txt (gobuster, HTTPS+HTTP fallback, redirect follow)
 - [x] Webserver information gathering (whatweb — framework, CMS, CDN, version)
 - [x] Full DNS records (A, AAAA, MX, NS, TXT, CNAME, CAA)
-- [ ] URL/IP reputation via VirusTotal API
+- [x] URL/IP reputation via VirusTotal API
 - [ ] ZAP Proxy API — passive/baseline scan (depth 2, max 50 URLs, 3min timeout)
 
 **Additional (built)**

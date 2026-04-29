@@ -4,10 +4,12 @@ Zenkai Quick Scanner — streaming modular scanner for Kali.
 Each module runs with a hard timeout, emits one JSON line on completion.
 Format: {"module":"nmap","status":"pass|warn|fail","score":int,"summary":"...","details":[],"findings":[]}
 """
-import json, subprocess, sys, re, os
+import json, subprocess, sys, re, os, requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-WORDLIST = "/usr/share/wordlists/dirb/common.txt"
+WORDLIST  = "/usr/share/wordlists/dirb/common.txt"
+VT_KEY    = os.environ.get("VIRUSTOTAL_API_KEY", "")
+SHODAN_KEY = os.environ.get("SHODAN_API_KEY", "")
 
 
 def run(cmd, timeout=30):
@@ -250,6 +252,40 @@ def mod_whatweb(domain):
     emit("whatweb", status, score, ", ".join(details[:5]) or "No fingerprint", details, findings)
 
 
+def mod_virustotal(domain):
+    if not VT_KEY:
+        emit("virustotal", "warn", 50, "No VirusTotal API key — skipped", [], [])
+        return
+    try:
+        r = requests.get(
+            f"https://www.virustotal.com/api/v3/domains/{domain}",
+            headers={"x-apikey": VT_KEY}, timeout=15
+        )
+        if r.status_code != 200:
+            emit("virustotal", "warn", 50, f"VirusTotal: HTTP {r.status_code}", [], [])
+            return
+        attrs = r.json().get("data", {}).get("attributes", {})
+        stats = attrs.get("last_analysis_stats", {})
+        malicious  = stats.get("malicious", 0)
+        suspicious = stats.get("suspicious", 0)
+        harmless   = stats.get("harmless", 0)
+        details    = [f"Malicious: {malicious}", f"Suspicious: {suspicious}", f"Clean: {harmless}"]
+        findings   = []
+        if malicious > 0:
+            findings.append({"title": f"Flagged malicious by {malicious} vendors", "severity": "High",
+                "description": f"VirusTotal: {malicious} security vendors flagged this domain.",
+                "recommendation": "Investigate domain reputation and hosting provider."})
+        if suspicious > 0:
+            findings.append({"title": f"Flagged suspicious by {suspicious} vendors", "severity": "Medium",
+                "description": f"VirusTotal: {suspicious} vendors flagged as suspicious.",
+                "recommendation": "Review domain configuration and content."})
+        score  = max(0, 100 - malicious * 15 - suspicious * 5)
+        status = "pass" if malicious == 0 and suspicious == 0 else ("warn" if score >= 50 else "fail")
+        emit("virustotal", status, score, f"{malicious} malicious · {suspicious} suspicious · {harmless} clean", details, findings)
+    except Exception as e:
+        emit("virustotal", "warn", 50, f"VirusTotal error: {str(e)[:60]}", [], [])
+
+
 # ── main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -259,9 +295,9 @@ if __name__ == "__main__":
 
     domain = sys.argv[1].strip().lstrip("https://").lstrip("http://").split("/")[0]
 
-    modules = [mod_headers, mod_ssl, mod_dns, mod_nmap, mod_gobuster, mod_nikto, mod_whatweb]
+    modules = [mod_headers, mod_ssl, mod_dns, mod_nmap, mod_gobuster, mod_nikto, mod_whatweb, mod_virustotal]
 
-    with ThreadPoolExecutor(max_workers=7) as pool:
+    with ThreadPoolExecutor(max_workers=8) as pool:
         futures = {pool.submit(m, domain): m.__name__ for m in modules}
         for f in as_completed(futures):
             try:

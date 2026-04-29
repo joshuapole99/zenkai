@@ -50,10 +50,11 @@ const QUICK_CHECKS = [
   { id: "headers",  label: "Security headers",      desc: "CSP, HSTS, X-Frame-Options" },
   { id: "ssl",      label: "SSL / TLS",              desc: "TLS versie + certificaat (openssl)" },
   { id: "dns",      label: "SPF / DMARC",            desc: "DNS e-mail authenticatie (dig)" },
-  { id: "nmap",     label: "Poortscan",              desc: "Top 1000 TCP poorten + services (nmap)" },
-  { id: "gobuster", label: "Directory enum",         desc: "Verborgen paden (gobuster + dirb wordlist)" },
-  { id: "nikto",    label: "Nikto baseline",         desc: "OWASP Top 10 indicatoren (nikto)" },
-  { id: "whatweb",  label: "Tech fingerprint",       desc: "CMS, server, frameworks (whatweb)" },
+  { id: "nmap",       label: "Poortscan",              desc: "Top 1000 TCP poorten + services (nmap)" },
+  { id: "gobuster",   label: "Directory enum",         desc: "Verborgen paden (gobuster + dirb wordlist)" },
+  { id: "nikto",      label: "Nikto baseline",         desc: "OWASP Top 10 indicatoren (nikto)" },
+  { id: "whatweb",    label: "Tech fingerprint",       desc: "CMS, server, frameworks (whatweb)" },
+  { id: "virustotal", label: "VirusTotal reputatie",   desc: "Malicious + suspicious vendors" },
 ];
 
 // ── Full scan modules ─────────────────────────────────────────────────────────
@@ -119,6 +120,11 @@ export default function ScanPage() {
   const [expanded, setExpanded]       = useState<string | null>(null);
   const [error, setError]             = useState("");
   const [scannedDomain, setScannedDomain] = useState("");
+  const [scanDone, setScanDone]       = useState(false);
+  const [reportEmail, setReportEmail] = useState("");
+  const [reportSending, setReportSending] = useState(false);
+  const [reportSent, setReportSent]   = useState(false);
+  const [reportError, setReportError] = useState("");
 
   const CHECKS = mode === "full" ? FULL_CHECKS : mode === "quick" ? QUICK_CHECKS : FREE_CHECKS;
 
@@ -134,6 +140,9 @@ export default function ScanPage() {
     setError("");
     setScannedDomain(d);
     setExpanded(null);
+    setScanDone(false);
+    setReportSent(false);
+    setReportError("");
 
     try {
       const endpoint = mode === "full" ? "/api/full-scan" : mode === "quick" ? "/api/quick-scan" : "/api/scan";
@@ -203,6 +212,30 @@ export default function ScanPage() {
       setError((e as Error).message);
     } finally {
       setScanning(false);
+      setScanDone(true);
+    }
+  }
+
+  async function sendReport(e: React.FormEvent) {
+    e.preventDefault();
+    if (!reportEmail || !scannedDomain) return;
+    setReportSending(true);
+    setReportError("");
+    try {
+      const res = await fetch("/api/generate-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: scannedDomain, email: reportEmail, language, type: mode }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Mislukt" }));
+        throw new Error((err as { error: string }).error);
+      }
+      setReportSent(true);
+    } catch (e) {
+      setReportError((e as Error).message);
+    } finally {
+      setReportSending(false);
     }
   }
 
@@ -386,6 +419,38 @@ export default function ScanPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* ── PDF rapport via email ── */}
+          {scanDone && (mode === "quick" || mode === "full") && !reportSent && (
+            <form onSubmit={sendReport} style={{ display: "flex", gap: "0", marginBottom: "24px", maxWidth: "520px", border: "1px solid rgba(15,14,14,0.1)", overflow: "hidden" }}>
+              <input
+                type="email"
+                required
+                placeholder={language === "en" ? "your@email.com — receive PDF report" : "jouw@email.nl — ontvang PDF rapport"}
+                value={reportEmail}
+                onChange={e => setReportEmail(e.target.value)}
+                disabled={reportSending}
+                style={{ flex: 1, padding: "12px 16px", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", border: "none", outline: "none", background: "transparent", color: "#0F0E0E" }}
+              />
+              <button
+                type="submit"
+                disabled={reportSending}
+                style={{ padding: "12px 20px", background: "#0F0E0E", color: "#fff", border: "none", cursor: reportSending ? "not-allowed" : "pointer", fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", fontWeight: 600, whiteSpace: "nowrap", opacity: reportSending ? 0.6 : 1 }}
+              >
+                {reportSending ? "..." : language === "en" ? "SEND PDF →" : "STUUR PDF →"}
+              </button>
+            </form>
+          )}
+          {reportSent && (
+            <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "#16A34A", marginBottom: "24px" }}>
+              ✓ {language === "en" ? `Report sent to ${reportEmail}` : `Rapport verstuurd naar ${reportEmail}`}
+            </p>
+          )}
+          {reportError && (
+            <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "#DC2626", marginBottom: "24px" }}>
+              ✗ {reportError}
+            </p>
           )}
 
           {/* ── Checks list ── */}
