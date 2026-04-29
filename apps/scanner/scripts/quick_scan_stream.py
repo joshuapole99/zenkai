@@ -160,16 +160,24 @@ def mod_gobuster(domain):
     if not os.path.exists(WORDLIST):
         emit("gobuster", "warn", 50, "Wordlist not found — skipped", [], [])
         return
-    out = run(
-        f"gobuster dir -u https://{domain} -w {WORDLIST} -k -t 20 -q "
-        f"--timeout 10s -b 404,429,503 --no-error 2>/dev/null",
-        timeout=90
-    )
+
+    ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    # Try HTTPS first, fall back to HTTP
+    for scheme in ["https", "http"]:
+        out = run(
+            f"gobuster dir -u {scheme}://{domain} -w {WORDLIST} -k -r -t 10 -q "
+            f"--timeout 15s -b 404,429,503 -a '{ua}'",
+            timeout=90
+        )
+        if out.strip():
+            break
+
     sensitive = ["admin","login","wp-admin","phpmyadmin",".env","config","backup",
                  "api","swagger","graphql",".git","debug","shell","upload"]
     findings, details = [], []
     for line in out.splitlines():
-        m = re.search(r'(/\S+)\s.*Status:\s*(\d+)', line)
+        # gobuster v3 format: /path   (Status: 200) [Size: 1234]
+        m = re.search(r'(/\S+)\s+\(Status:\s*(\d+)\)', line)
         if not m:
             continue
         path, code = m.group(1), int(m.group(2))
@@ -178,7 +186,7 @@ def mod_gobuster(domain):
         details.append(f"{path} [{code}]")
         if is_s or code == 200:
             findings.append({"title": f"Endpoint: {path}", "severity": sev,
-                "description": f"HTTP {code} at https://{domain}{path}",
+                "description": f"HTTP {code} at {scheme}://{domain}{path}",
                 "recommendation": "Verify this endpoint should be public."})
 
     score = max(0, 100 - len([f for f in findings if f["severity"] in ("High","Medium")]) * 15)

@@ -142,6 +142,50 @@ def quick_scan_stream():
     )
 
 
+@app.route("/full-scan", methods=["POST"])
+def full_scan_stream():
+    key = request.headers.get("X-API-Key")
+    if key != API_KEY:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data     = request.json or {}
+    domain   = clean_domain(data.get("domain", ""))
+    language = valid_language(data.get("language", "nl"))
+
+    if not domain:
+        return jsonify({"error": "domain required"}), 400
+
+    if not DOMAIN_RE.match(domain):
+        return jsonify({"error": "Invalid domain"}), 400
+
+    results_dir = os.path.join(SCRIPT_DIR, "results", domain)
+    os.makedirs(results_dir, exist_ok=True)
+    with open(os.path.join(results_dir, "language.txt"), "w") as f:
+        f.write(language)
+
+    script = os.path.join(SCRIPT_DIR, "full_scan_stream.py")
+
+    def generate():
+        proc = subprocess.Popen(
+            ["python3", script, domain, language],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            text=True, cwd=SCRIPT_DIR
+        )
+        try:
+            for line in iter(proc.stdout.readline, ""):
+                line = line.strip()
+                if line:
+                    yield line + "\n"
+        finally:
+            proc.wait()
+
+    return app.response_class(
+        generate(),
+        mimetype="text/plain",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+    )
+
+
 @app.route("/report/<path:domain>", methods=["GET"])
 def get_report(domain):
     key = request.headers.get("X-API-Key")

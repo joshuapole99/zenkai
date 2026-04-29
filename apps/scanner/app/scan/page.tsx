@@ -56,6 +56,21 @@ const QUICK_CHECKS = [
   { id: "whatweb",  label: "Tech fingerprint",       desc: "CMS, server, frameworks (whatweb)" },
 ];
 
+// ── Full scan modules ─────────────────────────────────────────────────────────
+const FULL_CHECKS = [
+  { id: "headers",    label: "Security headers",      desc: "8 headers incl. COOP, CORP" },
+  { id: "ssl",        label: "SSL / TLS deep",        desc: "Cipher suites, RC4, 3DES (sslyze)" },
+  { id: "dns",        label: "DNS volledig",           desc: "SPF, DMARC, CAA, MX, NS (dig)" },
+  { id: "nmap",       label: "Full poortscan",         desc: "Alle 65535 TCP poorten (nmap)" },
+  { id: "subdomains", label: "Subdomain enum",         desc: "DNS brute-force subdomains" },
+  { id: "gobuster",   label: "Directory enum (big)",   desc: "Uitgebreide paden (gobuster + big.txt)" },
+  { id: "nikto",      label: "Nikto uitgebreid",       desc: "OWASP + XSS + CORS + TRACE (nikto)" },
+  { id: "whatweb",    label: "Tech fingerprint",       desc: "CMS, server, frameworks (whatweb)" },
+  { id: "shodan",     label: "Shodan intelligence",    desc: "CVEs + exposed services (Shodan API)" },
+  { id: "virustotal", label: "VirusTotal reputatie",   desc: "Malicious + suspicious vendors" },
+  { id: "zap",        label: "ZAP baseline",           desc: "Passieve web crawl (OWASP ZAP)" },
+];
+
 const STATUS: Record<StatusKey, { color: string; label: string }> = {
   pass:  { color: "#16A34A", label: "PASS" },
   warn:  { color: "#D97706", label: "WARN" },
@@ -95,7 +110,7 @@ function Spinner() {
 
 export default function ScanPage() {
   const [domain, setDomain]           = useState("");
-  const [mode, setMode]               = useState<"free" | "quick">("free");
+  const [mode, setMode]               = useState<"free" | "quick" | "full">("free");
   const [language, setLanguage]       = useState<"nl" | "en">("nl");
   const [scanning, setScanning]       = useState(false);
   const [results, setResults]         = useState<Results>({});
@@ -105,7 +120,7 @@ export default function ScanPage() {
   const [error, setError]             = useState("");
   const [scannedDomain, setScannedDomain] = useState("");
 
-  const CHECKS = mode === "quick" ? QUICK_CHECKS : FREE_CHECKS;
+  const CHECKS = mode === "full" ? FULL_CHECKS : mode === "quick" ? QUICK_CHECKS : FREE_CHECKS;
 
   async function runScan(e: React.FormEvent) {
     e.preventDefault();
@@ -121,7 +136,7 @@ export default function ScanPage() {
     setExpanded(null);
 
     try {
-      const endpoint = mode === "quick" ? "/api/quick-scan" : "/api/scan";
+      const endpoint = mode === "full" ? "/api/full-scan" : mode === "quick" ? "/api/quick-scan" : "/api/scan";
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -233,7 +248,8 @@ export default function ScanPage() {
           <div style={{ display: "flex", gap: "8px", marginBottom: "28px" }}>
             {[
               { key: "free",  label: "Gratis scan",   desc: "6 checks · serverless" },
-              { key: "quick", label: "Quick scan",     desc: "7 modules · Kali VM" },
+              { key: "quick", label: "Quick scan",     desc: "7 modules · VPS" },
+              { key: "full",  label: "Full scan",      desc: "11 modules · VPS · Pro" },
             ].map((m) => (
               <button
                 key={m.key}
@@ -279,8 +295,13 @@ export default function ScanPage() {
           </div>
 
           {mode === "quick" && (
-            <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "#D97706", marginBottom: "20px", padding: "10px 14px", border: "1px solid rgba(217,119,6,0.2)", background: "rgba(217,119,6,0.04)" }}>
-              ⚠ Vereist: Flask API op Kali VM (192.168.178.36:5000). Lokaal netwerk only.
+            <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "#0284C7", marginBottom: "20px", padding: "10px 14px", border: "1px solid rgba(2,132,199,0.2)", background: "rgba(2,132,199,0.04)" }}>
+              ⚡ Quick scan draait op de Zenkai VPS — geen setup nodig.
+            </p>
+          )}
+          {mode === "full" && (
+            <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "#7C3AED", marginBottom: "20px", padding: "10px 14px", border: "1px solid rgba(124,58,237,0.2)", background: "rgba(124,58,237,0.04)" }}>
+              🔍 Full scan — 11 modules, full poortscan, subdomain enum, Shodan + VirusTotal. Duurt 5–15 min.
             </p>
           )}
 
