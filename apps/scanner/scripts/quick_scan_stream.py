@@ -238,9 +238,8 @@ def mod_whatweb(domain):
                 "recommendation": "Upgrade to PHP 8.1+"})
 
     status = "pass" if not findings else "warn"
-    emit("whatweb", 100 if not findings else 70,
-         100 if not findings else 70,
-         ", ".join(details[:5]) or "No fingerprint", details, findings)
+    score  = 100 if not findings else 70
+    emit("whatweb", status, score, ", ".join(details[:5]) or "No fingerprint", details, findings)
 
 
 # ── main ──────────────────────────────────────────────────────────────────────
