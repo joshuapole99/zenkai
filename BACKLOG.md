@@ -148,19 +148,36 @@ Shodan / VirusTotal:
 ---
 
 ### Phase 2 — Quick Scan / Starter Plan ✓ (COMPLETE - April 2026)
-- [x] TCP port scan — top 1000 ports (nmap -sV -T4)
+
+Goal: fast broad inventory without impacting the target.
+
+**Port & Service Discovery**
+- [x] TCP port scan — top 1000 ports (nmap -sV)
+- [ ] UDP scan — selected ranges (DNS 53, SNMP 161, NTP 123)
 - [x] Service fingerprinting on open ports
+
+**Web & Infrastructure**
 - [x] Directory enumeration — common.txt (gobuster, HTTPS+HTTP fallback, redirect follow)
 - [x] Webserver information gathering (whatweb — framework, CMS, CDN, version)
+- [x] Full DNS records (A, AAAA, MX, NS, TXT, CNAME, CAA)
+- [ ] URL/IP reputation via VirusTotal API
+- [ ] ZAP Proxy API — passive/baseline scan (depth 2, max 50 URLs, 3min timeout)
+
+**Additional (built)**
 - [x] Nikto baseline checks (OWASP)
 - [x] SSL/TLS analysis (TLS 1.0/1.1/1.2/1.3, cert expiry, self-signed)
-- [x] DNS records analysis (SPF, DMARC)
 - [x] Security headers (HSTS, CSP, X-Frame, X-Content, Referrer, Permissions)
 - [x] Streaming scan UI with real-time per-module results
 - [x] NL/EN language toggle for PDF reports
 - [x] VPS deployment (Ubuntu, nginx, systemd, Let's Encrypt HTTPS)
 - [x] Bilingual PDF report (WeasyPrint + Jinja2)
 - [x] CVSS score mapping per finding
+
+**Limits (Starter):**
+- Max 1000 ports, 30 req/s, 10 min total scan time
+- No active exploitation, no deep crawling
+- 1 domein, 3 scans/mnd
+- Input: one domain per scan, scope-validated
 
 ---
 
