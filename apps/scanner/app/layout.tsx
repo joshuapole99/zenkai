@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   description:
     "Enter your domain. Get a professional security report in minutes. Shodan, SSL, OWASP, port scan, injection testing and more.",
   icons: {
-    icon: "/zenkai-logo.jpg",
-    apple: "/zenkai-logo.jpg",
+    icon: "/zenkai-logo.png",
+    apple: "/zenkai-logo.png",
   },
 };
 

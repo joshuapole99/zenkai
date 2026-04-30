@@ -16,9 +16,9 @@ export function ZenkaiFooter() {
         }}>
           <a href="https://zenkai.nl" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <img
-              src="/zenkai-logo.jpg"
+              src="/zenkai-logo.png"
               alt="Zenkai"
-              style={{ height: "56px", width: "auto", display: "block", filter: "invert(1)", margin: "-10px 0" }}
+              style={{ height: "56px", width: "auto", display: "block", margin: "-10px 0" }}
             />
           </a>
 

@@ -13,8 +13,8 @@ export const metadata: Metadata = {
     "Zenkai is a security platform for automated vulnerability scanning, reporting, and penetration testing tools.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/zenkai-logo.jpg",
-    apple: "/zenkai-logo.jpg",
+    icon: "/zenkai-logo.png",
+    apple: "/zenkai-logo.png",
   },
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Zenkai" },
   openGraph: {
