@@ -2,144 +2,138 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Privacy Policy — Zenkai",
-  description: "How Zenkai collects, uses, and protects your data.",
+  description: "Hoe Zenkai jouw gegevens verzamelt, gebruikt en beschermt.",
 };
-
-export default function PrivacyPage() {
-  return (
-    <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
-      <header
-        className="flex items-center justify-between px-6 py-4 border-b"
-        style={{ borderColor: "rgba(255,255,255,0.06)" }}
-      >
-        <Link href="/" className="font-black text-lg tracking-tight gradient-text">ZENKAI</Link>
-        <Link href="/" className="text-xs text-gray-500 hover:text-white transition-colors">Back to home</Link>
-      </header>
-
-      <main className="max-w-2xl mx-auto px-6 py-16">
-        <div className="mb-10">
-          <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: "#FF6B35" }}>Legal</p>
-          <h1 className="text-3xl font-black text-white">Privacy Policy</h1>
-          <p className="text-sm text-gray-500 mt-2">Last updated: April 2026</p>
-        </div>
-
-        <div className="space-y-10 text-sm text-gray-400 leading-relaxed">
-          <Section title="1. Who we are">
-            Zenkai (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is a fitness application that helps you train
-            consistently through gamified daily quests and character progression. We are committed to
-            protecting your personal data and being transparent about how we use it.
-          </Section>
-
-          <Section title="2. Data we collect">
-            When you use Zenkai, we collect the following data:
-            <ul className="mt-3 space-y-2 pl-4">
-              <Item>Email address — used to identify your account and send transactional messages.</Item>
-              <Item>Username and character name — used to personalize your in-app experience.</Item>
-              <Item>Fitness data — quest completions, XP, streaks, food check responses. Used to power your character progression.</Item>
-              <Item>Onboarding choices — character class, goal, and fitness level. Used to calibrate daily quests.</Item>
-            </ul>
-            <p className="mt-3">We do not collect any health data beyond what you voluntarily log inside the app.</p>
-          </Section>
-
-          <Section title="3. How we use your data">
-            Your data is used exclusively to:
-            <ul className="mt-3 space-y-2 pl-4">
-              <Item>Provide and improve the Zenkai service.</Item>
-              <Item>Personalize your quests and character experience.</Item>
-              <Item>Send you account-related emails (e.g. password resets).</Item>
-              <Item>Analyze usage patterns in aggregate to improve product features.</Item>
-            </ul>
-            <p className="mt-3">We never sell your data to third parties. We never use your data for advertising.</p>
-          </Section>
-
-          <Section title="4. Data storage">
-            Your data is stored in a secure PostgreSQL database hosted on Neon. All data is encrypted
-            in transit via HTTPS. Passwords are hashed using bcrypt and are never stored in plain text.
-          </Section>
-
-          <Section title="5. Cookies">
-            We use a single HTTP-only cookie to maintain your login session. This cookie contains a
-            signed JWT token and expires after 7 days. We do not use tracking cookies or third-party
-            analytics cookies.
-          </Section>
-
-          <Section title="6. Your rights">
-            You have the right to:
-            <ul className="mt-3 space-y-2 pl-4">
-              <Item>Access the personal data we hold about you.</Item>
-              <Item>Request correction of inaccurate data.</Item>
-              <Item>Request deletion of your account and all associated data.</Item>
-              <Item>Withdraw consent at any time by deleting your account.</Item>
-            </ul>
-            <p className="mt-3">
-              To exercise any of these rights, email us at{" "}
-              <a href="mailto:privacy@zenkai.app" className="text-white hover:underline">privacy@zenkai.app</a>.
-            </p>
-          </Section>
-
-          <Section title="7. Third-party services">
-            Zenkai uses the following third-party services:
-            <ul className="mt-3 space-y-2 pl-4">
-              <Item>Neon — database hosting (your data is stored here).</Item>
-              <Item>Vercel — application hosting and deployment.</Item>
-              <Item>Lemon Squeezy — payment processing (only if you subscribe).</Item>
-            </ul>
-            Each service operates under its own privacy policy and data protection standards.
-          </Section>
-
-          <Section title="8. Children">
-            Zenkai is not directed at children under the age of 13. We do not knowingly collect
-            data from children. If you believe a child has created an account, contact us at
-            privacy@zenkai.app and we will delete it promptly.
-          </Section>
-
-          <Section title="9. Changes to this policy">
-            We may update this policy from time to time. When we do, we will update the date at
-            the top of this page. Continued use of Zenkai after changes constitutes acceptance
-            of the updated policy.
-          </Section>
-
-          <Section title="10. Contact">
-            For any privacy-related questions:
-            <br />
-            <a href="mailto:privacy@zenkai.app" className="text-white hover:underline">privacy@zenkai.app</a>
-          </Section>
-        </div>
-      </main>
-
-      <Footer />
-    </div>
-  );
-}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h2 className="text-base font-bold text-white mb-3">{title}</h2>
-      <div>{children}</div>
+      <h2 style={{
+        fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700,
+        fontSize: "1.25rem", letterSpacing: "-0.02em",
+        color: "#0F0E0E", margin: "0 0 12px",
+      }}>
+        {title}
+      </h2>
+      <div style={{ fontSize: "14px", color: "rgba(15,14,14,0.55)", lineHeight: 1.8 }}>
+        {children}
+      </div>
     </div>
   );
 }
 
-function Item({ children }: { children: React.ReactNode }) {
+export default function PrivacyPage() {
   return (
-    <li className="flex gap-2">
-      <span style={{ color: "#FF6B35" }} className="flex-shrink-0 mt-0.5">—</span>
-      <span>{children}</span>
-    </li>
-  );
-}
+    <div style={{ minHeight: "100vh", background: "#ffffff", color: "#0F0E0E" }}>
+      <header style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "0 40px", height: "60px",
+        borderBottom: "1px solid rgba(15,14,14,0.08)",
+      }}>
+        <Link href="/" style={{ textDecoration: "none" }}>
+          <img src="/zenkai-logo.jpg" alt="Zenkai" style={{ height: "36px", width: "auto", display: "block", mixBlendMode: "multiply" }} />
+        </Link>
+        <Link href="/" style={{
+          fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
+          color: "rgba(15,14,14,0.4)", textDecoration: "none",
+          letterSpacing: "0.04em",
+        }}>
+          ← Terug
+        </Link>
+      </header>
 
-function Footer() {
-  return (
-    <footer className="border-t py-8 px-6 mt-16" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-      <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p className="text-xs text-gray-700">© 2026 Zenkai. Every setback makes you stronger.</p>
-        <div className="flex gap-5 text-xs">
-          <Link href="/privacy" className="text-gray-500 hover:text-white transition-colors">Privacy</Link>
-          <Link href="/terms" className="text-gray-500 hover:text-white transition-colors">Terms</Link>
+      <main style={{ maxWidth: "680px", margin: "0 auto", padding: "64px 40px 100px" }}>
+        <div style={{ marginBottom: "48px" }}>
+          <span style={{
+            fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
+            letterSpacing: "0.2em", color: "rgba(15,14,14,0.35)",
+            textTransform: "uppercase", display: "block", marginBottom: "16px",
+          }}>
+            Legal
+          </span>
+          <h1 style={{
+            fontFamily: "'Fraunces',Georgia,serif", fontWeight: 900,
+            fontSize: "clamp(2rem,5vw,3.5rem)", letterSpacing: "-0.04em",
+            lineHeight: 0.95, color: "#0F0E0E", margin: "0 0 16px",
+          }}>
+            Privacy Policy
+          </h1>
+          <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "rgba(15,14,14,0.35)" }}>
+            Laatst bijgewerkt: april 2026
+          </p>
         </div>
-      </div>
-    </footer>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "36px" }}>
+          <Section title="1. Wie zijn wij">
+            Zenkai is een security platform ontwikkeld door Joshua Pole (security analyst, OSCP). Het platform omvat <strong>scan.zenkai.nl</strong> — een geautomatiseerde domeinscanner voor security audits. Zenkai is een eenmanszaak gevestigd in Nederland. Contact: <a href="mailto:hi@zenkai.nl" style={{ color: "#0284C7" }}>hi@zenkai.nl</a>
+          </Section>
+
+          <Section title="2. Welke gegevens verzamelen we">
+            <ul style={{ paddingLeft: "20px", margin: "8px 0 0" }}>
+              {[
+                "E-mailadres — gebruikt voor accountbeheer en het versturen van PDF rapporten.",
+                "Domeinnaam bij een scan — het domein dat je opgeeft voor analyse.",
+                "Scanresultaten — technische bevindingen van het opgegeven domein, opgeslagen voor rapportage.",
+                "Betaalgegevens — verwerkt via Lemon Squeezy. Zenkai slaat geen betaaldata op.",
+                "IP-adres — gelogd voor beveiligingsdoeleinden en misbruikpreventie.",
+              ].map((item) => (
+                <li key={item} style={{ marginBottom: "8px" }}>{item}</li>
+              ))}
+            </ul>
+          </Section>
+
+          <Section title="3. Hoe we gegevens gebruiken">
+            Wij gebruiken jouw gegevens uitsluitend voor:
+            <ul style={{ paddingLeft: "20px", margin: "8px 0 0" }}>
+              {[
+                "Het uitvoeren van gevraagde security scans.",
+                "Het genereren en versturen van PDF rapporten per e-mail.",
+                "Accountbeheer en authenticatie.",
+                "Facturering via Lemon Squeezy.",
+                "Misbruikdetectie en rate limiting.",
+              ].map((item) => (
+                <li key={item} style={{ marginBottom: "8px" }}>{item}</li>
+              ))}
+            </ul>
+            We verkopen of delen jouw gegevens nooit met derden voor marketingdoeleinden.
+          </Section>
+
+          <Section title="4. Scanresultaten en doeldomeinen">
+            De scanner analyseert uitsluitend domeinen die jij opgeeft. Door een scan te starten verklaar je dat je <strong>eigenaar bent van het domein</strong> of <strong>expliciete toestemming hebt</strong> van de eigenaar. Scanresultaten worden maximaal 30 dagen opgeslagen (Starter), 1 jaar (Pro) of onbeperkt (Enterprise).
+          </Section>
+
+          <Section title="5. Derden">
+            Zenkai maakt gebruik van de volgende externe diensten:
+            <ul style={{ paddingLeft: "20px", margin: "8px 0 0" }}>
+              {[
+                "Supabase — database en authenticatie (EU servers).",
+                "Vercel — hosting van de webapplicatie.",
+                "Lemon Squeezy — betalingsverwerking.",
+                "Resend — e-mailverzending van rapporten.",
+                "Shodan, urlscan.io — externe threat intelligence (geanonimiseerde queries).",
+              ].map((item) => (
+                <li key={item} style={{ marginBottom: "8px" }}>{item}</li>
+              ))}
+            </ul>
+          </Section>
+
+          <Section title="6. Jouw rechten (AVG/GDPR)">
+            Als EU-inwoner heb je het recht op inzage, correctie, verwijdering en bezwaar. Stuur een verzoek naar <a href="mailto:hi@zenkai.nl" style={{ color: "#0284C7" }}>hi@zenkai.nl</a>. We reageren binnen 30 dagen.
+          </Section>
+
+          <Section title="7. Cookies">
+            Zenkai gebruikt alleen functionele cookies (sessie, authenticatie). Er worden geen tracking- of advertentiecookies geplaatst.
+          </Section>
+
+          <Section title="8. Beveiliging">
+            Alle verbindingen zijn versleuteld via HTTPS/TLS. Wachtwoorden worden gehasht opgeslagen via Supabase Auth. Scanresultaten zijn alleen toegankelijk voor de accounteigenaar.
+          </Section>
+
+          <Section title="9. Contact">
+            Vragen over privacy? Mail naar <a href="mailto:hi@zenkai.nl" style={{ color: "#0284C7" }}>hi@zenkai.nl</a> of schrijf naar: Zenkai, Nederland.
+          </Section>
+        </div>
+      </main>
+    </div>
   );
 }
