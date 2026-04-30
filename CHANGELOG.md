@@ -8,8 +8,12 @@
 - **fix:** Shodan 403 (CDN IP) → graceful warn; 404 → graceful pass instead of error.
 - **fix:** Subdomain enumeration expanded to SecLists `subdomains-top1million-5000.txt` (5000 entries, xargs -P 40 parallel).
 
-### Scanner — PDF Report
+### Scanner — PDF Report (Phase 5)
 - **fix:** Bar chart overflow — switched from pixel to percentage widths; bars no longer escape the chart box.
+- **feat:** "Scan Overzicht" section in PDF — 2-column module grid showing status badge, summary, and first 8 detail lines per module (open ports, subdomain list, ZAP findings, injection results, etc.)
+- **fix:** Section numbering now dynamic — accounts for fingerprints + modules sections to avoid duplicate numbers.
+- **fix:** `render.py` — reads `full_report.json` for full scans (has modules data) instead of falling through to `report.json` (empty modules).
+- **fix:** PDF generation for IP address targets — `api.py` now uses `sys.executable` for all subprocess calls, ensuring WeasyPrint venv is used.
 
 ### Web (zenkai.nl)
 - **feat:** Privacy Policy rewritten in security platform style (9 sections, AVG/GDPR compliant, scanner-specific).

@@ -264,10 +264,12 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 ---
 
 ### Phase 5 — Output & Reporting
-- [ ] PDF rapport — client-ready, Zenkai branded, met logo
+- [x] PDF rapport — client-ready, Zenkai branded, met logo
+- [x] Risk score 0–100 met severity breakdown
+- [x] "Scan Overzicht" module grid — open ports, subdomains, ZAP details, injections in PDF
+- [x] Section numbering dynamisch op basis van aanwezige secties
 - [ ] JSON output voor API consumers
-- [ ] Risk score 0–100 met severity breakdown
-- [ ] Executive summary in plain Nederlands
+- [ ] Executive summary in plain Nederlands (nu generiek — verbeteren)
 - [ ] CVE + CVSS score per finding
 - [ ] Top findings + actionable fixes + evidence per issue
 - [ ] Rapport bewaren per plan (30 dagen / 1 jaar / onbeperkt)
