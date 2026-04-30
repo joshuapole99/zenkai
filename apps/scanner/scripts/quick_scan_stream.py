@@ -190,7 +190,7 @@ def mod_gobuster(domain):
     for scheme in ["https", "http"]:
         out = run(
             f"gobuster dir -u {scheme}://{domain} -w {WORDLIST} -k -r -t 10 -q "
-            f"--timeout 15s -b 404,429,503 -a '{ua}'",
+            f"--timeout 15s -b 404,403,429,503 -a '{ua}'",
             timeout=90
         )
         if out.strip():
@@ -355,16 +355,23 @@ def mod_zap(domain):
     findings, details = [], []
     if os.path.exists(report_path):
         try:
+            import html
             content = open(report_path).read()
+            seen = set()
             for m in re.finditer(
-                r'<name>([^<]+)</name>.*?<riskcode>(\d)</riskcode>.*?<desc>([^<]{0,200})',
+                r'<name>([^<]+)</name>.*?<riskcode>(\d+)</riskcode>.*?<desc>(.*?)</desc>',
                 content, re.DOTALL
             ):
-                name, risk, desc = m.group(1).strip(), int(m.group(2)), m.group(3).strip()
+                name = m.group(1).strip()
+                risk = int(m.group(2))
+                desc = html.unescape(re.sub(r'<[^>]+>', '', m.group(3))).strip()[:200]
+                if name in seen:
+                    continue
+                seen.add(name)
                 sev = {3: "High", 2: "Medium", 1: "Low", 0: "Info"}.get(risk, "Low")
                 if risk >= 1:
                     findings.append({"title": name, "severity": sev,
-                        "description": desc[:200],
+                        "description": desc,
                         "recommendation": "Review ZAP finding and apply remediation."})
                     details.append(f"[{sev}] {name}")
         finally:
