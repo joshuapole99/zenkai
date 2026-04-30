@@ -325,3 +325,55 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 | ldapsearch | LDAP directory enumeration | Enterprise |
 | netexec | SMB/SSH/WinRM/MSSQL/FTP credential spraying | Enterprise |
 | Kerbrute | Kerberos username enumeration | Enterprise |
+| Hydra | Web/FTP/SSH/RDP login brute force | Enterprise |
+| GitDumper | Git repo dump als /.git gevonden wordt | Pro+ |
+| sslscan | SSL/TLS cipher suite analyse | Pro+ |
+| shcheck.py | Security headers checker | Starter+ |
+| snmpwalk | SNMP enumeration | Pro+ |
+| dnsenum | DNS enumeration (zone transfer, brute force) | Starter+ |
+| nslookup | DNS lookup | Alle plans |
+| metasploit | Exploit validation (pentest service only) | Enterprise+ |
+
+---
+
+### Phase 7 — Scanner Intelligence & Reporting Improvements (TODO)
+
+**Reporting — Tabellen per module**
+- [ ] Poortscan resultaten → tabel: IP address, hostname, port, service, details
+- [ ] DNS records → tabel: domain, record type, value, policy (incl. SPF, DKIM, DMARC)
+- [ ] Response headers → tabel: domain, header, value
+- [ ] Missing security headers → tabel: domain, ontbrekende header
+- [ ] SSL misconfiguraties → tabel: domain, issue (bijv. TLSv1.0 enabled — alleen 1.2/1.3 is secure)
+- [ ] Network discovery → tabel: IP address, hostname, OS, domain, Signing, SMBv1
+- [ ] Gevonden accounts → tabel: source, username, type
+- [ ] Elke finding krijgt: uitleg wat het is + aanbeveling/recommendation voor de klant
+- [ ] Security headers uitleg — wat doet elke header (HSTS, CSP, X-Frame, etc.)
+
+**Tool verbeteringen**
+- [ ] feroxbuster/gobuster: herken Cloudflare CDN paden (`/cdn-cgi/`) → filter of markeer als "CDN intern, geen risico"
+- [ ] SQLMap: scan alle input velden (forms/POST) via .req file, niet alleen URL params
+- [ ] Alle gevonden subdomains: automatisch poortscan (nmap) + nikto → Pro / beperkt in Free
+- [ ] nmap flags: `-p-` (alle poorten), `-sV` (service), `-sU` (UDP), `-Pn` (host unreachable), `-A` (aggressive)
+- [ ] DNSDumpster integratie voor subdomain discovery (web scraper of API)
+- [ ] DNSSEC scanning — check of DNSSEC correct geconfigureerd is
+- [ ] snmpwalk — SNMP community string enumeration (public/private)
+- [ ] shcheck.py — security headers analyse als aanvulling op huidige check
+- [ ] sslscan — aanvulling op sslyze voor cipher suite details
+
+**Brute force verbeteringen (Enterprise)**
+- [ ] Hydra — wachtwoord brute force op web login, FTP, SSH, RDP
+- [ ] NetExec met FTP/SMB/SSH/RDP brute force + enum
+- [ ] Login portals, routers, printers, switches → test admin:admin + top credentials
+- [ ] GitDumper — als `.git` directory gevonden (200 response) → dump repo automatisch
+- [ ] Nederlandse wordlist support (~/Tools/zenkai/wordlists/) voor enum + brute force
+
+**Enterprise extras**
+- [ ] Metasploit exploit validation pipeline (pentest service — aparte offering naast scanner)
+- [ ] Subdomains: elk ontdekt subdomain krijgt volledige poortscan + nikto + headers
+- [ ] IP ranges ondersteuning: alle subdomains/IPs in eigen subnet-tabel met reverse DNS
+
+**Pentest-as-a-Service (apart product — TODO)**
+- [ ] Handmatige pentest service op basis van OSCP kennis
+- [ ] Mooi rapport template (PDF) met executive summary + technische bevindingen
+- [ ] Research: is dit legaal in NL met alleen OSCP (zonder CREST/RE&D certificering)?
+- [ ] Pricing model: per domein / per dag / per rapport
