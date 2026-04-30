@@ -9,9 +9,11 @@ Format: {"module":"...","status":"pass|warn|fail","score":int,"summary":"...","d
 import json, subprocess, sys, re, os, requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-WORDLIST_COMMON = "/usr/share/wordlists/dirb/common.txt"
-WORDLIST_BIG    = "/usr/share/wordlists/dirb/big.txt"
-WORDLIST        = WORDLIST_BIG if os.path.exists(WORDLIST_BIG) else WORDLIST_COMMON
+WORDLIST_COMMON   = "/usr/share/wordlists/dirb/common.txt"
+WORDLIST_RAFT_LG  = "/usr/share/seclists/Discovery/Web-Content/raft-large-words.txt"
+WORDLIST_RAFT_MD  = "/usr/share/seclists/Discovery/Web-Content/raft-medium-words.txt"
+WORDLIST_BIG      = "/usr/share/seclists/Discovery/Web-Content/big.txt"
+WORDLIST_FULL     = next((w for w in [WORDLIST_RAFT_LG, WORDLIST_RAFT_MD, WORDLIST_BIG, WORDLIST_COMMON] if os.path.exists(w)), WORDLIST_COMMON)
 
 SHODAN_KEY    = os.environ.get("SHODAN_API_KEY", "")
 URLSCAN_KEY   = os.environ.get("URLSCAN_API_KEY", "")
@@ -219,38 +221,66 @@ def mod_subdomains(domain):
 
 
 def mod_gobuster(domain):
-    if not os.path.exists(WORDLIST):
+    # Full scan: use feroxbuster with SecLists raft-large wordlist
+    use_ferox = bool(run("which feroxbuster", timeout=3).strip())
+    wordlist  = WORDLIST_FULL
+    if not os.path.exists(wordlist):
         emit("gobuster", "warn", 50, "Wordlist not found — skipped", [], [])
         return
+
     ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    for scheme in ["https", "http"]:
-        out = run(
-            f"gobuster dir -u {scheme}://{domain} -w {WORDLIST} -k -r -t 10 -q "
-            f"--timeout 15s -b 404,403,429,503 -a '{ua}'",
-            timeout=120
-        )
-        if out.strip():
-            break
-
     sensitive = ["admin","login","wp-admin","phpmyadmin",".env","config","backup",
-                 "api","swagger","graphql",".git","debug","shell","upload","secret"]
+                 "api","swagger","graphql",".git","debug","shell","upload","secret",
+                 "console","dashboard","manage","panel","private","internal"]
     findings, details = [], []
-    for line in out.splitlines():
-        m = re.search(r'(/\S+)\s+\(Status:\s*(\d+)\)', line)
-        if not m:
-            continue
-        path, code = m.group(1), int(m.group(2))
-        is_s = any(s in path.lower() for s in sensitive)
-        sev = "High" if is_s else ("Medium" if code == 200 else "Low")
-        details.append(f"{path} [{code}]")
-        if is_s or code == 200:
-            findings.append({"title": f"Endpoint: {path}", "severity": sev,
-                "description": f"HTTP {code} at {scheme}://{domain}{path}",
-                "recommendation": "Verify this endpoint should be public."})
 
-    score = max(0, 100 - len([f for f in findings if f["severity"] in ("High","Medium")]) * 10)
+    if use_ferox:
+        out = run(
+            f"feroxbuster -u https://{domain} -w {wordlist} -k --silent "
+            f"-t 20 --timeout 10 --depth 2 "
+            f"-C 400,401,403,404,429,500,502,503 "
+            f"-A '{ua}' 2>/dev/null",
+            timeout=180
+        )
+        for line in out.splitlines():
+            m = re.search(r'(\d{3})\s+\S+\s+\S+\s+(https?://\S+)', line)
+            if not m:
+                continue
+            code, url = int(m.group(1)), m.group(2)
+            path = "/" + url.split("/", 3)[-1] if "/" in url else url
+            is_s = any(s in path.lower() for s in sensitive)
+            sev  = "High" if is_s else ("Medium" if code == 200 else "Low")
+            details.append(f"{path} [{code}]")
+            if is_s or code == 200:
+                findings.append({"title": f"Endpoint: {path}", "severity": sev,
+                    "description": f"HTTP {code} at https://{domain}{path}",
+                    "recommendation": "Verify this endpoint should be public."})
+    else:
+        for scheme in ["https", "http"]:
+            out = run(
+                f"gobuster dir -u {scheme}://{domain} -w {wordlist} -k -r -t 10 -q "
+                f"--timeout 15s -b 404,403,429,503 -a '{ua}'",
+                timeout=180
+            )
+            if out.strip():
+                break
+        for line in out.splitlines():
+            m = re.search(r'(/\S+)\s+\(Status:\s*(\d+)\)', line)
+            if not m:
+                continue
+            path, code = m.group(1), int(m.group(2))
+            is_s = any(s in path.lower() for s in sensitive)
+            sev  = "High" if is_s else ("Medium" if code == 200 else "Low")
+            details.append(f"{path} [{code}]")
+            if is_s or code == 200:
+                findings.append({"title": f"Endpoint: {path}", "severity": sev,
+                    "description": f"HTTP {code} at {scheme}://{domain}{path}",
+                    "recommendation": "Verify this endpoint should be public."})
+
+    tool = "feroxbuster" if use_ferox else "gobuster"
+    score  = max(0, 100 - len([f for f in findings if f["severity"] in ("High","Medium")]) * 10)
     status = "pass" if not findings else ("warn" if score >= 50 else "fail")
-    emit("gobuster", status, score, f"{len(details)} paths found", details, findings)
+    emit("gobuster", status, score, f"{len(details)} paths found ({tool} + {os.path.basename(wordlist)})", details, findings)
 
 
 def mod_nikto(domain):

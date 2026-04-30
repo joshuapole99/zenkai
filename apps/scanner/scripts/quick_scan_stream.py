@@ -11,6 +11,8 @@ WORDLIST      = "/usr/share/wordlists/dirb/common.txt"
 URLSCAN_KEY   = os.environ.get("URLSCAN_API_KEY", "")
 SHODAN_KEY    = os.environ.get("SHODAN_API_KEY", "")
 
+collected = []
+
 
 def run(cmd, timeout=30):
     try:
@@ -21,6 +23,9 @@ def run(cmd, timeout=30):
 
 
 def emit(module, status, score, summary, details=None, findings=None):
+    obj = {"module": module, "status": status, "score": score,
+           "summary": summary, "details": details or [], "findings": findings or []}
+    collected.append(obj)
     print(json.dumps({
         "module": module, "status": status, "score": score,
         "summary": summary, "details": details or [], "findings": findings or []
@@ -401,5 +406,10 @@ if __name__ == "__main__":
             except Exception as e:
                 name = futures[f].replace("mod_", "")
                 emit(name, "warn", 50, f"Module error: {str(e)[:100]}", [], [])
+
+    results_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results", domain)
+    os.makedirs(results_dir, exist_ok=True)
+    with open(os.path.join(results_dir, "quick_report.json"), "w") as fh:
+        json.dump({"domain": domain, "modules": collected}, fh, indent=2)
 
     print(json.dumps({"done": True}), flush=True)
