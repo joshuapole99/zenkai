@@ -54,7 +54,7 @@ const QUICK_CHECKS = [
   { id: "gobuster",   label: "Directory enum",         desc: "Verborgen paden (gobuster + dirb wordlist)" },
   { id: "nikto",      label: "Nikto baseline",         desc: "OWASP Top 10 indicatoren (nikto)" },
   { id: "whatweb",    label: "Tech fingerprint",       desc: "CMS, server, frameworks (whatweb)" },
-  { id: "virustotal", label: "VirusTotal reputatie",   desc: "Malicious + suspicious vendors" },
+  { id: "urlscan",    label: "URL reputatie",           desc: "Malware + phishing scan (urlscan.io)" },
   { id: "zap",        label: "ZAP baseline",           desc: "Passieve web crawl (OWASP ZAP)" },
 ];
 
@@ -69,7 +69,7 @@ const FULL_CHECKS = [
   { id: "nikto",      label: "Nikto uitgebreid",       desc: "OWASP + XSS + CORS + TRACE (nikto)" },
   { id: "whatweb",    label: "Tech fingerprint",       desc: "CMS, server, frameworks (whatweb)" },
   { id: "shodan",     label: "Shodan intelligence",    desc: "CVEs + exposed services (Shodan API)" },
-  { id: "virustotal", label: "VirusTotal reputatie",   desc: "Malicious + suspicious vendors" },
+  { id: "urlscan",    label: "URL reputatie",          desc: "Malware + phishing scan (urlscan.io)" },
   { id: "zap",        label: "ZAP baseline",           desc: "Passieve web crawl (OWASP ZAP)" },
 ];
 
@@ -282,7 +282,7 @@ export default function ScanPage() {
           <div style={{ display: "flex", gap: "8px", marginBottom: "28px" }}>
             {[
               { key: "free",  label: "Gratis scan",   desc: "6 checks · serverless" },
-              { key: "quick", label: "Quick scan",     desc: "7 modules · VPS" },
+              { key: "quick", label: "Quick scan",     desc: "9 modules · VPS" },
               { key: "full",  label: "Full scan",      desc: "11 modules · VPS · Pro" },
             ].map((m) => (
               <button

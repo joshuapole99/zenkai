@@ -13,8 +13,8 @@ WORDLIST_COMMON = "/usr/share/wordlists/dirb/common.txt"
 WORDLIST_BIG    = "/usr/share/wordlists/dirb/big.txt"
 WORDLIST        = WORDLIST_BIG if os.path.exists(WORDLIST_BIG) else WORDLIST_COMMON
 
-SHODAN_KEY   = os.environ.get("SHODAN_API_KEY", "")
-VT_KEY       = os.environ.get("VIRUSTOTAL_API_KEY", "")
+SHODAN_KEY    = os.environ.get("SHODAN_API_KEY", "")
+URLSCAN_KEY   = os.environ.get("URLSCAN_API_KEY", "")
 
 collected = []
 
@@ -351,36 +351,57 @@ def mod_shodan(domain):
         emit("shodan", "warn", 50, f"Shodan error: {str(e)[:60]}", [], [])
 
 
-def mod_virustotal(domain):
-    if not VT_KEY:
-        emit("virustotal", "warn", 50, "No VirusTotal API key — skipped", [], [])
+def mod_urlscan(domain):
+    import time
+    if not URLSCAN_KEY:
+        emit("urlscan", "warn", 50, "No urlscan API key — skipped", [], [])
         return
     try:
-        headers = {"x-apikey": VT_KEY}
-        r = requests.get(f"https://www.virustotal.com/api/v3/domains/{domain}", headers=headers, timeout=15)
-        if r.status_code != 200:
-            emit("virustotal", "warn", 50, f"VirusTotal: {r.status_code}", [], [])
+        r = requests.post(
+            "https://urlscan.io/api/v1/scan/",
+            headers={"API-Key": URLSCAN_KEY, "Content-Type": "application/json"},
+            json={"url": f"https://{domain}", "visibility": "unlisted"},
+            timeout=15
+        )
+        if r.status_code not in (200, 201):
+            emit("urlscan", "warn", 50, f"urlscan submit: HTTP {r.status_code}", [], [])
             return
-        data = r.json().get("data", {}).get("attributes", {})
-        stats = data.get("last_analysis_stats", {})
-        malicious = stats.get("malicious", 0)
-        suspicious = stats.get("suspicious", 0)
-        details = [f"Malicious: {malicious}", f"Suspicious: {suspicious}",
-                   f"Clean: {stats.get('harmless',0)}"]
+        uuid = r.json().get("uuid", "")
+        if not uuid:
+            emit("urlscan", "warn", 50, "urlscan: no UUID returned", [], [])
+            return
+        result = None
+        for _ in range(6):
+            time.sleep(5)
+            res = requests.get(f"https://urlscan.io/api/v1/result/{uuid}/", timeout=10)
+            if res.status_code == 200:
+                result = res.json()
+                break
+        if not result:
+            emit("urlscan", "warn", 50, "urlscan: scan timed out", [], [])
+            return
+        verdicts  = result.get("verdicts", {}).get("overall", {})
+        malicious = verdicts.get("malicious", False)
+        score_val = verdicts.get("score", 0)
+        tags      = verdicts.get("tags", [])
+        page      = result.get("page", {})
+        details   = [f"Status: {page.get('status','?')}", f"Server: {page.get('server','unknown')}", f"Score: {score_val}"]
+        if tags:
+            details.append(f"Tags: {', '.join(tags)}")
         findings = []
-        if malicious > 0:
-            findings.append({"title": f"Flagged Malicious by {malicious} vendors", "severity": "High",
-                "description": f"VirusTotal: {malicious} engines flagged this domain.",
-                "recommendation": "Investigate domain reputation and hosting."})
-        if suspicious > 0:
-            findings.append({"title": f"Flagged Suspicious by {suspicious} vendors", "severity": "Medium",
-                "description": f"VirusTotal: {suspicious} engines flagged as suspicious.",
+        if malicious:
+            findings.append({"title": "Domain flagged as malicious", "severity": "High",
+                "description": f"urlscan.io flagged {domain} as malicious (score: {score_val}).",
+                "recommendation": "Investigate domain reputation and hosting provider."})
+        elif score_val > 50:
+            findings.append({"title": "Suspicious domain score", "severity": "Medium",
+                "description": f"urlscan.io gave {domain} a suspicious score of {score_val}.",
                 "recommendation": "Review domain configuration and content."})
-        score = max(0, 100 - malicious * 10 - suspicious * 5)
-        status = "pass" if malicious == 0 and suspicious == 0 else ("warn" if score >= 50 else "fail")
-        emit("virustotal", status, score, f"{malicious} malicious, {suspicious} suspicious on VT", details, findings)
+        final_score = max(0, 100 - score_val)
+        status = "fail" if malicious else ("warn" if score_val > 50 else "pass")
+        emit("urlscan", status, final_score, f"Score: {score_val} · {'malicious' if malicious else 'clean'}", details, findings)
     except Exception as e:
-        emit("virustotal", "warn", 50, f"VirusTotal error: {str(e)[:60]}", [], [])
+        emit("urlscan", "warn", 50, f"urlscan error: {str(e)[:60]}", [], [])
 
 
 def mod_zap(domain):
@@ -424,7 +445,7 @@ if __name__ == "__main__":
 
     modules = [
         mod_headers, mod_ssl, mod_dns, mod_nmap_full, mod_subdomains,
-        mod_gobuster, mod_nikto, mod_whatweb, mod_shodan, mod_virustotal, mod_zap
+        mod_gobuster, mod_nikto, mod_whatweb, mod_shodan, mod_urlscan, mod_zap
     ]
 
     with ThreadPoolExecutor(max_workers=6) as pool:

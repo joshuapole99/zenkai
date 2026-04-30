@@ -7,9 +7,9 @@ Format: {"module":"nmap","status":"pass|warn|fail","score":int,"summary":"...","
 import json, subprocess, sys, re, os, requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-WORDLIST  = "/usr/share/wordlists/dirb/common.txt"
-VT_KEY    = os.environ.get("VIRUSTOTAL_API_KEY", "")
-SHODAN_KEY = os.environ.get("SHODAN_API_KEY", "")
+WORDLIST      = "/usr/share/wordlists/dirb/common.txt"
+URLSCAN_KEY   = os.environ.get("URLSCAN_API_KEY", "")
+SHODAN_KEY    = os.environ.get("SHODAN_API_KEY", "")
 
 
 def run(cmd, timeout=30):
@@ -167,10 +167,12 @@ def mod_nmap(domain):
         if "/udp" in line and "open" in line:
             udp_count += 1
             details.append(f"[UDP] {line.strip()}")
-            port = line.split("/")[0].strip()
-            if port in risky_udp:
-                t, s, d, r = risky_udp[port]
-                findings.append({"title": t, "severity": s, "description": d, "recommendation": r})
+            # only flag confirmed open ports, not open|filtered (CDN/firewall artefact)
+            if "open|filtered" not in line:
+                port = line.split("/")[0].strip()
+                if port in risky_udp:
+                    t, s, d, r = risky_udp[port]
+                    findings.append({"title": t, "severity": s, "description": d, "recommendation": r})
 
     total = tcp_count + udp_count
     score = max(0, 100 - len(findings) * 20)
@@ -272,38 +274,68 @@ def mod_whatweb(domain):
     emit("whatweb", status, score, ", ".join(details[:5]) or "No fingerprint", details, findings)
 
 
-def mod_virustotal(domain):
-    if not VT_KEY:
-        emit("virustotal", "warn", 50, "No VirusTotal API key — skipped", [], [])
+def mod_urlscan(domain):
+    if not URLSCAN_KEY:
+        emit("urlscan", "warn", 50, "No urlscan API key — skipped", [], [])
         return
     try:
-        r = requests.get(
-            f"https://www.virustotal.com/api/v3/domains/{domain}",
-            headers={"x-apikey": VT_KEY}, timeout=15
+        # Submit scan
+        r = requests.post(
+            "https://urlscan.io/api/v1/scan/",
+            headers={"API-Key": URLSCAN_KEY, "Content-Type": "application/json"},
+            json={"url": f"https://{domain}", "visibility": "unlisted"},
+            timeout=15
         )
-        if r.status_code != 200:
-            emit("virustotal", "warn", 50, f"VirusTotal: HTTP {r.status_code}", [], [])
+        if r.status_code not in (200, 201):
+            emit("urlscan", "warn", 50, f"urlscan submit: HTTP {r.status_code}", [], [])
             return
-        attrs = r.json().get("data", {}).get("attributes", {})
-        stats = attrs.get("last_analysis_stats", {})
-        malicious  = stats.get("malicious", 0)
-        suspicious = stats.get("suspicious", 0)
-        harmless   = stats.get("harmless", 0)
-        details    = [f"Malicious: {malicious}", f"Suspicious: {suspicious}", f"Clean: {harmless}"]
-        findings   = []
-        if malicious > 0:
-            findings.append({"title": f"Flagged malicious by {malicious} vendors", "severity": "High",
-                "description": f"VirusTotal: {malicious} security vendors flagged this domain.",
+        uuid = r.json().get("uuid", "")
+        if not uuid:
+            emit("urlscan", "warn", 50, "urlscan: no scan UUID returned", [], [])
+            return
+
+        # Poll for result (max 30s)
+        import time
+        result = None
+        for _ in range(6):
+            time.sleep(5)
+            res = requests.get(f"https://urlscan.io/api/v1/result/{uuid}/", timeout=10)
+            if res.status_code == 200:
+                result = res.json()
+                break
+
+        if not result:
+            emit("urlscan", "warn", 50, "urlscan: scan timed out", [], [])
+            return
+
+        verdicts  = result.get("verdicts", {}).get("overall", {})
+        malicious = verdicts.get("malicious", False)
+        score_vt  = verdicts.get("score", 0)
+        tags      = verdicts.get("tags", [])
+        page      = result.get("page", {})
+        details   = [
+            f"Status: {page.get('status', '?')}",
+            f"Server: {page.get('server', 'unknown')}",
+            f"Score: {score_vt}",
+        ]
+        if tags:
+            details.append(f"Tags: {', '.join(tags)}")
+
+        findings = []
+        if malicious:
+            findings.append({"title": "Domain flagged as malicious", "severity": "High",
+                "description": f"urlscan.io flagged {domain} as malicious (score: {score_vt}).",
                 "recommendation": "Investigate domain reputation and hosting provider."})
-        if suspicious > 0:
-            findings.append({"title": f"Flagged suspicious by {suspicious} vendors", "severity": "Medium",
-                "description": f"VirusTotal: {suspicious} vendors flagged as suspicious.",
+        elif score_vt > 50:
+            findings.append({"title": "Suspicious domain score", "severity": "Medium",
+                "description": f"urlscan.io gave {domain} a suspicious score of {score_vt}.",
                 "recommendation": "Review domain configuration and content."})
-        score  = max(0, 100 - malicious * 15 - suspicious * 5)
-        status = "pass" if malicious == 0 and suspicious == 0 else ("warn" if score >= 50 else "fail")
-        emit("virustotal", status, score, f"{malicious} malicious · {suspicious} suspicious · {harmless} clean", details, findings)
+
+        final_score = max(0, 100 - score_vt)
+        status = "fail" if malicious else ("warn" if score_vt > 50 else "pass")
+        emit("urlscan", status, final_score, f"Score: {score_vt} · {'malicious' if malicious else 'clean'}", details, findings)
     except Exception as e:
-        emit("virustotal", "warn", 50, f"VirusTotal error: {str(e)[:60]}", [], [])
+        emit("urlscan", "warn", 50, f"urlscan error: {str(e)[:60]}", [], [])
 
 
 def mod_zap(domain):
@@ -352,7 +384,7 @@ if __name__ == "__main__":
 
     domain = sys.argv[1].strip().replace("https://", "").replace("http://", "").split("/")[0]
 
-    modules = [mod_headers, mod_ssl, mod_dns, mod_nmap, mod_gobuster, mod_nikto, mod_whatweb, mod_virustotal, mod_zap]
+    modules = [mod_headers, mod_ssl, mod_dns, mod_nmap, mod_gobuster, mod_nikto, mod_whatweb, mod_urlscan, mod_zap]
 
     with ThreadPoolExecutor(max_workers=9) as pool:
         futures = {pool.submit(m, domain): m.__name__ for m in modules}
