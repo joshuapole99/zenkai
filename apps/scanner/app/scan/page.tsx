@@ -265,7 +265,7 @@ export default function ScanPage() {
         .mode-btn:hover    { border-color: rgba(2,132,199,0.4) !important; }
       `}</style>
 
-      <main style={{ minHeight: "100vh", background: "#ffffff", color: "#0F0E0E", paddingTop: "48px" }}>
+      <div style={{ minHeight: "100vh", background: "#ffffff", color: "#0F0E0E", paddingTop: "40px" }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 24px 80px" }}>
 
           {/* ── Heading ── */}
@@ -564,7 +564,7 @@ export default function ScanPage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
     </>
   );
 }
