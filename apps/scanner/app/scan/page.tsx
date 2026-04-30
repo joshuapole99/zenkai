@@ -265,7 +265,7 @@ export default function ScanPage() {
         .mode-btn:hover    { border-color: rgba(2,132,199,0.4) !important; }
       `}</style>
 
-      <main style={{ minHeight: "100vh", background: "#ffffff", color: "#0F0E0E", paddingTop: "104px" }}>
+      <main style={{ minHeight: "100vh", background: "#ffffff", color: "#0F0E0E", paddingTop: "48px" }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 24px 80px" }}>
 
           {/* ── Heading ── */}
@@ -288,7 +288,7 @@ export default function ScanPage() {
               <button
                 key={m.key}
                 className="mode-btn"
-                onClick={() => { if (!scanning) setMode(m.key as "free" | "quick"); }}
+                onClick={() => { if (!scanning) setMode(m.key as "free" | "quick" | "full"); }}
                 style={{
                   padding: "10px 20px", cursor: scanning ? "not-allowed" : "pointer",
                   border: `1px solid ${mode === m.key ? "#0284C7" : "rgba(15,14,14,0.14)"}`,
@@ -335,7 +335,7 @@ export default function ScanPage() {
           )}
           {mode === "full" && (
             <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "#7C3AED", marginBottom: "20px", padding: "10px 14px", border: "1px solid rgba(124,58,237,0.2)", background: "rgba(124,58,237,0.04)" }}>
-              🔍 Full scan — 11 modules, full poortscan, subdomain enum, Shodan + VirusTotal. Duurt 5–15 min.
+              🔍 Full scan — 11 modules, full poortscan, subdomain enum, Shodan + urlscan.io. Duurt 5–15 min.
             </p>
           )}
 
