@@ -192,14 +192,16 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 - [x] Version-based vulnerability detection via Shodan CVEs
 - [x] Directory enum — feroxbuster + SecLists raft-large (119k wordlist)
 - [x] feroxbuster output parser fix (correct field count: STATUS METHOD LINES WORDS BYTES URL)
-- [ ] ZAP active scan + full crawl (depth 5, 500 URLs) — NEXT
+- [x] Shodan API credits cache — 24h file cache, skips re-query for same IP — DEPLOYED
+- [x] urlscan.io — search existing scans first; poll timeout 30s → 60s — DEPLOYED
+- [x] ZAP active scan + full crawl (depth 5, 500 URLs) — DEPLOYED (automation YAML: spider depth 5 + activeScan 8min)
 
 **Active Testing**
 - [x] SQL Injection — SQLMap BEUSTQ, level 2, risk 1 — forms (crawl=3) + URL params (?id,cat,q,search)
 - [x] Server-Side Template Injection (SSTI) — Jinja2/Twig/Freemarker payloads
 - [x] Open Redirect detection — 7 common parameters
 - [x] Host Header Injection
-- [ ] XSS testing — ZAP active scan — NEXT
+- [x] XSS testing — ZAP active scan — DEPLOYED (included in ZAP activeScan automation)
 - [ ] SSRF met callback — requires OOB server — FUTURE
 - [ ] Client-Side Prototype Pollution — FUTURE
 
@@ -211,10 +213,10 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 - [x] PDF report: risk gauge SVG + severity bar chart confirmed rendering correctly
 
 **Advanced Tool Arsenal — Enumeration (Pro + Enterprise)**
-- [ ] ffuf — directory/file fuzzing, LFI detection, API endpoint discovery, vhost discovery
+- [x] ffuf — LFI detection (LFI-Jhaddix.txt) + API endpoint discovery (/api/FUZZ) — DEPLOYED
 - [ ] gobuster DNS mode — DNS recon + vhost discovery (naast bestaande dir mode)
-- [ ] wfuzz — parameter fuzzing, login fuzzing, SQL injection fuzzing, subdomain enumeration
-- [ ] WPScan — WordPress vulnerability scanning, plugin/theme enumeration (alleen als WordPress gedetecteerd via whatweb)
+- [x] wfuzz — parameter fuzzing + SQL injection fuzzing via URL params — DEPLOYED
+- [x] WPScan — WordPress vulnerability scanning, plugin/theme enumeration (WordPress-only) — DEPLOYED
 - [ ] enum4linux-ng — SMB/LDAP enumeration (Enterprise IP range scans)
 - [ ] ldapsearch — LDAP directory enumeration (Enterprise)
 

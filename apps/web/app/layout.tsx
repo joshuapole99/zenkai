@@ -8,15 +8,19 @@ const rajdhani = Rajdhani({ variable: "--font-rajdhani", subsets: ["latin"], wei
 const syne     = Syne({ variable: "--font-syne", subsets: ["latin"], weight: ["400","500","600","700","800"] });
 
 export const metadata: Metadata = {
-  title: "Zenkai — Your custom workout coach for consistency.",
+  title: "Zenkai — Security platform",
   description:
-    "Design your own workouts. Pick your training days. Zenkai keeps you consistent — and gives you a comeback workout when life gets in the way.",
+    "Zenkai is a security platform for automated vulnerability scanning, reporting, and penetration testing tools.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/zenkai-logo.jpg",
+    apple: "/zenkai-logo.jpg",
+  },
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Zenkai" },
   openGraph: {
-    title: "Zenkai — Your custom workout coach for consistency.",
+    title: "Zenkai — Security platform",
     description:
-      "Design your own workouts. Pick your training days. Zenkai keeps you consistent — and gives you a comeback workout when life gets in the way.",
+      "Automated security scanning, PDF reports, and vulnerability intelligence for developers and pentesters.",
     type: "website",
   },
 };

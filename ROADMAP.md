@@ -33,11 +33,11 @@ zenkai/
 - VPS deployment (nginx, systemd, Let's Encrypt)
 - zenkai.nl rebranded as security platform hub
 
-### Next — Phase 3 remaining
-- [ ] ZAP active scan + XSS testing (Full Scan)
-- [ ] ffuf — LFI + API endpoint discovery (Pro)
-- [ ] wfuzz — parameter + SQLi fuzzing (Pro)
-- [ ] WPScan — WordPress scanning (Pro, WP-only)
+### Phase 3 remaining
+- [x] ZAP active scan + XSS testing (Full Scan) — DEPLOYED
+- [x] ffuf — LFI + API endpoint discovery (Pro) — DEPLOYED
+- [x] wfuzz — parameter + SQLi fuzzing (Pro) — DEPLOYED
+- [x] WPScan — WordPress scanning (Pro, WP-only) — DEPLOYED
 
 ### Phase 4 — Enterprise
 - [ ] IP range scanning (/24 max)

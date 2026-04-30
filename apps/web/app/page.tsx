@@ -20,38 +20,74 @@ const PRODUCTS = [
   {
     num: "01", id: "scan", category: "ATTACK SURFACE",
     name: "Scan",
-    tagline: "Quick Scan (9 modules) en Full Scan (11 modules). PDF rapport per email.",
-    desc: "SSL/TLS, DNS, headers, open poorten (TCP+UDP), directory enum, Nikto, ZAP, urlscan.io reputatie, Shodan CVEs. Van gratis domeincheck tot volledig attack surface rapport.",
+    tagline: "Quick Scan (9 modules) en Full Scan (16 modules). PDF rapport per email.",
+    desc: "SSL/TLS, DNS, headers, open poorten, directory enum, Nikto, ZAP active scan, Shodan CVEs, SQLMap, ffuf, wfuzz. Van gratis domeincheck tot volledig attack surface rapport.",
     status: "live" as const,
     href: "https://scan.zenkai.nl",
-    accent: "#0284C7", accentBg: "rgba(2,132,199,0.05)", word: "Scanners.",
+    accent: "#0284C7", accentBg: "rgba(2,132,199,0.05)", word: "Analysts.",
   },
   {
-    num: "02", id: "cve", category: "INTELLIGENCE",
-    name: "CVE Intel",
-    tagline: "Shodan-powered CVE monitoring voor jouw IP-ranges.",
-    desc: "Automatisch bijhouden van nieuwe CVEs voor jouw assets. Email alerts bij nieuwe exploits, severity scoring, CVSS breakdown per service.",
+    num: "02", id: "ssl", category: "MONITORING",
+    name: "SSL Monitor",
+    tagline: "Certificaat monitoring en alerts voor jouw domeinen.",
+    desc: "Automatische melding bij vervaldatum, zwakke cipher suites, mismatched domeinen of self-signed certs. Dashboard per domein.",
     status: "coming-soon" as const,
     href: "#",
-    accent: "#DC2626", accentBg: "rgba(220,38,38,0.05)", word: "Defenders.",
+    accent: "#16A34A", accentBg: "rgba(22,163,74,0.05)", word: "Developers.",
   },
   {
-    num: "03", id: "phish", category: "PHISHING",
-    name: "Phishing Check",
-    tagline: "Detecteer phishing domeinen en lookalike aanvallen.",
-    desc: "Check of een domein of email verdacht is. Typosquatting detectie, DMARC/SPF analyse, MX reputatie lookup en brand impersonation scoring.",
+    num: "03", id: "email", category: "EMAIL SECURITY",
+    name: "Email Header Analyzer",
+    tagline: "SPF, DKIM en DMARC check in één klik.",
+    desc: "Plak een email header en zie direct of SPF/DKIM/DMARC kloppen, waar het bericht vandaan komt, en of er tekenen zijn van spoofing.",
     status: "coming-soon" as const,
     href: "#",
-    accent: "#EA580C", accentBg: "rgba(234,88,12,0.05)", word: "Analysts.",
+    accent: "#7C3AED", accentBg: "rgba(124,58,237,0.05)", word: "Freelancers.",
   },
   {
-    num: "04", id: "report", category: "REPORTING",
-    name: "Report Builder",
-    tagline: "Professionele pentest rapporten in minuten.",
-    desc: "Vul je bevindingen in, kies je template, exporteer naar PDF. CVSS scoring, aanbevelingen per bevinding, executive summary — alles inbegrepen.",
+    num: "04", id: "breach", category: "INTELLIGENCE",
+    name: "Password Breach Checker",
+    tagline: "Check of jouw credentials gelekt zijn via HaveIBeenPwned.",
+    desc: "Voer een email of wachtwoord in en zie direct of het voorkomt in bekende datalekken. k-Anonymity: jouw data verlaat nooit de browser.",
     status: "coming-soon" as const,
     href: "#",
-    accent: "#16A34A", accentBg: "rgba(22,163,74,0.05)", word: "Builders.",
+    accent: "#DC2626", accentBg: "rgba(220,38,38,0.05)", word: "Teams.",
+  },
+  {
+    num: "05", id: "dns", category: "RECONNAISSANCE",
+    name: "DNS Lookup",
+    tagline: "Uitgebreide DNS records — A, AAAA, MX, TXT, SPF, DMARC, CAA.",
+    desc: "Alle DNS records in één overzicht. Inclusief SPF-validatie, DMARC policy check, CAA analyse en reverse DNS voor IP-adressen.",
+    status: "coming-soon" as const,
+    href: "#",
+    accent: "#EA580C", accentBg: "rgba(234,88,12,0.05)", word: "Pentesters.",
+  },
+  {
+    num: "06", id: "pdf", category: "DOCUMENT SECURITY",
+    name: "PDF Protect",
+    tagline: "Beveilig PDF-documenten met wachtwoord en permissies.",
+    desc: "Upload een PDF, stel een wachtwoord in, blokkeer printen of kopiëren. Alles client-side — jouw document wordt nooit geüpload naar een server.",
+    status: "coming-soon" as const,
+    href: "#",
+    accent: "#0891B2", accentBg: "rgba(8,145,178,0.05)", word: "Builders.",
+  },
+  {
+    num: "07", id: "pwgen", category: "UTILITIES",
+    name: "Password Generator",
+    tagline: "Sterke, unieke wachtwoorden in één klik.",
+    desc: "Instelbare lengte, symbolen, cijfers, uitsluitingen. Entropie-indicator, clipboard copy, bulk genereren voor password managers.",
+    status: "coming-soon" as const,
+    href: "#",
+    accent: "#059669", accentBg: "rgba(5,150,105,0.05)", word: "Everyone.",
+  },
+  {
+    num: "08", id: "hash", category: "UTILITIES",
+    name: "Hash Generator",
+    tagline: "MD5, SHA-1, SHA-256, SHA-512 hashes in de browser.",
+    desc: "Plak tekst of upload een bestand — krijg direct alle hashes. Inclusief HMAC-varianten en hash vergelijking voor integriteitscontrole.",
+    status: "coming-soon" as const,
+    href: "#",
+    accent: "#B45309", accentBg: "rgba(180,83,9,0.05)", word: "Defenders.",
   },
 ];
 
@@ -422,9 +458,14 @@ export default function HubHome() {
               opacity: mounted ? 1 : 0, animation: mounted ? "hf .7s ease .3s both" : "none",
             }}
           >
-            <p style={{ fontSize: "16px", color: "rgba(15,14,14,0.48)", maxWidth: "380px", lineHeight: 1.78, margin: 0 }}>
-              Attack surface scanning, CVE intel, phishing detection — security tools gebouwd door een OSCP-gecertificeerde analyst. Geen enterprise pricing.
-            </p>
+            <div>
+              <p style={{ fontSize: "16px", color: "rgba(15,14,14,0.7)", maxWidth: "420px", lineHeight: 1.78, margin: "0 0 6px", fontWeight: 500 }}>
+                Security tools for Analysts, Developers, Freelancers and Teams.
+              </p>
+              <p style={{ fontSize: "14px", color: "rgba(15,14,14,0.4)", maxWidth: "420px", lineHeight: 1.7, margin: 0 }}>
+                Professional security tools. Built by someone who knows how attackers think.
+              </p>
+            </div>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               <a href="#tools" style={{
                 padding: "13px 26px", background: "#0284C7", color: "#ffffff",
@@ -454,7 +495,7 @@ export default function HubHome() {
             }}
           >
             {[
-              { v: "4", l: "Security tools" },
+              { v: "8", l: "Security tools" },
               { v: "1", l: "Live now" },
               { v: "OSCP", l: "Certified" },
               { v: "€0", l: "VC funding" },

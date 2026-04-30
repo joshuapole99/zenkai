@@ -3,9 +3,13 @@ import { ZenkaiNav, ZenkaiFooter } from "@zenkai/ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Scan — Automated domain security audit",
+  title: "Zenkai Scanner — Automated security audit",
   description:
-    "Enter your domain. Get a professional security report in minutes. Shodan, HIBP, SSL, OWASP indicators and more.",
+    "Enter your domain. Get a professional security report in minutes. Shodan, SSL, OWASP, port scan, injection testing and more.",
+  icons: {
+    icon: "/zenkai-logo.jpg",
+    apple: "/zenkai-logo.jpg",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

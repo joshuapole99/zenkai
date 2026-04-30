@@ -4,10 +4,10 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 const PRODUCTS = [
-  { id: "scan",    name: "Scan",    sub: "Domein security",   href: "https://scan.zenkai.nl",    accent: "#0284C7", status: "Beta" },
-  { id: "goals",   name: "Goals",   sub: "Financiële helderheid", href: "https://goals.zenkai.nl", accent: "#16A34A", status: "Live" },
-  { id: "job",     name: "Job",     sub: "CV + sollicitatiebegeleiding", href: "https://job.zenkai.nl",   accent: "#7C3AED", status: "Live" },
-  { id: "workout", name: "Workout", sub: "Fitness comeback mechanic", href: "https://workout.zenkai.nl", accent: "#EA580C", status: "Live" },
+  { id: "scan",    name: "Scan",    sub: "Quick Scan + Full Scan. PDF rapport per domein.",      href: "https://scan.zenkai.nl", accent: "#0284C7", status: "Live" },
+  { id: "cve",     name: "CVE Intel", sub: "Shodan-powered CVE monitoring voor jouw IP-ranges.", href: "#",                      accent: "#DC2626", status: "Soon" },
+  { id: "phish",   name: "Phishing", sub: "Lookalike domein detectie + DMARC/SPF analyse.",      href: "#",                      accent: "#EA580C", status: "Soon" },
+  { id: "report",  name: "Reports",  sub: "Client-ready pentest rapporten in minuten.",           href: "#",                      accent: "#7C3AED", status: "Soon" },
 ];
 
 function useInView(threshold = 0.15) {
@@ -84,9 +84,9 @@ export default function AboutPage() {
             color: "rgba(245,243,236,0.6)",
             maxWidth: "600px",
           }}>
-            Ik ben Joshua — security analyst, ethical hacker, en maker van Zenkai.
-            Overdag werk ik als security analyst bij Enreach. In het weekend bouw ik
-            tools die ik zelf wilde maar niet kon betalen.
+            Ik ben Joshua, security analyst en officer bij Enreach. In mijn vrije tijd
+            bouw ik Zenkai — security tools voor iedereen die serieus wil weten hoe
+            hun domein ervoor staat.
           </p>
         </div>
       </section>
@@ -111,9 +111,9 @@ export default function AboutPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1px", background: "rgba(15,14,14,0.08)" }}>
             {[
               { num: "01", label: "Certificering", value: "OSCP", sub: "Offensive Security Certified Professional" },
-              { num: "02", label: "Ervaring", value: "5+ jaar", sub: "Security analyst @ Enreach. Pentesting, hardening, vulnerability assessment." },
-              { num: "03", label: "Funding", value: "€0 VC", sub: "Geen investeerders. Gebouwd in vrije tijd, voor echte mensen." },
-              { num: "04", label: "Locatie", value: "Nederland", sub: "Amsterdam. Tools voor studenten, freelancers en zzp'ers." },
+              { num: "02", label: "Ervaring", value: "5+ jaar", sub: "Security analyst bij Enreach. Incidents, Sentinel & Defender, pentestcoördinatie." },
+              { num: "03", label: "Funding", value: "€0 VC", sub: "Geen investeerders. Gebouwd in vrije tijd." },
+              { num: "04", label: "Locatie", value: "Utrecht", sub: "Gebouwd in vrije tijd, voor freelancers, developers en bedrijven." },
             ].map((c, i) => (
               <Reveal key={c.num} delay={i * 0.08}>
                 <div style={{
@@ -150,49 +150,40 @@ export default function AboutPage() {
         background: "#F5F3EC",
         padding: "clamp(64px, 10vw, 100px) clamp(24px, 6vw, 80px)",
       }}>
-        <div data-about-story="" style={{ maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "80px", alignItems: "start" }}>
-          <Reveal>
-            <p style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: "11px", letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "rgba(15,14,14,0.3)",
-              marginBottom: "24px",
-            }}>Waarom Zenkai</p>
-            <h2 style={{
-              fontFamily: "'Fraunces', Georgia, serif",
-              fontSize: "clamp(32px, 5vw, 52px)",
-              fontWeight: 700,
-              lineHeight: 1.05,
-              letterSpacing: "-0.03em",
-              color: "#0F0E0E",
-              margin: 0,
-            }}>
-              Elke tool begon<br />als een eigen probleem.
-            </h2>
-          </Reveal>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-            {[
-              "Elk tool op Zenkai is gebouwd omdat het probleem echt is en de bestaande oplossingen te duur, te complex, of gewoon slecht zijn.",
-              "Scan: geen security scanner was betaalbaar voor een freelancer. Job: ik zag hoeveel mensen CV's sturen die niemand leest. Goals: niemand legde studenten eerlijk uit waar hun geld bleef.",
-              "Workout: consistentie is moeilijker dan motivatie. De grace day mechanic bestaat omdat ik hem zelf nodig had — niet om perfect te zijn, maar om niet te stoppen.",
-              "OSCP gecertificeerd. Geen VC funding. Geen team. Gewoon bouwen.",
-            ].map((p, i) => (
-              <Reveal key={i} delay={i * 0.07}>
+        <div style={{ maxWidth: "720px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "48px" }}>
+          {[
+            { label: "Hoe ik hier beland ben", body: "Ik ben altijd bezig geweest met dingen uitproberen die eigenlijk niet mochten. Android telefoons rooten, wii's ombouwen, mods installeren — gewoon om te kijken hoe het werkte. Geen plan, gewoon nieuwsgierigheid." },
+            { label: null, body: "Ik begon met een studie game development en webdevelopment, maar de game industrie is klein en moeilijk in te komen. Cybersecurity leek een logische stap. Wat ik niet verwachtte: dat ik het echt leuk zou vinden." },
+            { label: null, body: "Binnen twee jaar haalde ik mijn HBO AD. Een jaar later mijn OSCP. Tijdens mijn stage bij Secured by Design werkte ik als pentester en ze boden me een traineeship aan. Uiteindelijk ben ik naar Enreach gegaan als security analyst." },
+            { label: "Wat ik doe bij Enreach", body: "Ik werk dagelijks met Microsoft Sentinel en Defender — security incidents detecteren en afhandelen. Daarnaast organiseer ik alle pentests voor de applicaties van Enreach: scope bepalen, inplannen met Secured by Design, en zorgen dat findings ook echt opgepakt worden. Soms verifieer ik zelf of een fix werkt." },
+            { label: null, body: "Van alles wat ik doe vind ik pentesten nog steeds het leukste. Het is een soort spel en als je dan een finding doet geeft dat echt een kick. Een beetje zoals die hackers in films die zeggen \"I'm in the mainframe.\" Maar dan echt." },
+            { label: "Waarom Zenkai", body: "Zenkai begon als een scanner die ik zelf wilde gebruiken. De meeste goede security tools kosten honderden euro's per maand of vragen een enterprise demo aan. Dat werkt niet als je gewoon snel wil weten hoe je domein ervoor staat." },
+            { label: null, body: "Ik heb meerdere side projects geprobeerd. Geen van allemaal werkte. Uiteindelijk kwam ik steeds terug bij het enige waar ik echt goed in ben en het leukst vind: security. Dus bouw ik het zelf — van gratis domeincheck tot full scan met Shodan, SQLMap en ZAP. Geen team, geen investeerders. Gewoon bouwen." },
+            { label: "Voor wie", body: "Zenkai Scan heeft een plan voor elke situatie. Gratis voor een snelle eenmalige check. Starter voor freelancers en developers die regelmatig willen scannen. Pro voor IT teams en agencies met meerdere domeinen. Enterprise voor organisaties die IP-ranges willen monitoren of een dedicated rapport nodig hebben." },
+            { label: null, body: "Het enige wat ze gemeen hebben: niemand hoeft een demo aan te vragen of een NDA te tekenen om te beginnen." },
+          ].map((item, i) => (
+            <Reveal key={i} delay={i * 0.04}>
+              <div>
+                {item.label && (
+                  <p style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: "11px", letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "rgba(15,14,14,0.3)",
+                    marginBottom: "12px", marginTop: 0,
+                  }}>{item.label}</p>
+                )}
                 <p style={{
                   fontFamily: "'Fraunces', Georgia, serif",
-                  fontSize: "17px",
-                  fontWeight: 300,
-                  lineHeight: 1.7,
+                  fontSize: "18px", fontWeight: 300, lineHeight: 1.75,
                   color: "rgba(15,14,14,0.7)",
                   margin: 0,
-                  borderLeft: "2px solid rgba(15,14,14,0.1)",
-                  paddingLeft: "20px",
-                }}>{p}</p>
-              </Reveal>
-            ))}
-          </div>
+                  borderLeft: item.label ? "2px solid rgba(15,14,14,0.15)" : "none",
+                  paddingLeft: item.label ? "20px" : "0",
+                }}>{item.body}</p>
+              </div>
+            </Reveal>
+          ))}
         </div>
       </section>
 
@@ -209,7 +200,7 @@ export default function AboutPage() {
               textTransform: "uppercase",
               color: "rgba(245,243,236,0.3)",
               marginBottom: "48px",
-            }}>Platform — vier tools</p>
+            }}>Platform — security tools</p>
           </Reveal>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1px", background: "rgba(245,243,236,0.06)" }}>

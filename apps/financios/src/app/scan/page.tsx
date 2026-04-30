@@ -2,8 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+
 
 interface Subscription {
   naam: string;
@@ -157,15 +156,6 @@ function ScanForm() {
 
   return (
     <main className="min-h-screen">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-border px-6 py-4 flex items-center justify-between max-w-xl mx-auto w-full backdrop-blur-md bg-background/80">
-        <Link href="/">
-          <Image src="/logo.png" alt="Financios" width={120} height={30} priority />
-        </Link>
-        <Link href="/" className="text-sm text-muted hover:text-foreground transition-colors">
-          ← Terug
-        </Link>
-      </nav>
 
       <div className="px-4 py-10 max-w-xl mx-auto">
       {/* Header */}

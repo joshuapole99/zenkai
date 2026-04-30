@@ -1,10 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import { calculate, parseScanInput } from "@/lib/calculate";
 import { generatePlan } from "@/lib/generatePlan";
 import { generatePlanAI, type AIPlanContent } from "@/lib/generatePlanAI";
 import { redis } from "@/lib/redis";
-import { getSession } from "@/lib/session";
 import WeekChecklist from "./WeekChecklist";
 import PlanParamsLoader from "./PlanParamsLoader";
 
@@ -41,8 +39,6 @@ async function PlanContent({ params, token }: { params: Record<string, string>; 
   const input = parseScanInput(params);
   const result = calculate(input);
   const plan = generatePlan(input, result);
-  const session = await getSession();
-
   // AI-generated content: try Redis cache first to avoid paying per refresh
   const aiCacheKey = `plan_ai:${token}`;
   let aiContent: AIPlanContent | null = await redis.get<AIPlanContent>(aiCacheKey);
@@ -68,24 +64,6 @@ async function PlanContent({ params, token }: { params: Record<string, string>; 
   return (
     <main className="min-h-screen">
       {/* Sticky nav */}
-      <nav className="sticky top-0 z-50 border-b border-border backdrop-blur-md bg-background/80">
-        <div className="max-w-xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/">
-            <Image src="/logo.png" alt="Financios" width={120} height={30} priority />
-          </Link>
-          <div className="flex items-center gap-3">
-            {session ? (
-              <Link href="/dashboard" className="text-sm font-semibold text-accent hover:text-accent-hover transition-colors">
-                Dashboard →
-              </Link>
-            ) : (
-              <Link href="/scan" className="text-sm text-muted hover:text-foreground transition-colors">
-                Nieuwe scan
-              </Link>
-            )}
-          </div>
-        </div>
-      </nav>
 
       <div className="px-4 py-10 max-w-xl mx-auto">
       {/* Payment success banner */}
