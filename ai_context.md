@@ -1,48 +1,46 @@
 # Zenkai — AI Context
 
 ## What is Zenkai?
-Anime fitness PWA where you train in real life and your 
-anime character grows with you. Unique mechanic: Zenkai 
-Boost — when you miss days you get a special comeback 
-quest instead of punishment.
+Security platform for automated domain auditing. Flagship product is
+scan.zenkai.nl — a scanner that runs nmap, gobuster, sqlmap, sslyze,
+ZAP and other tools against a domain and generates a PDF report with
+CVSS-scored findings and remediation advice.
 
-## Target audience
-Gen Z, anime fans, people who keep falling off their 
-fitness routine.
+## Owner
+Joshua Pole — security analyst, OSCP certified.
+Primary niche: security. Everything else is secondary.
+
+## Products
+- scan.zenkai.nl — domain security scanner (LIVE, flagship)
+- zenkai.nl — hub / landing page for all tools
+- workout.zenkai.nl — fitness RPG (Open Beta, secondary)
+- goals.zenkai.nl — finance tool (secondary)
+- job.zenkai.nl — job coach (secondary)
 
 ## Tech stack
-- Next.js + Tailwind CSS
-- Neon PostgreSQL
-- Vercel
-- Lemon Squeezy for payments
-- PWA enabled
+- Next.js 15 + Tailwind CSS + TypeScript (frontend)
+- Flask + Python (scanner backend, Ubuntu VPS)
+- Supabase (auth + database)
+- Vercel (hosting)
+- Lemon Squeezy (payments)
+- Resend (email / PDF delivery)
 
-## Pricing
-- Free: 7 days trial
-- Full Power: €4,99/month
+## Scanner pricing
+- Free: €0 — 1 scan/mnd, basic checks
+- Starter: €19/mnd — Quick Scan (9 modules)
+- Pro: €49/mnd — Full Scan (13 modules, active injection testing)
+- Enterprise: op aanvraag — IP ranges, brute force (opt-in), dedicated support
 
-## Design
-- Dark background #0a0a0a
-- Neon orange #FF6B35 and purple #7C3AED accents
-- Anime inspired, bold typography
-- Mobile first
-- No emojis in UI
+## Design (zenkai.nl / scanner)
+- White background #ffffff
+- Black text #0F0E0E
+- IBM Plex Mono for labels/meta
+- Fraunces for headings
+- Logo: zenkai-logo.jpg with mix-blend-mode: multiply (light bg) or filter: invert(1) (dark bg)
 
-## Character design rules
-- No licensed anime IP (no Goku, Naruto, etc.) — copyright/trademark risk
-- All characters are original designs, anime-inspired in style only
-- Class names and lore can reference anime tropes (Saiyan Warrior, Shadow Assassin) 
-  as genre conventions, not as character likenesses
-
-## Social media
-- Instagram: @zenkai_app (primary platform, 1-platform focus)
-- Strategy: consistent posts, no spreading thin across multiple platforms
-
-## Development Rules
-- Always push to GitHub after every task:
-  git add .
-  git commit -m "short description of what was built"
-  git push
-- Always read ai_context.md and product_backlog.md before starting
-- Build one feature at a time
-- Update product_backlog.md and CHANGELOG.md after every task
+## Development rules
+- BACKLOG.md is the source of truth for what to build
+- CHANGELOG.md tracks what shipped
+- CLAUDE.md is the system prompt for Claude Code
+- Scanner backend files live at /root/zenkai/ on VPS
+- Always SCP to upload Python changes, then restart zenkai-scanner.service

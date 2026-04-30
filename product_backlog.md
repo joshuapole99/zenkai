@@ -1,4 +1,9 @@
-# Product Backlog
+# Product Backlog (archived — workout app)
+
+> Active backlog has moved to **[BACKLOG.md](./BACKLOG.md)**
+> This file is kept for workout app history only.
+
+---
 
 ## Bugs (Known Issues)
 - [x] Timezone display — Netherlands (UTC+2) showed Saturday instead of Friday — FIXED

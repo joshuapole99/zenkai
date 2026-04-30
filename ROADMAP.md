@@ -1,79 +1,61 @@
-# Zenkai Platform — Roadmap
+# Zenkai — Security Platform Roadmap
 
 ## Monorepo structure
 
 ```
 zenkai/
-├── apps/
-│   ├── web/        → zenkai.nl          (Vercel: root = apps/web)
-│   ├── scanner/    → scanner.zenkai.nl  (Vercel: root = apps/scanner)
-│   ├── financios/  → financios.zenkai.nl
-│   └── jobs/       → jobs.zenkai.nl
-└── packages/
-    └── ui/         → @zenkai/ui design tokens
+├── apps/web/        → zenkai.nl          (Vercel)
+├── apps/scanner/    → scan.zenkai.nl     (Vercel)
+├── apps/financios/  → goals.zenkai.nl    (Vercel, secondary)
+└── packages/ui/     → shared components + design tokens
 ```
-
-**Vercel setup per project:**
-- Set "Root Directory" to `apps/web` for zenkai.nl
-- Set "Root Directory" to `apps/scanner` for scanner.zenkai.nl
-- Repeat for each subdomain app
 
 ---
 
-## Status
+## Product status
 
-| Tool              | Domain                   | Status     |
-|-------------------|--------------------------|------------|
-| SenseiScan        | scanner.zenkai.nl        | Waitlist   |
-| Financios         | financios.zenkai.nl      | Live       |
-| Sollicitatie Coach| jobs.zenkai.nl           | Live       |
-| Zenkai Workout    | zenkai.nl/dashboard      | Live       |
+| Product | Domain | Status |
+|---|---|---|
+| Zenkai Scanner | scan.zenkai.nl | **Live** |
+| Zenkai Hub | zenkai.nl | **Live** |
+| Workout app | workout.zenkai.nl | Open Beta (secondary) |
+| Goals | goals.zenkai.nl | Live (secondary) |
+| Job Coach | job.zenkai.nl | Live (secondary) |
 
 ---
 
-## Phase 3 — Shipping (current)
+## Scanner roadmap (primary focus)
 
-- [x] Monorepo migration (apps/web, apps/scanner, packages/ui)
-- [x] Design tokens in @zenkai/ui
-- [x] zenkai.nl homepage (hero, 4 product cards, about, blog, hamburger nav)
-- [x] scanner.zenkai.nl landing (SenseiScan, 7 checks, pricing, waitlist)
-- [ ] Deploy apps/web to Vercel (update Root Directory)
-- [ ] Deploy apps/scanner to Vercel (new project, root = apps/scanner)
-- [ ] Connect scanner.zenkai.nl subdomain
+### Done ✓
+- Quick Scan — 9 modules, streaming UI, PDF report
+- Full Scan — 13 modules, active injection testing (SQLMap + SSTI + open redirect)
+- Bilingual PDF (NL/EN), CVSS mapping, risk gauge
+- VPS deployment (nginx, systemd, Let's Encrypt)
+- zenkai.nl rebranded as security platform hub
 
-## Phase 4 — SenseiScan MVP
+### Next — Phase 3 remaining
+- [ ] ZAP active scan + XSS testing (Full Scan)
+- [ ] ffuf — LFI + API endpoint discovery (Pro)
+- [ ] wfuzz — parameter + SQLi fuzzing (Pro)
+- [ ] WPScan — WordPress scanning (Pro, WP-only)
 
-- [ ] Backend: domain scan engine (SSL, DNS, headers, open ports, email auth)
-- [ ] PDF report generation
-- [ ] Stripe payment (€29 one-time, €49 monitored)
-- [ ] Email delivery of PDF report
-- [ ] Launch to waitlist
+### Phase 4 — Enterprise
+- [ ] IP range scanning (/24 max)
+- [ ] Brute force tools (netexec, Kerbrute, wfuzz login) — opt-in, Enterprise only
+- [ ] API access with key
+- [ ] Custom PDF branding
 
-## Phase 5 — Platform
+### Phase 5 — Platform
+- [ ] Lemon Squeezy subscription gating (plan enforcement)
+- [ ] User dashboard — scan history, report downloads
+- [ ] Async job queue (scan isolation)
+- [ ] GitHub CI/CD to VPS
 
-- [ ] Unified login across subdomains (shared JWT/session)
-- [ ] zenkai.nl dashboard overview (all tools in one place)
-- [ ] Blog CMS (MDX or Contentlayer)
-- [ ] Newsletter (building in public)
+---
 
-## Phase 6 — Financios v2
-
-- [ ] Bank import (Nordigen/GoCardless API)
-- [ ] Category AI (auto-tag transactions)
-- [ ] Subscription detection
-
-## Feature flags (locked)
-
-```typescript
-export const FEATURES = {
-  enemies: false,
-  bosses: false,
-  friends: false,
-  leaderboard: false,
-  co_op: false,
-  character_evolution: false,
-  weekly_bosses: false,
-}
-```
-
-These stay `false` until explicitly enabled.
+## Architecture principles
+- Security-first: scanner is the flagship, everything else is secondary
+- One domain per scan (no IP ranges on Free/Starter/Pro)
+- Modules run isolated — one failure never stops the full scan
+- Brute force: Enterprise-only, explicit opt-in checkbox required
+- See BACKLOG.md for full feature tracking and CHANGELOG.md for release history

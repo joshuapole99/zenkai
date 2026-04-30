@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Zenkai — Security Platform
 
-## Getting Started
+Automated domain security auditing. Scan your attack surface, get a PDF report, fix what matters.
 
-First, run the development server:
+**Live:** [zenkai.nl](https://zenkai.nl) · [scan.zenkai.nl](https://scan.zenkai.nl)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Scanner
+
+| Scan type | Modules | Plan |
+|---|---|---|
+| Quick Scan | 9 — headers, SSL/TLS, DNS, nmap, gobuster, nikto, whatweb, urlscan, ZAP baseline | Starter |
+| Full Scan | 13 — all Quick + full TCP/UDP, subdomain enum, sslyze, SQLMap, injection checks | Pro |
+
+PDF report: CVSS scores, CWE mappings, risk gauge, bilingual (NL/EN), executive summary.
+
+## Structure
+
+```
+apps/web/        → zenkai.nl          (Next.js, Vercel)
+apps/scanner/    → scan.zenkai.nl     (Next.js, Vercel)
+packages/ui/     → shared components
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Scanner backend:** Flask on Ubuntu VPS — nmap, feroxbuster, nikto, sqlmap, sslyze, ZAP  
+**Stack:** Next.js 15 · Supabase · Lemon Squeezy · Resend · Vercel
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Plans
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Plan | Price | Scans/mnd |
+|---|---|---|
+| Free | €0 | 1 |
+| Starter | €19/mnd | 3 |
+| Pro | €49/mnd | Unlimited |
+| Enterprise | Op aanvraag | Unlimited + IP ranges |
 
-## Learn More
+## Dev
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+bun install
+cd apps/web && bun dev        # zenkai.nl
+cd apps/scanner && bun dev    # scan.zenkai.nl
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Scanner backend runs on VPS (185.137.122.205:5000). See `apps/scanner/scripts/` for Python scan modules.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built by [Joshua Pole](https://zenkai.nl) — OSCP · Security Analyst
