@@ -181,34 +181,33 @@ Goal: fast broad inventory without impacting the target.
 
 ---
 
-### Phase 3 — Full Scan / Pro Plan (NEXT)
+### Phase 3 — Full Scan / Pro Plan ✓ (COMPLETE - April 2026)
 
 Goal: full attack surface mapping + controlled vulnerability testing.
 
 **Deep Discovery**
-- [ ] Full TCP scan (1–65535) + UDP
-- [ ] Advanced DNS + subdomain enumeration (capped)
-- [ ] Full web crawling via ZAP Proxy API (depth 5, max 500 URLs, 15min timeout)
-- [ ] Endpoint + parameter discovery
-- [ ] SSL/TLS deep analysis (cipher suites, protocol versions)
-- [ ] Version-based vulnerability detection (CVE mapping)
-- [ ] Common misconfiguration detection netwerk + applicatie niveau
+- [x] Full TCP scan (1–65535) + UDP
+- [x] Advanced DNS + subdomain enumeration (capped)
+- [x] SSL/TLS deep analysis — cipher suites, RC4, 3DES (sslyze)
+- [x] Version-based vulnerability detection via Shodan CVEs
+- [x] Directory enum — feroxbuster + SecLists raft-large (119k wordlist)
+- [ ] ZAP active scan + full crawl (depth 5, 500 URLs) — NEXT
 
 **Active Testing**
-- [ ] SQL Injection — SQLMap basis (BEUSTQ technieken, 5min timeout)
-- [ ] XSS testing — ZAP active scan
-- [ ] SSRF detection
-- [ ] Server-Side Template Injection (SSTI)
-- [ ] Client-Side Prototype Pollution
-- [ ] Code injection checks (Python / JS / PHP patterns)
-- [ ] ZAP API active scan + full crawl
+- [x] SQL Injection — SQLMap BEUSTQ, level 2, risk 1, 5min timeout
+- [x] Server-Side Template Injection (SSTI) — Jinja2/Twig/Freemarker payloads
+- [x] Open Redirect detection — 7 common parameters
+- [x] Host Header Injection
+- [ ] XSS testing — ZAP active scan — NEXT
+- [ ] SSRF met callback — requires OOB server — FUTURE
+- [ ] Client-Side Prototype Pollution — FUTURE
 
 **Intelligence**
-- [ ] VirusTotal domain/IP/URL reputation (expanded)
-- [ ] Shodan enrichment (ports, CVEs, banners)
+- [x] urlscan.io domain/IP/URL reputation
+- [x] Shodan enrichment (ports, CVEs, banners)
 
 **Limits (Pro):**
-- Max 65535 ports, 50 req/s, 45 min total scan time
+- Max 65535 ports, 50 req/s, max 20 min total scan time
 - 5 domeinen, onbeperkte scans
 - Hard caps: max 500 URLs gecrawld, max 10 subdomains
 
