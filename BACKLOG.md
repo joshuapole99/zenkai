@@ -210,6 +210,31 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 - [x] Shodan 403 (CDN IP) → graceful warn; 404 → graceful pass
 - [x] PDF report: risk gauge SVG + severity bar chart confirmed rendering correctly
 
+**Advanced Tool Arsenal — Enumeration (Pro + Enterprise)**
+- [ ] ffuf — directory/file fuzzing, LFI detection, API endpoint discovery, vhost discovery
+- [ ] gobuster DNS mode — DNS recon + vhost discovery (naast bestaande dir mode)
+- [ ] wfuzz — parameter fuzzing, login fuzzing, SQL injection fuzzing, subdomain enumeration
+- [ ] WPScan — WordPress vulnerability scanning, plugin/theme enumeration (alleen als WordPress gedetecteerd via whatweb)
+- [ ] enum4linux-ng — SMB/LDAP enumeration (Enterprise IP range scans)
+- [ ] ldapsearch — LDAP directory enumeration (Enterprise)
+
+**Advanced Tool Arsenal — Injection Testing (Pro + Enterprise)**
+- [ ] wfuzz SQL module — SQL injection fuzzing via parameters
+- [ ] XXE payloads via ZAP — XML External Entity injection
+- [ ] SSTI detection via ffuf/wfuzz — template injection fuzzing (aanvulling op huidige curl-based SSTI)
+- [ ] LFI detection via ffuf — local file inclusion path fuzzing (SecLists LFI-Jhaddix wordlist)
+- [ ] Upload vulnerability checks via ZAP — file upload bypass testing
+
+**Advanced Tool Arsenal — Brute Force (Enterprise only — opt-in)**
+- [ ] wfuzz login fuzzing — credential bruteforce op login endpoints
+- [ ] netexec — SMB/SSH/WinRM/MSSQL/FTP credential spraying (Enterprise IP range scans)
+- [ ] Kerbrute — Kerberos username enumeration (Enterprise)
+- [ ] Custom wordlist support — gebruiker kan eigen wordlist uploaden
+- [ ] Rate limiting configureerbaar — default 10 req/s, max 100 req/s
+- [ ] Expliciete opt-in vereist — checkbox: "Ik bevestig dat ik eigenaar ben van dit target en toestemming heb voor deze test"
+- [ ] Bevindingen: weak credentials, username enumeration, account lockout beleid ontbreekt
+- [ ] Brute force resultaten apart gemarkeerd in rapport als "Authorized Testing"
+
 **Intelligence**
 - [x] urlscan.io domain/IP/URL reputation
 - [x] Shodan enrichment (ports, CVEs, banners)
@@ -267,6 +292,10 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 - Active testing alleen op bevestigd attack surface — nooit full aggression mode
 - Target safety principe: scanner mag nooit target overbelasten of crashen
 - Plan limieten worden afgedwongen in Flask API voor elke tool aanroep
+- Brute force tools alleen beschikbaar in Enterprise plan
+- Brute force vereist expliciete opt-in checkbox: "Ik bevestig dat ik eigenaar ben van dit target en toestemming heb voor deze test"
+- Rate limiting default op 10 req/s voor brute force, gebruiker kan verhogen tot 100 req/s
+- Brute force resultaten worden apart gemarkeerd in het rapport als "Authorized Testing"
 
 ---
 
@@ -284,3 +313,11 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 | nikto | OWASP baseline checks | Alle plans |
 | whatweb | Tech fingerprinting | Alle plans |
 | sslyze | SSL/TLS deep analysis | Pro+ |
+| ffuf | Directory/file fuzzing, LFI, API endpoints, vhost discovery | Pro+ |
+| wfuzz | Parameter fuzzing, login fuzzing, SQLi fuzzing, subdomain enum | Pro+ |
+| WPScan | WordPress vulnerability scanning, plugin/theme enum | Pro+ (WordPress only) |
+| feroxbuster | Fast recursive directory enumeration | Pro+ |
+| enum4linux-ng | SMB/LDAP enumeration | Enterprise |
+| ldapsearch | LDAP directory enumeration | Enterprise |
+| netexec | SMB/SSH/WinRM/MSSQL/FTP credential spraying | Enterprise |
+| Kerbrute | Kerberos username enumeration | Enterprise |
