@@ -18,7 +18,7 @@ export function ZenkaiFooter() {
             <img
               src="/zenkai-logo.jpg"
               alt="Zenkai"
-              style={{ height: "36px", width: "auto", display: "block", filter: "invert(1)" }}
+              style={{ height: "56px", width: "auto", display: "block", filter: "invert(1)", margin: "-10px 0" }}
             />
           </a>
 

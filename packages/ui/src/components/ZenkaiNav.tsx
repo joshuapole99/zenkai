@@ -65,7 +65,13 @@ export function ZenkaiNav({ currentApp, rightSlot }: Props) {
             <img
               src="/zenkai-logo.jpg"
               alt="Zenkai"
-              style={{ height: "40px", width: "auto", display: "block", mixBlendMode: "multiply" }}
+              style={{
+                height: "72px",
+                width: "auto",
+                display: "block",
+                mixBlendMode: "multiply",
+                margin: "-14px 0",
+              }}
             />
           </a>
 
