@@ -191,36 +191,63 @@ def mod_gobuster(domain):
         return
 
     ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    # Try HTTPS first, fall back to HTTP
-    for scheme in ["https", "http"]:
+    scheme = "https"
+    for s in ["https", "http"]:
         out = run(
-            f"gobuster dir -u {scheme}://{domain} -w {WORDLIST} -k -r -t 10 -q "
+            f"gobuster dir -u {s}://{domain} -w {WORDLIST} -k -t 10 -q "
             f"--timeout 15s -b 404,403,429,503 -a '{ua}'",
             timeout=90
         )
         if out.strip():
+            scheme = s
             break
 
-    sensitive = ["admin","login","wp-admin","phpmyadmin",".env","config","backup",
-                 "api","swagger","graphql",".git","debug","shell","upload"]
+    SENSITIVE = ["admin","login","wp-admin","phpmyadmin",".env","config","backup",
+                 "api","swagger","graphql",".git","debug","shell","upload","passwd",
+                 "secret","private","credentials","token","key","database","db"]
+
     findings, details = [], []
+    sensitive_hits = []
+    public_hits = []
+
     for line in out.splitlines():
-        # gobuster v3 format: /path   (Status: 200) [Size: 1234]
         m = re.search(r'(/\S+)\s+\(Status:\s*(\d+)\)', line)
         if not m:
             continue
         path, code = m.group(1), int(m.group(2))
-        is_s = any(s in path.lower() for s in sensitive)
-        sev = "High" if is_s else ("Medium" if code == 200 else "Low")
+        if code in (403, 404, 429, 503):
+            continue
+        is_s = any(s in path.lower() for s in SENSITIVE)
         details.append(f"{path} [{code}]")
-        if is_s or code == 200:
-            findings.append({"title": f"Endpoint: {path}", "severity": sev,
-                "description": f"HTTP {code} at {scheme}://{domain}{path}",
-                "recommendation": "Verify this endpoint should be public."})
+        if is_s:
+            sensitive_hits.append((path, code))
+        elif code == 200:
+            public_hits.append((path, code))
 
-    score = max(0, 100 - len([f for f in findings if f["severity"] in ("High","Medium")]) * 15)
-    status = "pass" if not findings else ("warn" if score >= 50 else "fail")
-    emit("gobuster", status, score, f"{len(details)} paths found", details, findings)
+    # Individual findings only for sensitive paths (capped at 15)
+    for path, code in sensitive_hits[:15]:
+        findings.append({
+            "title": f"Gevoelig pad blootgesteld: {path}",
+            "severity": "High",
+            "description": f"HTTP {code} op {scheme}://{domain}{path} — mogelijk gevoelige locatie.",
+            "recommendation": "Verifieer of dit pad publiek toegankelijk moet zijn. Overweeg authenticatie of het blokkeren van externe toegang."
+        })
+
+    # All non-sensitive 200s summarised as ONE finding
+    if public_hits:
+        total = len(public_hits)
+        sample = ", ".join(p for p, _ in public_hits[:8])
+        sev = "Medium" if total >= 20 else "Low"
+        findings.append({
+            "title": f"Directory enumeration: {total} publiek toegankelijke paden",
+            "severity": sev,
+            "description": f"{total} paden geven een 200 OK response. Voorbeelden: {sample}{'...' if total > 8 else ''}.",
+            "recommendation": "Controleer of alle gevonden paden publiek toegankelijk moeten zijn. Verberg of beveilig onnodige paden."
+        })
+
+    score = max(0, 100 - len(sensitive_hits) * 20 - (5 if len(public_hits) >= 20 else 0))
+    status = "fail" if sensitive_hits else ("warn" if public_hits else "pass")
+    emit("gobuster", status, score, f"{len(details)} paden — {len(sensitive_hits)} gevoelig", details, findings)
 
 
 def mod_nikto(domain):
