@@ -329,8 +329,8 @@ export default function HubHome() {
           background: "rgba(255,255,255,0.94)", backdropFilter: "blur(20px)",
           borderBottom: "1px solid rgba(15,14,14,0.07)",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <img src="/logo.png" alt="Zenkai" style={{ height: "28px", width: "auto", display: "block" }} />
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img src="/zenkai-logo.jpg" alt="Zenkai" style={{ height: "44px", width: "auto", display: "block" }} />
           </div>
 
           <div className="nav-links" style={{ display: "flex", gap: "28px", alignItems: "center" }}>
@@ -858,9 +858,7 @@ export default function HubHome() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontStyle: "italic", fontSize: "19px", letterSpacing: "-0.03em", color: "#F5F3EC" }}>
-                Zenkai
-              </span>
+              <img src="/zenkai-logo.jpg" alt="Zenkai" style={{ height: "36px", width: "auto", display: "block", filter: "invert(1)" }} />
               <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.18)" }}>
                 © 2026
               </span>
