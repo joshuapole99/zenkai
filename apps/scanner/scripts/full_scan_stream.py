@@ -498,6 +498,134 @@ def mod_zap(domain):
     emit("zap", status, score, f"{len(findings)} issues via ZAP baseline", details, findings)
 
 
+def mod_sqlmap(domain):
+    """SQL injection testing — sqlmap BEUSTQ, level 2, risk 1, 5 min cap"""
+    if not run("which sqlmap", timeout=3).strip():
+        emit("sqlmap", "warn", 50, "sqlmap niet geinstalleerd — overgeslagen", [], [])
+        return
+
+    outdir = f"/tmp/sqlmap_{domain.replace('.','_')}"
+    out = run(
+        f"sqlmap -u https://{domain}/ --forms --crawl=2 --batch --smart "
+        f"--technique=BEUSTQ --level=2 --risk=1 "
+        f"--timeout=10 --time-sec=5 --retries=1 "
+        f"--output-dir={outdir} --no-cast --disable-coloring 2>&1",
+        timeout=300
+    )
+
+    findings, details = [], []
+    vulns = re.findall(r"Parameter: '([^']+)' \(([^)]+)\)", out)
+    seen_params = set()
+    for param, ptype in vulns[:10]:
+        if param in seen_params:
+            continue
+        seen_params.add(param)
+        findings.append({
+            "title": f"SQL Injection: parameter '{param}'",
+            "severity": "High",
+            "description": f"SQLMap detecteerde SQL injection in parameter '{param}' ({ptype}). Aanvaller kan database-inhoud lezen of manipuleren.",
+            "recommendation": "Gebruik prepared statements en parameterized queries. Valideer alle user input. Overweeg een WAF."
+        })
+        details.append(f"Kwetsbaar: parameter '{param}' ({ptype})")
+
+    if not findings:
+        if "no injectable" in out.lower() or "not injectable" in out.lower():
+            details.append("Geen SQL injection gevonden in getest formulieren")
+        elif "no forms found" in out.lower():
+            details.append("Geen formulieren gevonden om te testen")
+        else:
+            details.append("sqlmap scan voltooid — geen SQL injection gevonden")
+
+    run(f"rm -rf {outdir}", timeout=5)
+    score = 0 if findings else 100
+    status = "fail" if findings else "pass"
+    emit("sqlmap", status, score,
+         f"{len(findings)} SQL injection{'s' if len(findings) != 1 else ''} gevonden" if findings else "Geen SQL injection",
+         details, findings)
+
+
+def mod_injection(domain):
+    """SSTI, open redirect en host header injection detectie"""
+    import urllib.parse
+    findings, details = [], []
+
+    # ── Open redirect ─────────────────────────────────────────────────────────
+    for param in ["url", "redirect", "next", "return", "r", "goto", "dest"]:
+        encoded = urllib.parse.quote("https://evil-test-zenkai.com", safe="")
+        url = f"https://{domain}/?{param}={encoded}"
+        try:
+            out = run(
+                f"curl -sk -L --max-redirs 1 -o /dev/null "
+                f"-w '%{{url_effective}}' --max-time 6 '{url}'",
+                timeout=8
+            )
+            if "evil-test-zenkai.com" in out:
+                findings.append({
+                    "title": f"Open Redirect: parameter '{param}'",
+                    "severity": "Medium",
+                    "description": f"Parameter '{param}' volgt externe redirects zonder validatie. Kan gebruikt worden voor phishing.",
+                    "recommendation": "Valideer redirect-URLs tegen een whitelist van toegestane domeinen. Weiger externe URLs."
+                })
+                details.append(f"Open redirect via '?{param}='")
+                break
+        except Exception:
+            pass
+
+    # ── SSTI detectie ─────────────────────────────────────────────────────────
+    ssti_tests = [
+        ("{{7*7}}", "49"),
+        ("${7*7}", "49"),
+        ("{{7*'7'}}", "7777777"),
+    ]
+    for param in ["q", "search", "name", "template", "lang"]:
+        if any(f["title"].startswith("SSTI") for f in findings):
+            break
+        for payload, expected in ssti_tests:
+            encoded = urllib.parse.quote(payload, safe="")
+            url = f"https://{domain}/?{param}={encoded}"
+            try:
+                body = run(f"curl -sk --max-time 5 '{url}'", timeout=8)
+                if expected in body and payload not in body:
+                    findings.append({
+                        "title": f"Server-Side Template Injection (SSTI): '{param}'",
+                        "severity": "High",
+                        "description": f"Parameter '{param}' interpreteert template-expressies: payload '{payload}' → '{expected}'. Remote code execution mogelijk.",
+                        "recommendation": "Verwerk gebruikersinput nooit direct als template. Gebruik sandboxed engines of escaping."
+                    })
+                    details.append(f"SSTI in '?{param}=' — payload: {payload}")
+                    break
+            except Exception:
+                pass
+
+    # ── Host header injection ─────────────────────────────────────────────────
+    try:
+        body = run(
+            f"curl -sk -H 'Host: evil-test-zenkai.com' --max-time 6 'https://{domain}/'",
+            timeout=8
+        )
+        if "evil-test-zenkai.com" in body:
+            findings.append({
+                "title": "Host Header Injection",
+                "severity": "Medium",
+                "description": "De server reflecteert de Host header in de response — kan leiden tot cache poisoning of wachtwoord-reset aanvallen.",
+                "recommendation": "Valideer de Host header server-side. Stel een expliciete server_name in nginx/Apache in."
+            })
+            details.append("Host header reflectie gevonden")
+    except Exception:
+        pass
+
+    if not details:
+        details.append("Geen open redirect, SSTI of host header injection gevonden")
+
+    high = sum(1 for f in findings if f["severity"] == "High")
+    med  = sum(1 for f in findings if f["severity"] == "Medium")
+    score  = max(0, 100 - high * 30 - med * 15)
+    status = "fail" if high else ("warn" if med else "pass")
+    emit("injection", status, score,
+         f"{len(findings)} injection kwetsbaarheid{'en' if len(findings) != 1 else ''}" if findings else "Geen injection gevonden",
+         details, findings)
+
+
 # ── main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -510,7 +638,8 @@ if __name__ == "__main__":
 
     modules = [
         mod_headers, mod_ssl, mod_dns, mod_nmap_full, mod_subdomains,
-        mod_gobuster, mod_nikto, mod_whatweb, mod_shodan, mod_urlscan, mod_zap
+        mod_gobuster, mod_nikto, mod_whatweb, mod_shodan, mod_urlscan,
+        mod_zap, mod_sqlmap, mod_injection
     ]
 
     with ThreadPoolExecutor(max_workers=6) as pool:

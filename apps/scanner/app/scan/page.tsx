@@ -65,12 +65,14 @@ const FULL_CHECKS = [
   { id: "dns",        label: "DNS volledig",           desc: "SPF, DMARC, CAA, MX, NS (dig)" },
   { id: "nmap",       label: "Full poortscan",         desc: "Alle 65535 TCP poorten (nmap)" },
   { id: "subdomains", label: "Subdomain enum",         desc: "DNS brute-force subdomains" },
-  { id: "gobuster",   label: "Directory enum (big)",   desc: "Uitgebreide paden (gobuster + big.txt)" },
+  { id: "gobuster",   label: "Directory enum (big)",   desc: "Uitgebreide paden (feroxbuster + raft-large)" },
   { id: "nikto",      label: "Nikto uitgebreid",       desc: "OWASP + XSS + CORS + TRACE (nikto)" },
   { id: "whatweb",    label: "Tech fingerprint",       desc: "CMS, server, frameworks (whatweb)" },
   { id: "shodan",     label: "Shodan intelligence",    desc: "CVEs + exposed services (Shodan API)" },
   { id: "urlscan",    label: "URL reputatie",          desc: "Malware + phishing scan (urlscan.io)" },
   { id: "zap",        label: "ZAP baseline",           desc: "Passieve web crawl (OWASP ZAP)" },
+  { id: "sqlmap",     label: "SQL injection",          desc: "Formulieren + parameters (sqlmap BEUSTQ)" },
+  { id: "injection",  label: "Injection checks",       desc: "SSTI, open redirect, host header injection" },
 ];
 
 const STATUS: Record<StatusKey, { color: string; label: string }> = {
@@ -283,7 +285,7 @@ export default function ScanPage() {
             {[
               { key: "free",  label: "Gratis scan",   desc: "6 checks · serverless" },
               { key: "quick", label: "Quick scan",     desc: "9 modules · VPS" },
-              { key: "full",  label: "Full scan",      desc: "11 modules · VPS · Pro" },
+              { key: "full",  label: "Full scan",      desc: "13 modules · VPS · Pro" },
             ].map((m) => (
               <button
                 key={m.key}
@@ -335,7 +337,7 @@ export default function ScanPage() {
           )}
           {mode === "full" && (
             <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "#7C3AED", marginBottom: "20px", padding: "10px 14px", border: "1px solid rgba(124,58,237,0.2)", background: "rgba(124,58,237,0.04)" }}>
-              🔍 Full scan — 11 modules, full poortscan, subdomain enum, Shodan + urlscan.io. Duurt 5–15 min.
+              🔍 Full scan — 13 modules incl. SQLMap + injection checks. Duurt 10–20 min.
             </p>
           )}
 
