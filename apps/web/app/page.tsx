@@ -20,9 +20,9 @@ const PRODUCTS = [
   {
     num: "01", id: "scan", category: "SECURITY",
     name: "Scan",
-    tagline: "Automated domain security audit. PDF report in minutes.",
-    desc: "7-point security check: SSL, DNS, headers, open ports, email auth, vulnerabilities, reputation.",
-    status: "coming-soon" as const,
+    tagline: "Free scan, Quick Scan (9 modules) en Full Scan (11 modules). PDF rapport per email.",
+    desc: "SSL/TLS, DNS, security headers, open poorten (TCP+UDP), directory enum, Nikto, ZAP, urlscan.io reputatie, Shodan CVEs. Van gratis check tot full attack surface mapping.",
+    status: "live" as const,
     href: "https://scan.zenkai.nl",
     accent: "#0284C7", accentBg: "rgba(2,132,199,0.05)", word: "Security.",
   },
@@ -343,21 +343,21 @@ export default function HubHome() {
 
           <div className="nav-links" style={{ display: "flex", gap: "28px", alignItems: "center" }}>
             {[
-              { l: "Goals",   h: "https://goals.zenkai.nl" },
-              { l: "Job",     h: "https://job.zenkai.nl" },
-              { l: "About",   h: "/about" },
+              { l: "Pricing",  h: "#pricing" },
+              { l: "Tools",    h: "#tools" },
+              { l: "About",    h: "/about" },
             ].map((x) => (
               <a key={x.l} href={x.h} style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.4)", textDecoration: "none" }}>
                 {x.l}
               </a>
             ))}
-            <a href="#tools" style={{
+            <a href="https://scan.zenkai.nl" style={{
               fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", fontWeight: 600,
               color: "#ffffff", textDecoration: "none",
               padding: "8px 18px", background: "#0284C7",
               letterSpacing: "0.04em",
             }}>
-              Explore Tools ↓
+              Start Scan →
             </a>
           </div>
 
@@ -463,7 +463,7 @@ export default function HubHome() {
           >
             {[
               { v: "4", l: "Tools" },
-              { v: "3", l: "Live now" },
+              { v: "4", l: "Live now" },
               { v: "OSCP", l: "Certified" },
               { v: "€0", l: "VC funding" },
             ].map((s, i) => (
@@ -511,6 +511,176 @@ export default function HubHome() {
             {PRODUCTS.map((p, i) => (
               <ProductCard key={p.id} p={p} i={i} visible={mounted} />
             ))}
+          </div>
+        </section>
+
+        {/* ── PRICING ─────────────────────────────────────────────────────── */}
+        <section id="pricing" style={{ background: "#F5F3EC", padding: "100px 40px" }}>
+          <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
+            <span style={{
+              fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px",
+              letterSpacing: "0.2em", color: "rgba(15,14,14,0.35)",
+              textTransform: "uppercase", display: "block", marginBottom: "20px",
+            }}>
+              Pricing
+            </span>
+            <h2 style={{
+              fontFamily: "'Fraunces',Georgia,serif", fontWeight: 900,
+              fontSize: "clamp(2.5rem,5vw,4.5rem)", letterSpacing: "-0.04em",
+              lineHeight: 0.93, color: "#0F0E0E", margin: "0 0 64px",
+            }}>
+              Kies je plan
+              <br />
+              <em style={{ fontWeight: 300, color: "rgba(15,14,14,0.35)" }}>
+                geen verborgen kosten.
+              </em>
+            </h2>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: "1px",
+              background: "rgba(15,14,14,0.1)",
+              border: "1px solid rgba(15,14,14,0.1)",
+            }}>
+              {[
+                {
+                  name: "Free",
+                  price: "€0",
+                  period: "",
+                  desc: "Voor eenmalige checks en kennismaking met het platform.",
+                  features: [
+                    "1 scan per maand",
+                    "6 basis checks",
+                    "Serverless — geen VPS",
+                    "Headers, DNS, SSL",
+                  ],
+                  cta: "Start gratis",
+                  href: "https://scan.zenkai.nl",
+                  highlight: false,
+                },
+                {
+                  name: "Starter",
+                  price: "€19",
+                  period: "/mnd",
+                  desc: "Voor freelancers en kleine bedrijven die regelmatig willen scannen.",
+                  features: [
+                    "3 scans per maand",
+                    "Quick Scan — 9 modules",
+                    "PDF rapport per email",
+                    "Nmap, Nikto, ZAP, urlscan",
+                  ],
+                  cta: "Start nu",
+                  href: "https://scan.zenkai.nl",
+                  highlight: false,
+                },
+                {
+                  name: "Pro",
+                  price: "€49",
+                  period: "/mnd",
+                  desc: "Voor security professionals en bedrijven met serieuze eisen.",
+                  features: [
+                    "Onbeperkt scans",
+                    "Full Scan — 11 modules",
+                    "JSON output + API toegang",
+                    "Shodan, feroxbuster, SSLyze",
+                    "Prioriteit support",
+                  ],
+                  cta: "Kies Pro",
+                  href: "https://scan.zenkai.nl",
+                  highlight: true,
+                },
+                {
+                  name: "Enterprise",
+                  price: "Op aanvraag",
+                  period: "",
+                  desc: "Voor organisaties met eigen infrastructuur en compliance-eisen.",
+                  features: [
+                    "IP-range scanning",
+                    "SQLMap integratie",
+                    "Custom rapport format",
+                    "Dedicated support",
+                    "SLA + NDA beschikbaar",
+                  ],
+                  cta: "Neem contact op",
+                  href: "mailto:joshuapole@live.nl",
+                  highlight: false,
+                },
+              ].map((plan) => (
+                <div
+                  key={plan.name}
+                  style={{
+                    background: plan.highlight ? "#0F0E0E" : "#F5F3EC",
+                    padding: "48px 36px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0",
+                  }}
+                >
+                  <span style={{
+                    fontFamily: "'IBM Plex Mono',monospace", fontSize: "10px",
+                    letterSpacing: "0.2em", textTransform: "uppercase",
+                    color: plan.highlight ? "rgba(245,243,236,0.4)" : "rgba(15,14,14,0.4)",
+                    marginBottom: "16px", display: "block",
+                  }}>
+                    {plan.name}
+                  </span>
+                  <div style={{ marginBottom: "24px" }}>
+                    <span style={{
+                      fontFamily: "'Fraunces',Georgia,serif", fontWeight: 900,
+                      fontSize: "clamp(2rem,3.5vw,3rem)", letterSpacing: "-0.04em",
+                      color: plan.highlight ? "#F5F3EC" : "#0F0E0E",
+                    }}>
+                      {plan.price}
+                    </span>
+                    {plan.period && (
+                      <span style={{
+                        fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px",
+                        color: plan.highlight ? "rgba(245,243,236,0.4)" : "rgba(15,14,14,0.4)",
+                        marginLeft: "4px",
+                      }}>
+                        {plan.period}
+                      </span>
+                    )}
+                  </div>
+                  <p style={{
+                    fontSize: "13px", lineHeight: 1.7,
+                    color: plan.highlight ? "rgba(245,243,236,0.5)" : "rgba(15,14,14,0.5)",
+                    margin: "0 0 32px", minHeight: "56px",
+                  }}>
+                    {plan.desc}
+                  </p>
+                  <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px", display: "flex", flexDirection: "column", gap: "12px", flex: 1 }}>
+                    {plan.features.map((f) => (
+                      <li key={f} style={{
+                        fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px",
+                        color: plan.highlight ? "rgba(245,243,236,0.7)" : "rgba(15,14,14,0.7)",
+                        display: "flex", alignItems: "flex-start", gap: "10px",
+                      }}>
+                        <span style={{ color: plan.highlight ? "#F5F3EC" : "#0F0E0E", marginTop: "1px", flexShrink: 0 }}>—</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <a
+                    href={plan.href}
+                    style={{
+                      display: "block", textAlign: "center",
+                      padding: "14px 24px",
+                      background: plan.highlight ? "#F5F3EC" : "#0F0E0E",
+                      color: plan.highlight ? "#0F0E0E" : "#F5F3EC",
+                      fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px",
+                      letterSpacing: "0.1em", textTransform: "uppercase",
+                      textDecoration: "none",
+                      transition: "opacity 0.15s",
+                    }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "0.75"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "1"; }}
+                  >
+                    {plan.cta}
+                  </a>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
