@@ -1,6 +1,54 @@
 # Zenkai Platform — Changelog
 
-## [Unreleased]
+## [Unreleased] — 30 april 2026
+
+### Scanner — Full Scan (VPS)
+- **fix:** feroxbuster output parser — correct regex field count (`STATUS METHOD LINES WORDS BYTES URL`). Was silently capturing 0 paths per full scan.
+- **fix:** SQLMap now tests HTML forms (crawl=3) AND common URL params (`?id=1&cat=1&q=test&search=test`) — covers sites with no HTML forms.
+- **fix:** Shodan 403 (CDN IP) → graceful warn; 404 → graceful pass instead of error.
+- **fix:** Subdomain enumeration expanded to SecLists `subdomains-top1million-5000.txt` (5000 entries, xargs -P 40 parallel).
+
+### Scanner — PDF Report
+- **fix:** Bar chart overflow — switched from pixel to percentage widths; bars no longer escape the chart box.
+
+### Web (zenkai.nl)
+- **feat:** Privacy Policy rewritten in security platform style (9 sections, AVG/GDPR compliant, scanner-specific).
+- **feat:** Terms of Service rewritten — authorized-use-only clause, 14-day refund, Lemon Squeezy payment terms.
+
+---
+
+## [Phase 3 complete] — 29 april 2026
+
+### Scanner — Full Scan
+- **feat:** SQL Injection module — SQLMap BEUSTQ, level 2, risk 1, 5 min cap.
+- **feat:** Injection checks module — SSTI (Jinja2/Twig/Freemarker), Open Redirect (7 params), Host Header Injection.
+- **fix:** gobuster/feroxbuster 403 fix — sensitive paths → max 15 HIGH findings; all other 200s → 1 summary finding. Eliminates 4000+ false positive medium findings.
+
+### Web (zenkai.nl)
+- **feat:** Rebranded as pure security platform — removed Goals/Job/Workout from hub.
+- **feat:** Pricing section added (Free €0 / Starter €19 / Pro €49 / Enterprise op aanvraag).
+- **feat:** Real Zenkai logo with `mix-blend-mode: multiply` on light, `filter: invert(1)` on dark backgrounds.
+- **feat:** scan.zenkai.nl landing page — live status, real module list, correct pricing.
+- **feat:** ZenkaiNav + ZenkaiFooter rewritten (packages/ui).
+
+---
+
+## [Phase 2 complete] — april 2026
+
+### Scanner
+- **feat:** Quick Scan — 9 modules (headers, ssl, dns, nmap, gobuster, nikto, whatweb, urlscan, zap).
+- **feat:** Full Scan — 13 modules + active injection testing.
+- **feat:** Streaming scan UI with real-time per-module results.
+- **feat:** Bilingual PDF report (NL/EN) — WeasyPrint + Jinja2, CVSS + CWE mapping.
+- **feat:** VPS deployment — Ubuntu, nginx, systemd, Let's Encrypt HTTPS.
+
+---
+
+## [Phase 1 complete] — 24 april 2026
+
+### Workout app (workout.zenkai.nl)
+- Custom workout setup, weekly calendar, streak tracking, Zenkai Boost mechanic.
+- Grace day (1× per week streak protection), exit survey, pattern insight, weekly coach summary.
 
 ---
 

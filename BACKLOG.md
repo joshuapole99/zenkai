@@ -187,20 +187,28 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 
 **Deep Discovery**
 - [x] Full TCP scan (1–65535) + UDP
-- [x] Advanced DNS + subdomain enumeration (capped)
+- [x] Advanced DNS + subdomain enumeration — SecLists top-5000 wordlist, parallel (xargs -P 40)
 - [x] SSL/TLS deep analysis — cipher suites, RC4, 3DES (sslyze)
 - [x] Version-based vulnerability detection via Shodan CVEs
 - [x] Directory enum — feroxbuster + SecLists raft-large (119k wordlist)
+- [x] feroxbuster output parser fix (correct field count: STATUS METHOD LINES WORDS BYTES URL)
 - [ ] ZAP active scan + full crawl (depth 5, 500 URLs) — NEXT
 
 **Active Testing**
-- [x] SQL Injection — SQLMap BEUSTQ, level 2, risk 1, 5min timeout
+- [x] SQL Injection — SQLMap BEUSTQ, level 2, risk 1 — forms (crawl=3) + URL params (?id,cat,q,search)
 - [x] Server-Side Template Injection (SSTI) — Jinja2/Twig/Freemarker payloads
 - [x] Open Redirect detection — 7 common parameters
 - [x] Host Header Injection
 - [ ] XSS testing — ZAP active scan — NEXT
 - [ ] SSRF met callback — requires OOB server — FUTURE
 - [ ] Client-Side Prototype Pollution — FUTURE
+
+**Report fixes**
+- [x] gobuster/feroxbuster: 403s no longer in report — blacklisted at tool level + parser level
+- [x] gobuster: sensitive paths → individual HIGH findings (max 15), all other 200s → 1 summary finding
+- [x] PDF bar chart overflow fix — switched from px to % widths
+- [x] Shodan 403 (CDN IP) → graceful warn; 404 → graceful pass
+- [x] PDF report: risk gauge SVG + severity bar chart confirmed rendering correctly
 
 **Intelligence**
 - [x] urlscan.io domain/IP/URL reputation
