@@ -18,61 +18,61 @@ function FontLoader() {
 
 const PRODUCTS = [
   {
-    num: "01", id: "scan", category: "SECURITY",
+    num: "01", id: "scan", category: "ATTACK SURFACE",
     name: "Scan",
-    tagline: "Free scan, Quick Scan (9 modules) en Full Scan (11 modules). PDF rapport per email.",
-    desc: "SSL/TLS, DNS, security headers, open poorten (TCP+UDP), directory enum, Nikto, ZAP, urlscan.io reputatie, Shodan CVEs. Van gratis check tot full attack surface mapping.",
+    tagline: "Quick Scan (9 modules) en Full Scan (11 modules). PDF rapport per email.",
+    desc: "SSL/TLS, DNS, headers, open poorten (TCP+UDP), directory enum, Nikto, ZAP, urlscan.io reputatie, Shodan CVEs. Van gratis domeincheck tot volledig attack surface rapport.",
     status: "live" as const,
     href: "https://scan.zenkai.nl",
-    accent: "#0284C7", accentBg: "rgba(2,132,199,0.05)", word: "Security.",
+    accent: "#0284C7", accentBg: "rgba(2,132,199,0.05)", word: "Scanners.",
   },
   {
-    num: "02", id: "fin", category: "FINANCE",
-    name: "Goals",
-    tagline: "Financial clarity for students and Gen Z.",
-    desc: "Budgeting, subscription tracking, financial goals — built for people who want clarity, not complexity.",
-    status: "live" as const,
-    href: "https://goals.zenkai.nl",
-    accent: "#16A34A", accentBg: "rgba(22,163,74,0.05)", word: "Finance.",
+    num: "02", id: "cve", category: "INTELLIGENCE",
+    name: "CVE Intel",
+    tagline: "Shodan-powered CVE monitoring voor jouw IP-ranges.",
+    desc: "Automatisch bijhouden van nieuwe CVEs voor jouw assets. Email alerts bij nieuwe exploits, severity scoring, CVSS breakdown per service.",
+    status: "coming-soon" as const,
+    href: "#",
+    accent: "#DC2626", accentBg: "rgba(220,38,38,0.05)", word: "Defenders.",
   },
   {
-    num: "03", id: "job", category: "CAREER",
-    name: "Job",
-    tagline: "CV score, cover letter, interview prep.",
-    desc: "AI-powered Dutch job coaching. Get your CV scored, cover letter reviewed, and interview questions prepped.",
-    status: "live" as const,
-    href: "https://job.zenkai.nl",
-    accent: "#7C3AED", accentBg: "rgba(124,58,237,0.05)", word: "Career.",
+    num: "03", id: "phish", category: "PHISHING",
+    name: "Phishing Check",
+    tagline: "Detecteer phishing domeinen en lookalike aanvallen.",
+    desc: "Check of een domein of email verdacht is. Typosquatting detectie, DMARC/SPF analyse, MX reputatie lookup en brand impersonation scoring.",
+    status: "coming-soon" as const,
+    href: "#",
+    accent: "#EA580C", accentBg: "rgba(234,88,12,0.05)", word: "Analysts.",
   },
   {
-    num: "04", id: "fit", category: "FITNESS",
-    name: "Workout",
-    tagline: "The comeback fitness app. No guilt trips.",
-    desc: "Daily quest, XP system, streak tracking with a grace day mechanic. Level up your fitness — no shame.",
-    status: "live" as const,
-    href: "https://workout.zenkai.nl",
-    accent: "#EA580C", accentBg: "rgba(234,88,12,0.05)", word: "Fitness.",
+    num: "04", id: "report", category: "REPORTING",
+    name: "Report Builder",
+    tagline: "Professionele pentest rapporten in minuten.",
+    desc: "Vul je bevindingen in, kies je template, exporteer naar PDF. CVSS scoring, aanbevelingen per bevinding, executive summary — alles inbegrepen.",
+    status: "coming-soon" as const,
+    href: "#",
+    accent: "#16A34A", accentBg: "rgba(22,163,74,0.05)", word: "Builders.",
   },
 ];
 
 const POSTS = [
   {
-    date: "2026-04-01", cat: "SECURITY",
+    date: "2026-04-01", cat: "SCANNER",
     title: "Waarom ik Scan bouwde terwijl er al 100 security scanners bestaan",
     excerpt: "De meeste scanners kosten €400/maand of vragen een enterprise demo. Ik wilde iets waarmee een freelancer in 30 seconden zijn eigen domein kan doorlichten.",
     accent: "#0284C7",
   },
   {
-    date: "2026-03-12", cat: "CAREER",
-    title: "Hoe ik mijn CV score van 4.2 naar 8.1 haalde in 10 minuten",
-    excerpt: "Niet door het anders op te maken. Door de ATS-killer zinnen eruit te gooien en te focussen op wat recruiters in de eerste 6 seconden zien.",
-    accent: "#7C3AED",
+    date: "2026-03-20", cat: "PENTESTING",
+    title: "Hoe Cloudflare bijna al mijn scan-resultaten verpeste",
+    excerpt: "403 op alles, open|filtered op UDP, ZAP geeft 0 issues. Hier is wat er echt aan de hand is als je een CDN-beschermd domein scant — en hoe je het interpreteert.",
+    accent: "#DC2626",
   },
   {
-    date: "2026-02-28", cat: "FINANCE",
-    title: "De reden waarom studenten altijd blut zijn op de 20ste",
-    excerpt: "Het heeft niets met discipline te maken. Het heeft alles te maken met hoe maandabonnementen, stilzwijgende verlengingen en 'kleine' vaste lasten oplopen.",
-    accent: "#16A34A",
+    date: "2026-02-14", cat: "OSCP",
+    title: "Wat ik leerde van OSCP dat geen enkele online cursus je vertelt",
+    excerpt: "De exam is niet het moeilijkste deel. Het moeilijkste is de maanden daarvoor — methodisch leren denken terwijl tools je niet de antwoorden geven.",
+    accent: "#EA580C",
   },
 ];
 
@@ -286,11 +286,10 @@ export default function HubHome() {
           </button>
           <nav style={{ display: "flex", flexDirection: "column", gap: "0" }}>
             {[
+              { l: "Pricing", h: "#pricing" },
               { l: "Tools", h: "#tools" },
-              { l: "Scan", h: "https://scan.zenkai.nl" },
-              { l: "Goals", h: "https://goals.zenkai.nl" },
-              { l: "Job", h: "https://job.zenkai.nl" },
-              { l: "Workout", h: "https://workout.zenkai.nl" },
+              { l: "About", h: "#about" },
+              { l: "Start Scan", h: "https://scan.zenkai.nl" },
             ].map((x) => (
               <a
                 key={x.l}
@@ -331,14 +330,7 @@ export default function HubHome() {
           borderBottom: "1px solid rgba(15,14,14,0.07)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <svg width="24" height="20" viewBox="0 0 44 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="0" y="0" width="44" height="6" fill="#0F0E0E"/>
-              <polygon points="44,6 44,13 6,30 0,30 0,23 38,6" fill="#0F0E0E"/>
-              <rect x="0" y="30" width="44" height="6" fill="#0F0E0E"/>
-            </svg>
-            <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontSize: "17px", letterSpacing: "-0.03em" }}>
-              Zenkai
-            </span>
+            <img src="/logo.png" alt="Zenkai" style={{ height: "28px", width: "auto", display: "block" }} />
           </div>
 
           <div className="nav-links" style={{ display: "flex", gap: "28px", alignItems: "center" }}>
@@ -389,7 +381,7 @@ export default function HubHome() {
           }}>
             <div style={{ width: "28px", height: "1px", background: "#0284C7" }} />
             <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", letterSpacing: "0.2em", color: "#0284C7", textTransform: "uppercase" }}>
-              zenkai.nl — platform
+              zenkai.nl — security platform
             </span>
           </div>
 
@@ -431,7 +423,7 @@ export default function HubHome() {
             }}
           >
             <p style={{ fontSize: "16px", color: "rgba(15,14,14,0.48)", maxWidth: "380px", lineHeight: 1.78, margin: 0 }}>
-              Security scans, finance, job coaching, fitness — built by an OSCP-certified analyst for real people. No enterprise pricing.
+              Attack surface scanning, CVE intel, phishing detection — security tools gebouwd door een OSCP-gecertificeerde analyst. Geen enterprise pricing.
             </p>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               <a href="#tools" style={{
@@ -462,8 +454,8 @@ export default function HubHome() {
             }}
           >
             {[
-              { v: "4", l: "Tools" },
-              { v: "4", l: "Live now" },
+              { v: "4", l: "Security tools" },
+              { v: "1", l: "Live now" },
               { v: "OSCP", l: "Certified" },
               { v: "€0", l: "VC funding" },
             ].map((s, i) => (
@@ -495,7 +487,7 @@ export default function HubHome() {
               Tools
             </span>
             <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.28)" }}>
-              3 live · 1 launching 2026
+              1 live · 3 launching 2026
             </span>
           </div>
           <div
@@ -707,25 +699,25 @@ export default function HubHome() {
                 fontSize: "clamp(2.5rem,5vw,4.5rem)", letterSpacing: "-0.04em",
                 lineHeight: 0.93, color: "#F5F3EC", margin: "0 0 28px",
               }}>
-                Ik bouw tools
+                Security is
                 <br />
                 <em style={{ fontWeight: 300, color: "rgba(245,243,236,0.3)" }}>
-                  die ik zelf wilde.
+                  mijn werk.
                 </em>
               </h2>
               <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.48)", lineHeight: 1.8, maxWidth: "420px", margin: "0 0 16px" }}>
-                Ik ben Joshua — security analyst, ethical hacker, en maker van Zenkai. Overdag werk ik als security analyst bij Enreach. In het weekend bouw ik tools die ik zelf wilde maar niet kon betalen.
+                Ik ben Joshua — OSCP-gecertificeerde security analyst bij Enreach. Ik bouw Zenkai als het security platform dat ik zelf wilde: betaalbaar, eerlijk, gebouwd door iemand die weet hoe aanvallers denken.
               </p>
               <p style={{ fontSize: "15px", color: "rgba(245,243,236,0.3)", lineHeight: 1.8, maxWidth: "420px", margin: 0 }}>
-                OSCP gecertificeerd. Geen VC funding. Geen team. Gewoon bouwen.
+                Geen VC funding. Geen team. Security is het werk — niet de hobby.
               </p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
               {[
                 { t: "OSCP Certified", d: "Offensive Security Certified Professional — de standaard voor penetration testing.", a: "#0284C7" },
-                { t: "5+ jaar security", d: "Security analyst bij Enreach. Ervaring met pentesting, vulnerability assessment en hardening.", a: "#16A34A" },
-                { t: "€0 VC funding", d: "Geen investeerders, geen groei-targets. Alle beslissingen zijn gebaseerd op wat goed is voor gebruikers.", a: "#7C3AED" },
-                { t: "Gebouwd in NL", d: "Amsterdam. Tools voor studenten, freelancers en zzp'ers — geen enterprise pricing.", a: "#EA580C" },
+                { t: "5+ jaar security", d: "Security analyst bij Enreach. Dagelijks bezig met pentesting, vulnerability assessment en hardening.", a: "#16A34A" },
+                { t: "Gebouwd door een hacker", d: "Zenkai Scan is gebouwd met dezelfde toolset die ik gebruik op echte engagements: nmap, nikto, ZAP, feroxbuster, Shodan.", a: "#DC2626" },
+                { t: "Geen enterprise BS", d: "Geen demo aanvragen, geen verborgen kosten. Gewoon scannen. Gebouwd vanuit Amsterdam.", a: "#EA580C" },
               ].map((item, i) => (
                 <div
                   key={item.t}
@@ -837,22 +829,19 @@ export default function HubHome() {
               fontSize: "clamp(2.5rem,6vw,5rem)", letterSpacing: "-0.04em",
               lineHeight: 0.9, color: "#F5F3EC", margin: "0 0 24px",
             }}>
-              Pick a tool.
+              Scan je domein.
               <br />
-              <em style={{ fontWeight: 300, fontStyle: "italic", color: "rgba(245,243,236,0.3)" }}>Start for free.</em>
+              <em style={{ fontWeight: 300, fontStyle: "italic", color: "rgba(245,243,236,0.3)" }}>Gratis. Nu.</em>
             </h2>
             <p style={{ fontSize: "16px", color: "rgba(245,243,236,0.35)", lineHeight: 1.75, marginBottom: "44px" }}>
-              All tools have a free tier. No credit card. No bullshit.
+              Geen account nodig. Geen credit card. Gewoon een domein invullen en scannen.
             </p>
             <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="https://goals.zenkai.nl" style={{ padding: "14px 30px", background: "#16A34A", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
-                Goals
+              <a href="https://scan.zenkai.nl" style={{ padding: "14px 30px", background: "#0284C7", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
+                Start Scan →
               </a>
-              <a href="https://job.zenkai.nl" style={{ padding: "14px 30px", background: "#7C3AED", color: "#fff", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
-                Job
-              </a>
-              <a href="https://scan.zenkai.nl" style={{ padding: "14px 30px", border: "1px solid rgba(245,243,236,0.18)", color: "rgba(245,243,236,0.55)", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
-                Scan waitlist
+              <a href="#pricing" style={{ padding: "14px 30px", border: "1px solid rgba(245,243,236,0.18)", color: "rgba(245,243,236,0.55)", fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase" }}>
+                Bekijk plannen
               </a>
             </div>
           </div>
