@@ -1,12 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerClient } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
-
-const PLAN_COLOR: Record<string, string> = {
-  free:    "#6b6b8a",
-  starter: "oklch(0.68 0.19 45)",
-  pro:     "oklch(0.55 0.22 290)",
-};
+import { FontLoader } from "./FontLoader";
 
 const PLAN_RETENTION_DAYS: Record<string, number | null> = {
   free:    30,
@@ -53,105 +48,142 @@ export default async function DashboardPage() {
 
   const { data: scans } = await scansQuery;
 
-  const planColor = PLAN_COLOR[plan] ?? PLAN_COLOR.free;
+  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  const planColor = plan === "free" ? "rgba(15,14,14,0.35)" : "#0284C7";
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "var(--z-bg, #09090f)",
-      color: "var(--z-text, #e4e4f0)",
-      padding: "48px 24px",
-      fontFamily: "'Rajdhani', sans-serif",
-    }}>
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
+    <>
+      <FontLoader />
+      <style>{`
+        @keyframes hf { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+        .dash-table tr:last-child td { border-bottom: none !important; }
+        .dash-pdf-btn:hover { background: #0F0E0E !important; color: #fff !important; }
+        .dash-upgrade:hover { background: #0284C7 !important; color: #fff !important; }
+      `}</style>
+
+      <div style={{ background: "#ffffff", color: "#0F0E0E", minHeight: "100vh" }}>
 
         {/* Header */}
-        <div style={{ marginBottom: 40 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, letterSpacing: "0.04em" }}>
+        <section style={{ padding: "64px 40px 0", maxWidth: "1200px", margin: "0 auto" }}>
+          <span style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: "11px", letterSpacing: "0.2em",
+            color: "rgba(15,14,14,0.35)", textTransform: "uppercase",
+            display: "block", marginBottom: "16px",
+          }}>
+            Account
+          </span>
+          <h1 style={{
+            fontFamily: "'Fraunces', Georgia, serif", fontWeight: 900,
+            fontSize: "clamp(2.5rem, 5vw, 4rem)", letterSpacing: "-0.04em",
+            lineHeight: 0.93, color: "#0F0E0E", margin: "0 0 8px",
+          }}>
             Dashboard
           </h1>
-          <p style={{ color: "#6b6b8a", margin: "8px 0 0", fontSize: 15 }}>
+          <p style={{
+            fontFamily: "'IBM Plex Mono', monospace", fontSize: "12px",
+            color: "rgba(15,14,14,0.35)", letterSpacing: "0.04em",
+            margin: "12px 0 0",
+          }}>
             {user.email}
           </p>
-        </div>
+        </section>
 
-        {/* Plan badge */}
-        <div style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 10,
-          background: "var(--z-surface, #111118)",
-          border: "1px solid var(--z-border, #252535)",
-          borderRadius: 10,
-          padding: "14px 20px",
-          marginBottom: 40,
-        }}>
-          <span style={{ fontSize: 12, color: "#6b6b8a", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-            Huidig plan
-          </span>
-          <span style={{
-            fontSize: 14,
-            fontWeight: 700,
-            color: planColor,
-            textTransform: "uppercase",
-            letterSpacing: "0.12em",
+        {/* Plan */}
+        <section style={{ padding: "40px 40px 0", maxWidth: "1200px", margin: "0 auto" }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "16px",
+            border: "1px solid rgba(15,14,14,0.1)", padding: "16px 24px",
           }}>
-            {plan}
-          </span>
-          {plan === "free" && (
-            <a
-              href="/#pricing"
-              style={{
-                marginLeft: 8,
-                fontSize: 12,
-                color: "oklch(0.68 0.19 45)",
-                textDecoration: "none",
-                border: "1px solid oklch(0.68 0.19 45 / 0.4)",
-                borderRadius: 6,
-                padding: "3px 10px",
-              }}
-            >
-              Upgrade
-            </a>
-          )}
-        </div>
+            <span style={{
+              fontFamily: "'IBM Plex Mono', monospace", fontSize: "10px",
+              letterSpacing: "0.2em", textTransform: "uppercase",
+              color: "rgba(15,14,14,0.35)",
+            }}>
+              Huidig plan
+            </span>
+            <span style={{
+              fontFamily: "'IBM Plex Mono', monospace", fontSize: "13px",
+              fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase",
+              color: planColor,
+            }}>
+              {planLabel}
+            </span>
+            {plan === "free" && (
+              <a
+                href="/#pricing"
+                className="dash-upgrade"
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace", fontSize: "10px",
+                  fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase",
+                  color: "#0284C7", textDecoration: "none",
+                  border: "1px solid #0284C7", padding: "5px 14px",
+                  transition: "background 0.15s, color 0.15s",
+                }}
+              >
+                Upgrade →
+              </a>
+            )}
+          </div>
+        </section>
 
         {/* Scan history */}
-        <h2 style={{ fontSize: 18, fontWeight: 600, margin: "0 0 16px", letterSpacing: "0.04em" }}>
-          Scan geschiedenis
-        </h2>
-
-        {!scans || scans.length === 0 ? (
+        <section style={{ padding: "48px 40px 100px", maxWidth: "1200px", margin: "0 auto" }}>
           <div style={{
-            background: "var(--z-surface, #111118)",
-            border: "1px solid var(--z-border, #252535)",
-            borderRadius: 10,
-            padding: "40px 24px",
-            textAlign: "center",
-            color: "#6b6b8a",
-            fontSize: 15,
+            display: "flex", justifyContent: "space-between", alignItems: "baseline",
+            paddingBottom: "16px", borderBottom: "2px solid #0F0E0E", marginBottom: "1px",
           }}>
-            Nog geen scans uitgevoerd.
+            <span style={{
+              fontFamily: "'IBM Plex Mono', monospace", fontSize: "11px",
+              fontWeight: 600, letterSpacing: "0.2em",
+              color: "rgba(15,14,14,0.4)", textTransform: "uppercase",
+            }}>
+              Scan geschiedenis
+            </span>
+            <span style={{
+              fontFamily: "'IBM Plex Mono', monospace", fontSize: "11px",
+              color: "rgba(15,14,14,0.3)",
+            }}>
+              {scans?.length ?? 0} scan{scans?.length !== 1 ? "s" : ""}
+              {retentionDays ? ` · laatste ${retentionDays === 30 ? "30 dagen" : "jaar"}` : ""}
+            </span>
           </div>
-        ) : (
-          <div style={{
-            background: "var(--z-surface, #111118)",
-            border: "1px solid var(--z-border, #252535)",
-            borderRadius: 10,
-            overflow: "hidden",
-          }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+
+          {!scans || scans.length === 0 ? (
+            <div style={{
+              padding: "60px 0", textAlign: "center",
+              background: "#F5F3EC",
+            }}>
+              <p style={{
+                fontFamily: "'IBM Plex Mono', monospace", fontSize: "12px",
+                color: "rgba(15,14,14,0.3)", letterSpacing: "0.08em",
+                textTransform: "uppercase", margin: "0 0 20px",
+              }}>
+                Nog geen scans
+              </p>
+              <a href="/scan" style={{
+                fontFamily: "'IBM Plex Mono', monospace", fontSize: "11px",
+                fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
+                color: "#ffffff", textDecoration: "none",
+                background: "#0284C7", padding: "12px 24px",
+                display: "inline-block",
+              }}>
+                Start eerste scan →
+              </a>
+            </div>
+          ) : (
+            <table className="dash-table" style={{
+              width: "100%", borderCollapse: "collapse",
+              background: "#F5F3EC",
+            }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--z-border, #252535)" }}>
+                <tr style={{ borderBottom: "1px solid rgba(15,14,14,0.08)" }}>
                   {["Domein", "Type", "Datum", "Rapport"].map((h) => (
                     <th key={h} style={{
-                      textAlign: "left",
-                      padding: "12px 16px",
-                      color: "#6b6b8a",
-                      fontWeight: 600,
-                      fontSize: 12,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
+                      textAlign: "left", padding: "12px 20px",
+                      fontFamily: "'IBM Plex Mono', monospace", fontSize: "9px",
+                      fontWeight: 600, letterSpacing: "0.18em",
+                      textTransform: "uppercase", color: "rgba(15,14,14,0.35)",
                     }}>
                       {h}
                     </th>
@@ -162,72 +194,76 @@ export default async function DashboardPage() {
                 {scans.map((scan, i) => (
                   <tr
                     key={scan.id}
-                    style={{
-                      borderBottom: i < scans.length - 1 ? "1px solid var(--z-border, #252535)" : "none",
-                    }}
+                    style={{ borderBottom: "1px solid rgba(15,14,14,0.06)" }}
                   >
-                    <td style={{ padding: "14px 16px", fontFamily: "monospace", fontSize: 13 }}>
+                    <td style={{
+                      padding: "16px 20px",
+                      fontFamily: "'IBM Plex Mono', monospace", fontSize: "12px",
+                      color: "#0F0E0E", fontWeight: 500,
+                    }}>
                       {scan.domain}
                     </td>
-                    <td style={{ padding: "14px 16px" }}>
+                    <td style={{ padding: "16px 20px" }}>
                       <span style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                        color: scan.scan_type === "full"
-                          ? "oklch(0.55 0.22 290)"
-                          : "oklch(0.68 0.19 45)",
-                        background: scan.scan_type === "full"
-                          ? "oklch(0.55 0.22 290 / 0.12)"
-                          : "oklch(0.68 0.19 45 / 0.12)",
-                        border: `1px solid ${scan.scan_type === "full"
-                          ? "oklch(0.55 0.22 290 / 0.3)"
-                          : "oklch(0.68 0.19 45 / 0.3)"}`,
-                        borderRadius: 5,
-                        padding: "2px 8px",
+                        fontFamily: "'IBM Plex Mono', monospace", fontSize: "9px",
+                        fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase",
+                        color: scan.scan_type === "full" ? "#0F0E0E" : "#0284C7",
+                        border: `1px solid ${scan.scan_type === "full" ? "rgba(15,14,14,0.25)" : "#0284C7"}`,
+                        padding: "3px 10px",
                       }}>
                         {scan.scan_type === "full" ? "Full" : "Quick"}
                       </span>
                     </td>
-                    <td style={{ padding: "14px 16px", color: "#6b6b8a", fontSize: 13 }}>
+                    <td style={{
+                      padding: "16px 20px",
+                      fontFamily: "'IBM Plex Mono', monospace", fontSize: "11px",
+                      color: "rgba(15,14,14,0.4)",
+                    }}>
                       {formatDate(scan.created_at)}
                     </td>
-                    <td style={{ padding: "14px 16px" }}>
+                    <td style={{ padding: "16px 20px" }}>
                       {scan.scan_type === "full" ? (
                         <a
                           href={`/api/report/${scan.domain}`}
+                          className="dash-pdf-btn"
                           style={{
-                            fontSize: 12,
-                            color: "oklch(0.55 0.22 290)",
-                            textDecoration: "none",
-                            border: "1px solid oklch(0.55 0.22 290 / 0.4)",
-                            borderRadius: 6,
-                            padding: "4px 12px",
-                            display: "inline-block",
+                            fontFamily: "'IBM Plex Mono', monospace", fontSize: "9px",
+                            fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase",
+                            color: "#0F0E0E", textDecoration: "none",
+                            border: "1px solid rgba(15,14,14,0.25)", padding: "5px 14px",
+                            display: "inline-block", transition: "background 0.15s, color 0.15s",
                           }}
                         >
-                          PDF
+                          PDF ↓
                         </a>
                       ) : (
-                        <span style={{ color: "#3a3a55", fontSize: 12 }}>—</span>
+                        <span style={{
+                          fontFamily: "'IBM Plex Mono', monospace", fontSize: "11px",
+                          color: "rgba(15,14,14,0.2)",
+                        }}>—</span>
                       )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
+          )}
 
-        {retentionDays && (
-          <p style={{ marginTop: 12, fontSize: 12, color: "#3a3a55" }}>
-            Scans ouder dan {retentionDays === 30 ? "30 dagen" : "1 jaar"} worden niet getoond.
-            {plan === "free" && " Upgrade naar Starter of Pro voor langere geschiedenis."}
-          </p>
-        )}
+          {plan === "free" && scans && scans.length > 0 && (
+            <p style={{
+              fontFamily: "'IBM Plex Mono', monospace", fontSize: "10px",
+              color: "rgba(15,14,14,0.28)", letterSpacing: "0.06em",
+              marginTop: "12px",
+            }}>
+              Free plan toont scans van de laatste 30 dagen.{" "}
+              <a href="/#pricing" style={{ color: "#0284C7", textDecoration: "none" }}>
+                Upgrade voor langere geschiedenis.
+              </a>
+            </p>
+          )}
+        </section>
 
       </div>
-    </div>
+    </>
   );
 }
