@@ -1,4 +1,6 @@
 import { NextRequest } from "next/server";
+import { getServerClient, PLAN_LIMITS } from "@/lib/supabase-server";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const maxDuration = 300;
 
@@ -9,11 +11,39 @@ function cleanDomain(input: string): string {
   return input.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, "").toLowerCase();
 }
 
+function json(body: object, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 export async function POST(req: NextRequest) {
-  const body = await req.json() as { domain?: string; language?: string };
-  if (!body.domain) {
-    return new Response(JSON.stringify({ error: "Domein vereist" }), { status: 400 });
+  // Auth
+  const sb = await getServerClient();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return json({ error: "Niet ingelogd" }, 401);
+
+  // Plan lookup
+  const { data: row } = await supabaseAdmin
+    .from("users")
+    .select("plan, scan_count_month, scan_reset_at")
+    .eq("id", user.id)
+    .single();
+
+  const plan   = (row?.plan ?? "free") as string;
+  const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
+
+  // Full scan = Pro+ only
+  if (!limits.fullScan) {
+    return json({
+      error: `Full scan is niet beschikbaar voor het ${plan} plan. Upgrade naar Pro.`,
+    }, 403);
   }
+
+  // Body
+  const body = await req.json() as { domain?: string; language?: string };
+  if (!body.domain) return json({ error: "Domein vereist" }, 400);
 
   const domain   = cleanDomain(body.domain);
   const language = body.language === "en" ? "en" : "nl";
@@ -22,17 +52,11 @@ export async function POST(req: NextRequest) {
   try {
     upstream = await fetch(`${SCANNER_URL}/full-scan`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-Key": SCANNER_KEY,
-      },
+      headers: { "Content-Type": "application/json", "X-API-Key": SCANNER_KEY },
       body: JSON.stringify({ domain, language }),
     });
-  } catch (e) {
-    return new Response(
-      JSON.stringify({ error: `Scanner backend niet bereikbaar (${SCANNER_URL})` }),
-      { status: 503 }
-    );
+  } catch {
+    return json({ error: `Scanner backend niet bereikbaar (${SCANNER_URL})` }, 503);
   }
 
   if (!upstream.ok) {

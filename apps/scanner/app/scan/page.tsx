@@ -122,6 +122,7 @@ export default function ScanPage() {
   const [scanGrade, setScanGrade]     = useState<string | null>(null);
   const [expanded, setExpanded]       = useState<string | null>(null);
   const [error, setError]             = useState("");
+  const [errorType, setErrorType]     = useState<null | "auth" | "upgrade" | "limit">(null);
   const [scannedDomain, setScannedDomain] = useState("");
   const [scanDone, setScanDone]       = useState(false);
   const [reportEmail, setReportEmail] = useState("");
@@ -141,6 +142,7 @@ export default function ScanPage() {
     setScore(null);
     setScanGrade(null);
     setError("");
+    setErrorType(null);
     setScannedDomain(d);
     setExpanded(null);
     setScanDone(false);
@@ -155,6 +157,28 @@ export default function ScanPage() {
         body: JSON.stringify({ domain: d, language }),
       });
 
+      if (res.status === 401) {
+        setErrorType("auth");
+        setScanning(false);
+        setScanDone(false);
+        return;
+      }
+      if (res.status === 403) {
+        const body = await res.json().catch(() => ({})) as { error?: string };
+        setError(body.error ?? "Full scan vereist een Pro plan.");
+        setErrorType("upgrade");
+        setScanning(false);
+        setScanDone(false);
+        return;
+      }
+      if (res.status === 429) {
+        const body = await res.json().catch(() => ({})) as { error?: string };
+        setError(body.error ?? "Scanlimiet bereikt voor dit plan.");
+        setErrorType("limit");
+        setScanning(false);
+        setScanDone(false);
+        return;
+      }
       if (!res.ok || !res.body) {
         const err = await res.text().catch(() => "Scan mislukt");
         throw new Error(err.slice(0, 200));
@@ -372,7 +396,49 @@ export default function ScanPage() {
             </button>
           </form>
 
-          {error && (
+          {errorType === "auth" && (
+            <div style={{ marginBottom: "32px", padding: "16px 20px", border: "1px solid rgba(2,132,199,0.25)", background: "rgba(2,132,199,0.04)" }}>
+              <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "13px", fontWeight: 600, color: "#0284C7", margin: "0 0 6px" }}>
+                Inloggen vereist
+              </p>
+              <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "rgba(15,14,14,0.5)", margin: "0 0 12px" }}>
+                Quick scan en Full scan zijn beschikbaar voor ingelogde gebruikers. Gratis scan werkt zonder account.
+              </p>
+              <a href="/login" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, color: "#fff", background: "#0284C7", padding: "8px 16px", textDecoration: "none", display: "inline-block" }}>
+                Inloggen →
+              </a>
+            </div>
+          )}
+
+          {errorType === "upgrade" && (
+            <div style={{ marginBottom: "32px", padding: "16px 20px", border: "1px solid rgba(124,58,237,0.25)", background: "rgba(124,58,237,0.04)" }}>
+              <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "13px", fontWeight: 600, color: "#7C3AED", margin: "0 0 6px" }}>
+                Plan upgrade vereist
+              </p>
+              <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "rgba(15,14,14,0.5)", margin: "0 0 12px", lineHeight: 1.6 }}>
+                {error}
+              </p>
+              <a href="/#pricing" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, color: "#fff", background: "#7C3AED", padding: "8px 16px", textDecoration: "none", display: "inline-block" }}>
+                Bekijk plannen →
+              </a>
+            </div>
+          )}
+
+          {errorType === "limit" && (
+            <div style={{ marginBottom: "32px", padding: "16px 20px", border: "1px solid rgba(217,119,6,0.25)", background: "rgba(217,119,6,0.04)" }}>
+              <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "13px", fontWeight: 600, color: "#D97706", margin: "0 0 6px" }}>
+                Scanlimiet bereikt
+              </p>
+              <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "rgba(15,14,14,0.5)", margin: "0 0 12px", lineHeight: 1.6 }}>
+                {error}
+              </p>
+              <a href="/#pricing" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, color: "#fff", background: "#D97706", padding: "8px 16px", textDecoration: "none", display: "inline-block" }}>
+                Upgrade plan →
+              </a>
+            </div>
+          )}
+
+          {!errorType && error && (
             <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "13px", color: "#DC2626", marginBottom: "32px" }}>
               ✗ {error}
             </p>

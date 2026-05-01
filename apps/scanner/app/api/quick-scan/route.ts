@@ -1,4 +1,6 @@
 import { NextRequest } from "next/server";
+import { getServerClient, PLAN_LIMITS } from "@/lib/supabase-server";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const maxDuration = 120;
 
@@ -9,11 +11,54 @@ function cleanDomain(input: string): string {
   return input.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, "").toLowerCase();
 }
 
+function json(body: object, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 export async function POST(req: NextRequest) {
-  const body = await req.json() as { domain?: string; language?: string };
-  if (!body.domain) {
-    return new Response(JSON.stringify({ error: "Domein vereist" }), { status: 400 });
+  // Auth
+  const sb = await getServerClient();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return json({ error: "Niet ingelogd" }, 401);
+
+  // Plan lookup
+  const { data: row } = await supabaseAdmin
+    .from("users")
+    .select("plan, scan_count_month, scan_reset_at")
+    .eq("id", user.id)
+    .single();
+
+  const plan  = (row?.plan ?? "free") as string;
+  const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
+
+  // Monthly reset
+  const resetAt   = new Date(row?.scan_reset_at ?? 0);
+  const now        = new Date();
+  const newMonth   = now.getMonth() !== resetAt.getMonth() || now.getFullYear() !== resetAt.getFullYear();
+  let count        = newMonth ? 0 : (row?.scan_count_month ?? 0);
+
+  // Enforce limit
+  if (limits.scansPerMonth !== -1 && count >= limits.scansPerMonth) {
+    return json({
+      error: `Scanlimiet bereikt (${limits.scansPerMonth}/mnd voor ${plan}). Upgrade je plan.`,
+    }, 429);
   }
+
+  // Increment count
+  await supabaseAdmin
+    .from("users")
+    .update({
+      scan_count_month: count + 1,
+      ...(newMonth ? { scan_reset_at: now.toISOString() } : {}),
+    })
+    .eq("id", user.id);
+
+  // Body
+  const body = await req.json() as { domain?: string; language?: string };
+  if (!body.domain) return json({ error: "Domein vereist" }, 400);
 
   const domain   = cleanDomain(body.domain);
   const language = body.language === "en" ? "en" : "nl";
@@ -22,17 +67,11 @@ export async function POST(req: NextRequest) {
   try {
     upstream = await fetch(`${SCANNER_URL}/quick-scan`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-Key": SCANNER_KEY,
-      },
+      headers: { "Content-Type": "application/json", "X-API-Key": SCANNER_KEY },
       body: JSON.stringify({ domain, language }),
     });
-  } catch (e) {
-    return new Response(
-      JSON.stringify({ error: `Scanner backend niet bereikbaar (${SCANNER_URL})` }),
-      { status: 503 }
-    );
+  } catch {
+    return json({ error: `Scanner backend niet bereikbaar (${SCANNER_URL})` }, 503);
   }
 
   if (!upstream.ok) {
