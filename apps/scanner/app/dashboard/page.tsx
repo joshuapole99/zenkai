@@ -224,7 +224,7 @@ export default async function DashboardPage() {
                     <td style={{ padding: "16px 20px" }}>
                       {scan.scan_type === "full" ? (
                         <a
-                          href={`/api/report/${scan.domain}`}
+                          href={`/report/${scan.domain}`}
                           className="dash-pdf-btn"
                           style={{
                             fontFamily: "'IBM Plex Mono', monospace", fontSize: "9px",
@@ -234,7 +234,7 @@ export default async function DashboardPage() {
                             display: "inline-block", transition: "background 0.15s, color 0.15s",
                           }}
                         >
-                          PDF ↓
+                          Rapport →
                         </a>
                       ) : (
                         <span style={{
