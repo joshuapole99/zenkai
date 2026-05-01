@@ -1,5 +1,38 @@
 ## Zenkai Product Backlog
 
+---
+
+## Zenkai Tools — zenkai.nl (1 live · 7 in backlog)
+
+| # | Tool | Status | Beschrijving |
+|---|---|---|---|
+| 01 | Scan | ✅ LIVE | Quick Scan + Full Scan, PDF rapport |
+| 02 | SSL Monitor | TODO | Cert monitoring + alerts — vervaldatum, weak ciphers, mismatch, self-signed |
+| 03 | Email Header Analyzer | TODO | SPF/DKIM/DMARC check — plak header, zie direct resultaat + spoofing tekenen |
+| 04 | Password Breach Checker | TODO | HaveIBeenPwned integratie — k-Anonymity, data verlaat nooit de browser |
+| 05 | DNS Lookup | TODO | A, AAAA, MX, TXT, SPF, DMARC, CAA — inclusief SPF-validatie + reverse DNS |
+| 06 | PDF Protect | TODO | Wachtwoord + permissies op PDF — volledig client-side, geen upload |
+| 07 | Password Generator | TODO | Instelbare lengte/symbolen/cijfers, entropie-indicator, bulk genereren |
+| 08 | Hash Generator | TODO | MD5/SHA-1/SHA-256/SHA-512 in browser — HMAC-varianten + hash vergelijking |
+
+---
+
+## Website (zenkai.nl — apps/web)
+
+### Pages — TODO
+- [ ] **Blog** — security artikelen, tool writeups, hacking tips (SEO + autoriteit opbouwen)
+- [ ] **Homepage** — geen leugens/misleidende claims; vervang placeholders met echte features + echte screenshots
+- [ ] **Pricing** — afmaken: per plan tabel, features, CTA naar checkout/scan
+- [ ] **Store** — losse scan pakketten, rapport credits, eventueel merchandise
+- [ ] **About** — afmaken: missie, OSCP achtergrond, waarom Zenkai, contact
+
+### Design / UX
+- [ ] Mobile nav afmaken
+- [ ] Consistent hero CTA op alle pagina's → "Start Free Scan"
+- [ ] Social proof section (testimonials of case studies — als die er zijn)
+
+---
+
 ### Phase 1 — Core Coach ✓ (COMPLETE - April 24)
 - [x] Custom workout setup in onboarding
 - [x] Weekly calendar dashboard
@@ -333,6 +366,11 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 | dnsenum | DNS enumeration (zone transfer, brute force) | Starter+ |
 | nslookup | DNS lookup | Alle plans |
 | metasploit | Exploit validation (pentest service only) | Enterprise+ |
+| theHarvester | OSINT — emails, usernames, subdomains via public bronnen | Starter+ |
+| amass | Passieve subdomain enumeration (certificate logs, APIs) | Pro+ |
+| subfinder | Snelle passieve subdomain discovery | Pro+ |
+| nuclei | Template-based vulnerability scanning (CVEs, misconfigs) | Pro+ |
+| waybackurls | Historische URL discovery via Wayback Machine | Pro+ |
 
 ---
 

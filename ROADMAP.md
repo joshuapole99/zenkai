@@ -1,14 +1,15 @@
 # Zenkai — Security Platform Roadmap
 
-## Monorepo structure
+## Structuur
 
 ```
 zenkai/
-├── apps/web/        → zenkai.nl          (Vercel)
-├── apps/scanner/    → scan.zenkai.nl     (Vercel)
-├── apps/financios/  → goals.zenkai.nl    (Vercel, secondary)
+├── apps/web/        → zenkai.nl          (Vercel) — marketing + hub
+├── apps/scanner/    → scan.zenkai.nl     (Vercel) — primary product
 └── packages/ui/     → shared components + design tokens
 ```
+
+> **Archived (not maintained):** workout.zenkai.nl · goals.zenkai.nl · job.zenkai.nl
 
 ---
 
@@ -16,46 +17,83 @@ zenkai/
 
 | Product | Domain | Status |
 |---|---|---|
-| Zenkai Scanner | scan.zenkai.nl | **Live** |
-| Zenkai Hub | zenkai.nl | **Live** |
-| Workout app | workout.zenkai.nl | Open Beta (secondary) |
-| Goals | goals.zenkai.nl | Live (secondary) |
-| Job Coach | job.zenkai.nl | Live (secondary) |
+| Zenkai Scanner | scan.zenkai.nl | **Live — primary focus** |
+| Zenkai Hub | zenkai.nl | **Live — marketing/hub** |
 
 ---
 
-## Scanner roadmap (primary focus)
+## Scanner roadmap
 
-### Done ✓
-- Quick Scan — 9 modules, streaming UI, PDF report
-- Full Scan — 13 modules, active injection testing (SQLMap + SSTI + open redirect)
-- Bilingual PDF (NL/EN), CVSS mapping, risk gauge
+### ✓ Klaar (April 2026)
+
+- Quick Scan — 9 modules, streaming UI, PDF rapport
+- Full Scan — 13 modules, active injection testing (SQLMap, SSTI, open redirect)
+- Bilingual PDF (NL/EN), CVSS mapping, risk gauge, severity bar chart
 - VPS deployment (nginx, systemd, Let's Encrypt)
-- zenkai.nl rebranded as security platform hub
+- ffuf — LFI + API endpoint discovery (Pro)
+- wfuzz — parameter + SQLi fuzzing (Pro)
+- WPScan — WordPress scanning (Pro, WP-only)
+- ZAP active scan + XSS testing (Full Scan)
+- Shodan API credits cache (24h)
+- zenkai.nl rebranded als security platform hub
 
-### Phase 3 remaining
-- [x] ZAP active scan + XSS testing (Full Scan) — DEPLOYED
-- [x] ffuf — LFI + API endpoint discovery (Pro) — DEPLOYED
-- [x] wfuzz — parameter + SQLi fuzzing (Pro) — DEPLOYED
-- [x] WPScan — WordPress scanning (Pro, WP-only) — DEPLOYED
+---
 
-### Phase 4 — Enterprise
-- [ ] IP range scanning (/24 max)
-- [ ] Brute force tools (netexec, Kerbrute, wfuzz login) — opt-in, Enterprise only
-- [ ] API access with key
-- [ ] Custom PDF branding
+### 🔴 Nu — Revenue unlocker
 
-### Phase 5 — Platform
-- [ ] Lemon Squeezy subscription gating (plan enforcement)
-- [ ] User dashboard — scan history, report downloads
-- [ ] Async job queue (scan isolation)
-- [ ] GitHub CI/CD to VPS
+**1. Lemon Squeezy plan enforcement**
+Webhook → Supabase `user.plan` updaten → Flask API checkt plan bij elke scan aanroep.
+Zonder dit geen betaalde klanten.
+
+**2. Gebruiker dashboard**
+Scan geschiedenis + rapport downloads per plan (30 dagen / 1 jaar / onbeperkt).
+
+**3. Known bugs fixen**
+- Timezone display (toont Sat terwijl het Fri is) — CRITICAL
+- Async job queue stabiliteit
+
+---
+
+### 🟡 Daarna — Reporting quality
+
+Uit Phase 7 backlog, hoge waarde voor Pro/Enterprise conversie:
+
+- Poortscan resultaten → tabel in PDF (IP, hostname, port, service)
+- DNS records → tabel (type, value, policy)
+- SSL misconfiguraties → tabel per issue
+- Elke finding: uitleg wat het is + concrete aanbeveling
+- Executive summary verbeteren (nu generiek → specifiek per scan)
+- feroxbuster/gobuster: Cloudflare CDN paden (`/cdn-cgi/`) filteren
+
+---
+
+### 🟢 Enterprise (wanneer Pro traction heeft)
+
+- IP ranges ondersteuning (max /24 per scan)
+- Brute force tools (netexec, Kerbrute, wfuzz login) — opt-in + checkbox
+- API toegang met eigen key
+- Custom PDF branding
+- 10 gelijktijdige scans
+
+---
+
+### 💡 Toekomst (na Enterprise)
+
+- Pentest-as-a-Service — handmatige pentest op basis van OSCP, apart product
+- Scheduled scans (automatisch wekelijks/maandelijks)
+- Slack/email alerting bij nieuwe bevindingen
+- Multi-domain monitoring dashboard
 
 ---
 
 ## Architecture principles
-- Security-first: scanner is the flagship, everything else is secondary
-- One domain per scan (no IP ranges on Free/Starter/Pro)
-- Modules run isolated — one failure never stops the full scan
-- Brute force: Enterprise-only, explicit opt-in checkbox required
-- See BACKLOG.md for full feature tracking and CHANGELOG.md for release history
+
+- Scanner is het flagship — alles else is secundair
+- One domain per scan (geen IP ranges op Free/Starter/Pro)
+- Modules draaien geïsoleerd — één failure stopt nooit de hele scan
+- Brute force: Enterprise-only, expliciete opt-in vereist
+- Active testing alleen op bevestigd attack surface
+
+---
+
+*Zie BACKLOG.md voor volledige feature tracking en CHANGELOG.md voor release history.*
