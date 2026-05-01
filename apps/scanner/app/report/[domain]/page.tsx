@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerClient } from "@/lib/supabase-server";
 import { FontLoader } from "@/app/dashboard/FontLoader";
 import { PrintButton } from "./PrintButton";
+import { SendPdfButton } from "./SendPdfButton";
 
 const SCANNER_URL = process.env.SCANNER_API_URL ?? "https://vmi3112892.contaboserver.net";
 const SCANNER_KEY = process.env.SCANNER_API_KEY ?? "verander-dit";
@@ -143,11 +144,24 @@ export default async function ReportPage({
                     </span>
                   </div>
                 )}
-                <span className="no-print">
+                <div className="no-print" style={{ display: "flex", gap: "8px" }}>
                   <PrintButton />
-                </span>
+                </div>
               </div>
             </div>
+
+            {/* PDF email row */}
+            <div className="no-print" style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid rgba(245,243,236,0.08)" }}>
+              <p style={{
+                fontFamily: "'IBM Plex Mono', monospace", fontSize: "10px",
+                letterSpacing: "0.15em", color: "rgba(245,243,236,0.35)",
+                textTransform: "uppercase", margin: "0 0 10px",
+              }}>
+                PDF per email
+              </p>
+              <SendPdfButton domain={domain} defaultEmail={user.email!} scanType="full" />
+            </div>
+
           </div>
         </div>
 
