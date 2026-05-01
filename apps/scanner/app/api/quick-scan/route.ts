@@ -24,11 +24,11 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return json({ error: "Niet ingelogd" }, 401);
 
-  // Plan lookup
+  // Plan lookup — keyed by email to match webhook upsert
   const { data: row } = await supabaseAdmin
     .from("users")
     .select("plan, scan_count_month, scan_reset_at")
-    .eq("id", user.id)
+    .eq("email", user.email)
     .single();
 
   const plan  = (row?.plan ?? "free") as string;
@@ -47,14 +47,18 @@ export async function POST(req: NextRequest) {
     }, 429);
   }
 
-  // Increment count
+  // Increment count (upsert so first-scan for free user creates the row)
   await supabaseAdmin
     .from("users")
-    .update({
-      scan_count_month: count + 1,
-      ...(newMonth ? { scan_reset_at: now.toISOString() } : {}),
-    })
-    .eq("id", user.id);
+    .upsert(
+      {
+        email: user.email,
+        plan: plan,
+        scan_count_month: count + 1,
+        ...(newMonth ? { scan_reset_at: now.toISOString() } : {}),
+      },
+      { onConflict: "email" }
+    );
 
   // Body
   const body = await req.json() as { domain?: string; language?: string };

@@ -415,3 +415,28 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 - [ ] Mooi rapport template (PDF) met executive summary + technische bevindingen
 - [ ] Research: is dit legaal in NL met alleen OSCP (zonder CREST/RE&D certificering)?
 - [ ] Pricing model: per domein / per dag / per rapport
+
+---
+
+## Content & Distribution (BACKLOG — niet oppakken)
+
+> Volgorde: News Page eerst → API daarna (pas als news page traffic heeft).
+
+### Security News Page — zenkai.nl/news
+
+- [ ] Dagelijkse scraper: CVE Mitre (NVD API), The Hacker News (RSS), Bleeping Computer (RSS)
+- [ ] Pagina toont recente CVEs, breaches en security nieuws
+- [ ] CVE detail view: CVSS score, affected products, published date, description
+- [ ] Filter op categorie (CVE / breach / news) en severity
+- [ ] SEO-geoptimaliseerd: dynamische meta titles per CVE/artikel
+- [ ] Doel: organisch verkeer + autoriteit opbouwen als security platform
+- [ ] Bouwen vóór de API — traffic eerst bewijzen
+
+### Security News API — api.zenkai.nl
+
+- [ ] REST API: CVE data + news feeds opvragen via API key
+- [ ] Endpoints: `GET /cves`, `GET /cves/{id}`, `GET /news`, `GET /news/{source}`
+- [ ] API key auth — uitgeven op Pro/Enterprise plan
+- [ ] Rate limiting per plan tier
+- [ ] Monetisatie: gratis tier (beperkt) → Pro/Enterprise onbeperkt
+- [ ] Pas bouwen nadat news page aantoonbaar organisch verkeer heeft

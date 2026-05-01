@@ -83,6 +83,8 @@ Uit Phase 7 backlog, hoge waarde voor Pro/Enterprise conversie:
 - Scheduled scans (automatisch wekelijks/maandelijks)
 - Slack/email alerting bij nieuwe bevindingen
 - Multi-domain monitoring dashboard
+- **Security News Page (zenkai.nl/news)** — dagelijkse scraper van CVE Mitre, The Hacker News, Bleeping Computer. Recente CVEs, breaches en security nieuws. Doel: organisch verkeer + autoriteit als security platform. Bouwen vóór de API.
+- **Security News API (api.zenkai.nl)** — REST API voor developers: CVE data + news feeds via API key. Monetisatie op Pro/Enterprise plan. Pas bouwen nadat news page traffic heeft.
 
 ---
 

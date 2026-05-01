@@ -15,6 +15,18 @@ function FontLoader() {
   return null;
 }
 
+function LemonLoader() {
+  useEffect(() => {
+    if (document.querySelector("[data-ls]")) return;
+    const s = document.createElement("script");
+    s.src = "https://app.lemonsqueezy.com/js/lemon.js";
+    s.defer = true;
+    s.setAttribute("data-ls", "");
+    document.head.appendChild(s);
+  }, []);
+  return null;
+}
+
 const MODULES = [
   { id: "headers",  label: "Security headers",    desc: "CSP, HSTS, X-Frame-Options, Referrer-Policy — 8 headers gecontroleerd." },
   { id: "ssl",      label: "SSL / TLS",            desc: "Certificaat geldigheid, TLS versie, cipher suites (sslyze)." },
@@ -36,6 +48,7 @@ const PRICING = [
     features: ["1 scan per maand", "6 basis checks", "Serverless", "Headers, DNS, SSL"],
     cta: "Start gratis",
     href: "/scan",
+    lemon: false,
     highlight: false,
   },
   {
@@ -45,7 +58,8 @@ const PRICING = [
     desc: "Voor freelancers en kleine bedrijven.",
     features: ["3 scans per maand", "Quick Scan — 9 modules", "PDF rapport per email", "Nmap, Nikto, ZAP, urlscan"],
     cta: "Start nu",
-    href: "/scan",
+    href: "https://zenkai-security.lemonsqueezy.com/checkout/buy/2a68308b-f0e9-4719-b85e-d36f5cad8c32",
+    lemon: true,
     highlight: false,
   },
   {
@@ -55,7 +69,8 @@ const PRICING = [
     desc: "Voor security professionals.",
     features: ["Onbeperkt scans", "Full Scan — 11 modules", "JSON output + API", "Shodan, feroxbuster, SSLyze", "Prioriteit support"],
     cta: "Kies Pro",
-    href: "/scan",
+    href: "https://zenkai-security.lemonsqueezy.com/checkout/buy/bb6a90f2-1fb9-41ff-9048-c0a694c13ab8",
+    lemon: true,
     highlight: true,
   },
   {
@@ -66,6 +81,7 @@ const PRICING = [
     features: ["IP-range scanning", "SQLMap integratie", "Custom rapport", "Dedicated support", "SLA + NDA"],
     cta: "Contact",
     href: "mailto:joshuapole@live.nl",
+    lemon: false,
     highlight: false,
   },
 ];
@@ -77,6 +93,7 @@ export default function ScanLanding() {
   return (
     <>
       <FontLoader />
+      <LemonLoader />
       <style>{`
         @keyframes hf { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
         @keyframes scanPulse { 0%,100% { opacity:0.5; } 50% { opacity:1; } }
@@ -235,7 +252,7 @@ export default function ScanLanding() {
         </section>
 
         {/* ── PRICING ── */}
-        <section id="pricing" style={{ padding: "80px 40px 100px", background: "#ffffff" }}>
+        <section id="pricing" className="sk-pricing-section" style={{ padding: "80px 40px 100px", background: "#ffffff" }}>
           <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
             <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", letterSpacing: "0.2em", color: "rgba(15,14,14,0.35)", textTransform: "uppercase", display: "block", marginBottom: "20px" }}>
               Pricing
@@ -309,6 +326,7 @@ export default function ScanLanding() {
                   </ul>
                   <a
                     href={plan.href}
+                    className={plan.lemon ? "lemonsqueezy-button" : undefined}
                     style={{
                       display: "block", textAlign: "center", padding: "13px 20px",
                       background: plan.highlight ? "#0284C7" : "#0F0E0E",

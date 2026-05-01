@@ -24,11 +24,11 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return json({ error: "Niet ingelogd" }, 401);
 
-  // Plan lookup
+  // Plan lookup — keyed by email to match webhook upsert
   const { data: row } = await supabaseAdmin
     .from("users")
     .select("plan, scan_count_month, scan_reset_at")
-    .eq("id", user.id)
+    .eq("email", user.email)
     .single();
 
   const plan   = (row?.plan ?? "free") as string;

@@ -568,7 +568,7 @@ export default function HubHome() {
                 geen verborgen kosten.
               </em>
             </h2>
-            <div style={{
+            <div className="zk-price-grid" style={{
               display: "grid",
               gridTemplateColumns: "repeat(4, 1fr)",
               gap: "1px",

@@ -20,3 +20,23 @@ body {
 }
 
 ::selection { background: #0F0E0E; color: #F5F3EC; }
+
+/* Pricing grid — 4 col desktop → 2 col tablet → 1 col mobile */
+.sk-price-grid {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
+@media (max-width: 900px) {
+  .sk-price-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .sk-price-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .sk-pricing-section {
+    padding: 60px 20px 80px !important;
+  }
+}

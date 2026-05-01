@@ -166,6 +166,21 @@ body {
   to   { opacity: 1; transform: scale(1); }
 }
 
+/* ── Pricing grid responsive ── */
+.zk-price-grid {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+@media (max-width: 900px) {
+  .zk-price-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 520px) {
+  .zk-price-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* ── Utilities ── */
 
 .gradient-text {
