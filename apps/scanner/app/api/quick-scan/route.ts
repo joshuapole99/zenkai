@@ -83,6 +83,14 @@ export async function POST(req: NextRequest) {
     return new Response(err, { status: upstream.status });
   }
 
+  // Record scan in history
+  await supabaseAdmin.from("scans").insert({
+    user_email: user.email,
+    domain,
+    scan_type: "quick",
+    status: "done",
+  });
+
   return new Response(upstream.body, {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",

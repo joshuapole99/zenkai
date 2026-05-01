@@ -11,9 +11,10 @@ const LINKS: { label: string; href: string }[] = [
 type Props = {
   currentApp?: ZenkaiApp;
   rightSlot?: React.ReactNode;
+  showDashboard?: boolean;
 };
 
-export function ZenkaiNav({ currentApp, rightSlot }: Props) {
+export function ZenkaiNav({ currentApp, rightSlot, showDashboard }: Props) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -94,6 +95,24 @@ export function ZenkaiNav({ currentApp, rightSlot }: Props) {
                 {l.label}
               </a>
             ))}
+            {showDashboard && (
+              <a
+                href="https://scan.zenkai.nl/dashboard"
+                data-zknav-link=""
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: "12px",
+                  fontWeight: 400,
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                  textDecoration: "none",
+                  color: "rgba(15,14,14,0.4)",
+                  transition: "color 0.15s",
+                }}
+              >
+                Dashboard
+              </a>
+            )}
             {rightSlot}
             <a
               href="https://scan.zenkai.nl"
@@ -146,6 +165,7 @@ export function ZenkaiNav({ currentApp, rightSlot }: Props) {
         }}>
           {[
             { label: "Scan",    href: "https://scan.zenkai.nl" },
+            ...(showDashboard ? [{ label: "Dashboard", href: "https://scan.zenkai.nl/dashboard" }] : []),
             { label: "Prijzen", href: "https://zenkai.nl/#pricing" },
             { label: "Over",    href: "https://zenkai.nl/about" },
           ].map((l, i) => (
