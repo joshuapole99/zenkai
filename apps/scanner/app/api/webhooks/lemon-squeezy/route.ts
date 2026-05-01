@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 const PLAN_MAP: Record<string, string> = {
   "1592277": "starter",
   "1592303": "pro",
+  "1599440": "pro",   // test variant (€0)
 };
 
 function planFromVariant(variantId: string | number): string {
@@ -27,9 +28,7 @@ export async function POST(req: Request) {
   const rawBody = await req.text();
 
   const valid = await verifySignature(req, rawBody);
-  if (!valid) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+  if (!valid) return new Response("Unauthorized", { status: 401 });
 
   let payload: Record<string, unknown>;
   try {
@@ -44,7 +43,10 @@ export async function POST(req: Request) {
   const attributes = data?.attributes as Record<string, unknown>;
 
   if (!eventName || !attributes) {
-    return new Response("OK", { status: 200 });
+    return new Response(
+      JSON.stringify({ debug: "missing_eventName_or_attributes", eventName, hasData: !!data, hasAttributes: !!attributes }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
   }
 
   const email      = attributes.user_email as string;
@@ -53,40 +55,54 @@ export async function POST(req: Request) {
   const customerId = attributes.customer_id as string | number;
   const status     = attributes.status as string;
 
-  if (!email) return new Response("OK", { status: 200 });
+  if (!email) {
+    return new Response(
+      JSON.stringify({ debug: "missing_email", eventName, variantId: String(variantId) }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
 
-  switch (eventName) {
-    case "subscription_created":
-    case "subscription_updated": {
-      const plan = planFromVariant(variantId);
-      await supabaseAdmin
-        .from("users")
-        .upsert(
-          {
-            email,
-            plan,
-            ls_subscription_id: subId,
-            ls_customer_id: String(customerId),
-          },
-          { onConflict: "email" }
-        );
-      break;
+  if (eventName === "subscription_created" || eventName === "subscription_updated") {
+    const plan = planFromVariant(variantId);
+
+    const { data: existing, error: selectErr } = await supabaseAdmin
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .single();
+
+    if (selectErr && selectErr.code !== "PGRST116") {
+      console.error("[LS] select_failed:", JSON.stringify(selectErr));
+      return new Response(JSON.stringify({ debug: "select_failed", error: selectErr }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
-    case "subscription_cancelled":
-    case "subscription_expired":
-    case "subscription_paused": {
-      // Downgrade to free on cancel/expire
-      const plan = status === "cancelled" || status === "expired" ? "free" : "free";
-      await supabaseAdmin
+    if (existing) {
+      const { error } = await supabaseAdmin
         .from("users")
-        .update({ plan, ls_subscription_id: null })
+        .update({ plan, ls_subscription_id: subId, ls_customer_id: String(customerId) })
         .eq("email", email);
-      break;
+      if (error) {
+        console.error("[LS] update_failed:", JSON.stringify(error));
+        return new Response(JSON.stringify({ debug: "update_failed", error }), { status: 200, headers: { "Content-Type": "application/json" } });
+      }
+    } else {
+      const { error } = await supabaseAdmin
+        .from("users")
+        .insert({ email, plan, ls_subscription_id: subId, ls_customer_id: String(customerId) });
+      if (error) {
+        console.error("[LS] insert_failed:", JSON.stringify(error));
+        return new Response(JSON.stringify({ debug: "insert_failed", error }), { status: 200, headers: { "Content-Type": "application/json" } });
+      }
     }
 
-    default:
-      break;
+    return new Response(JSON.stringify({ debug: "ok", plan, email }), { status: 200, headers: { "Content-Type": "application/json" } });
+  }
+
+  if (eventName === "subscription_cancelled" || eventName === "subscription_expired" || eventName === "subscription_paused") {
+    await supabaseAdmin
+      .from("users")
+      .update({ plan: "free", ls_subscription_id: null })
+      .eq("email", email);
   }
 
   return new Response("OK", { status: 200 });
