@@ -80,7 +80,7 @@ const PRICING = [
     desc: "Voor organisaties met compliance-eisen.",
     features: ["IP-range scanning", "SQLMap integratie", "Custom rapport", "Dedicated support", "SLA + NDA"],
     cta: "Contact",
-    href: "mailto:joshuapole@live.nl",
+    href: "mailto:info@zenkai.nl",
     lemon: false,
     highlight: false,
   },
