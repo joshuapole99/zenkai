@@ -345,8 +345,8 @@ export default function HubHome() {
             ))}
           </nav>
           <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "8px" }}>
-            <a href="mailto:hi@zenkai.nl" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "rgba(15,14,14,0.35)", textDecoration: "none" }}>
-              hi@zenkai.nl
+            <a href="mailto:info@zenkai.nl" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "rgba(15,14,14,0.35)", textDecoration: "none" }}>
+              info@zenkai.nl
             </a>
             <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.22)" }}>
               © Zenkai 2026
@@ -914,7 +914,7 @@ export default function HubHome() {
             <div style={{ display: "flex", gap: "22px" }}>
               <Link href="/privacy" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.18)", textDecoration: "none" }}>Privacy</Link>
               <Link href="/terms" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.18)", textDecoration: "none" }}>Terms</Link>
-              <a href="mailto:hi@zenkai.nl" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.18)", textDecoration: "none" }}>Contact</a>
+              <a href="mailto:info@zenkai.nl" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(245,243,236,0.18)", textDecoration: "none" }}>Contact</a>
             </div>
           </div>
         </footer>

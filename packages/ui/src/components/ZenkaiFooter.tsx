@@ -49,8 +49,8 @@ export function ZenkaiFooter() {
           <span style={{ fontSize: "11px", color: "rgba(245,243,236,0.18)", letterSpacing: "0.04em" }}>
             © 2026 ZENKAI SECURITY PLATFORM — JOSHUA POLE
           </span>
-          <a href="mailto:hi@zenkai.nl" style={{ fontSize: "11px", color: "rgba(245,243,236,0.18)", textDecoration: "none" }}>
-            hi@zenkai.nl
+          <a href="mailto:info@zenkai.nl" style={{ fontSize: "11px", color: "rgba(245,243,236,0.18)", textDecoration: "none" }}>
+            info@zenkai.nl
           </a>
         </div>
       </div>
