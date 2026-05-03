@@ -570,7 +570,7 @@ export default function HubHome() {
                     "Geen PDF rapport",
                   ],
                   cta: "Start gratis",
-                  href: "https://scan.zenkai.nl",
+                  href: "https://scan.zenkai.nl/scan",
                   highlight: false,
                 },
                 {
@@ -586,7 +586,7 @@ export default function HubHome() {
                     "DNS, SSL, Headers, Shodan basis, urlscan",
                   ],
                   cta: "Start nu",
-                  href: "https://scan.zenkai.nl",
+                  href: "https://zenkai-security.lemonsqueezy.com/checkout/buy/2a68308b-f0e9-4719-b85e-d36f5cad8c32",
                   highlight: false,
                 },
                 {
@@ -603,7 +603,7 @@ export default function HubHome() {
                     "Subdomains + volledige poortscan 1–65535",
                   ],
                   cta: "Kies Pro",
-                  href: "https://scan.zenkai.nl",
+                  href: "https://zenkai-security.lemonsqueezy.com/checkout/buy/bb6a90f2-1fb9-41ff-9048-c0a694c13ab8",
                   highlight: true,
                 },
                 {
