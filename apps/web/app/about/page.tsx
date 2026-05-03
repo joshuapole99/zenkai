@@ -204,11 +204,12 @@ export default function AboutPage() {
             }}>Platform — security tools</p>
           </Reveal>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1px", background: "rgba(245,243,236,0.06)" }}>
+          <div data-about-tools style={{ display: "flex", flexWrap: "wrap", gap: "1px", background: "rgba(245,243,236,0.06)" }}>
             {PRODUCTS.map((p, i) => (
-              <Reveal key={p.id} delay={i * 0.08}>
+              <div key={p.id} style={{ flex: "1 1 200px", minWidth: 0 }}>
+              <Reveal delay={i * 0.08}>
                 <a href={p.href} style={{
-                  display: "block", padding: "36px 32px",
+                  display: "flex", flexDirection: "column", height: "100%", padding: "36px 32px",
                   background: "#0F0E0E",
                   textDecoration: "none",
                   transition: "background 0.2s",
@@ -250,6 +251,7 @@ export default function AboutPage() {
                   }}>Bekijk →</span>
                 </a>
               </Reveal>
+              </div>
             ))}
           </div>
         </div>
@@ -316,6 +318,7 @@ export default function AboutPage() {
       <style>{`
         @media (max-width: 768px) {
           [data-about-story] { grid-template-columns: 1fr !important; gap: 40px !important; }
+          [data-about-tools] > div { flex: 1 1 100% !important; }
         }
       `}</style>
     </>
