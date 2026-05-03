@@ -4,10 +4,11 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 const PRODUCTS = [
-  { id: "scan",    name: "Scan",    sub: "Quick Scan + Full Scan. PDF rapport per domein.",      href: "https://scan.zenkai.nl", accent: "#0284C7", status: "Live" },
-  { id: "cve",     name: "CVE Intel", sub: "Shodan-powered CVE monitoring voor jouw IP-ranges.", href: "#",                      accent: "#DC2626", status: "Soon" },
-  { id: "phish",   name: "Phishing", sub: "Lookalike domein detectie + DMARC/SPF analyse.",      href: "#",                      accent: "#EA580C", status: "Soon" },
-  { id: "report",  name: "Reports",  sub: "Client-ready pentest rapporten in minuten.",           href: "#",                      accent: "#7C3AED", status: "Soon" },
+  { id: "scan",    name: "Scan",              sub: "Quick Scan + Full Scan. PDF rapport per domein.",                       href: "https://scan.zenkai.nl", accent: "#0284C7", status: "Live" },
+  { id: "ssl",     name: "SSL Monitor",       sub: "Certificaat monitoring + alerts — vervaldatum, weak ciphers, mismatch.", href: "#",                      accent: "#DC2626", status: "Soon" },
+  { id: "email",   name: "Email Analyzer",    sub: "SPF/DKIM/DMARC check — plak header, zie direct spoofing tekenen.",      href: "#",                      accent: "#EA580C", status: "Soon" },
+  { id: "breach",  name: "Breach Checker",    sub: "HaveIBeenPwned integratie — k-Anonymity, data verlaat nooit de browser.", href: "#",                    accent: "#7C3AED", status: "Soon" },
+  { id: "dns",     name: "DNS Lookup",        sub: "A, MX, TXT, SPF, DMARC, CAA — inclusief SPF-validatie + reverse DNS.",  href: "#",                      accent: "#16A34A", status: "Soon" },
 ];
 
 function useInView(threshold = 0.15) {
@@ -111,7 +112,7 @@ export default function AboutPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1px", background: "rgba(15,14,14,0.08)" }}>
             {[
               { num: "01", label: "Certificering", value: "OSCP", sub: "Offensive Security Certified Professional" },
-              { num: "02", label: "Ervaring", value: "5+ jaar", sub: "Security analyst bij Enreach. Incidents, Sentinel & Defender, pentestcoördinatie." },
+              { num: "02", label: "Ervaring", value: "2+ jaar", sub: "Security analyst bij Enreach. Incidents, Sentinel & Defender, pentestcoördinatie." },
               { num: "03", label: "Funding", value: "€0 VC", sub: "Geen investeerders. Gebouwd in vrije tijd." },
               { num: "04", label: "Locatie", value: "Utrecht", sub: "Gebouwd in vrije tijd, voor freelancers, developers en bedrijven." },
             ].map((c, i) => (
@@ -296,7 +297,7 @@ export default function AboutPage() {
               }}>
                 Bekijk alle tools →
               </Link>
-              <a href="mailto:joshuapole@live.nl" style={{
+              <a href="mailto:info@zenkai.nl" style={{
                 fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: "13px", letterSpacing: "0.04em",
                 padding: "14px 28px",
