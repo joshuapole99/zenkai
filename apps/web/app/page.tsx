@@ -91,26 +91,7 @@ const PRODUCTS = [
   },
 ];
 
-const POSTS = [
-  {
-    date: "2026-04-01", cat: "SCANNER",
-    title: "Waarom ik Scan bouwde terwijl er al 100 security scanners bestaan",
-    excerpt: "De meeste scanners kosten €400/maand of vragen een enterprise demo. Ik wilde iets waarmee een freelancer in 30 seconden zijn eigen domein kan doorlichten.",
-    accent: "#0284C7",
-  },
-  {
-    date: "2026-03-20", cat: "PENTESTING",
-    title: "Hoe Cloudflare bijna al mijn scan-resultaten verpeste",
-    excerpt: "403 op alles, open|filtered op UDP, ZAP geeft 0 issues. Hier is wat er echt aan de hand is als je een CDN-beschermd domein scant — en hoe je het interpreteert.",
-    accent: "#DC2626",
-  },
-  {
-    date: "2026-02-14", cat: "OSCP",
-    title: "Wat ik leerde van OSCP dat geen enkele online cursus je vertelt",
-    excerpt: "De exam is niet het moeilijkste deel. Het moeilijkste is de maanden daarvoor — methodisch leren denken terwijl tools je niet de antwoorden geven.",
-    accent: "#EA580C",
-  },
-];
+const POSTS: { date: string; cat: string; title: string; excerpt: string; accent: string }[] = [];
 
 function ScrollBar() {
   const [p, setP] = useState(0);
@@ -583,9 +564,10 @@ export default function HubHome() {
                   desc: "Voor eenmalige checks en kennismaking met het platform.",
                   features: [
                     "1 scan per maand",
-                    "6 basis checks",
-                    "Serverless — geen VPS",
-                    "Headers, DNS, SSL",
+                    "6 basis checks — serverless",
+                    "Security headers, SSL, DNS",
+                    "OWASP indicatoren, Shodan basis, urlscan",
+                    "Geen PDF rapport",
                   ],
                   cta: "Start gratis",
                   href: "https://scan.zenkai.nl",
@@ -600,7 +582,8 @@ export default function HubHome() {
                     "3 scans per maand",
                     "Quick Scan — 9 modules",
                     "PDF rapport per email",
-                    "Nmap, Nikto, ZAP, urlscan",
+                    "Nmap top 1000, Nikto, ZAP passief",
+                    "DNS, SSL, Headers, Shodan basis, urlscan",
                   ],
                   cta: "Start nu",
                   href: "https://scan.zenkai.nl",
@@ -613,10 +596,11 @@ export default function HubHome() {
                   desc: "Voor security professionals en bedrijven met serieuze eisen.",
                   features: [
                     "Onbeperkt scans",
-                    "Full Scan — 11 modules",
-                    "JSON output + API toegang",
-                    "Shodan, feroxbuster, SSLyze",
-                    "Prioriteit support",
+                    "Full Scan — 16 modules",
+                    "PDF rapport per email + JSON output",
+                    "Alle Starter modules + ffuf, wfuzz, WPScan",
+                    "SQLMap, feroxbuster, SSLyze, ZAP active scan",
+                    "Subdomains + volledige poortscan 1–65535",
                   ],
                   cta: "Kies Pro",
                   href: "https://scan.zenkai.nl",
@@ -628,14 +612,14 @@ export default function HubHome() {
                   period: "",
                   desc: "Voor organisaties met eigen infrastructuur en compliance-eisen.",
                   features: [
-                    "IP-range scanning",
-                    "SQLMap integratie",
-                    "Custom rapport format",
-                    "Dedicated support",
-                    "SLA + NDA beschikbaar",
+                    "Alles van Pro",
+                    "IP ranges /24, brute force tools",
+                    "Custom rapport format + API toegang",
+                    "10 gelijktijdige scans",
+                    "SLA + NDA, dedicated support",
                   ],
                   cta: "Neem contact op",
-                  href: "mailto:joshuapole@live.nl",
+                  href: "mailto:info@zenkai.nl",
                   highlight: false,
                 },
               ].map((plan) => (
@@ -756,9 +740,9 @@ export default function HubHome() {
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
               {[
                 { t: "OSCP Certified", d: "Offensive Security Certified Professional — de standaard voor penetration testing.", a: "#0284C7" },
-                { t: "5+ jaar security", d: "Security analyst bij Enreach. Dagelijks bezig met pentesting, vulnerability assessment en hardening.", a: "#16A34A" },
+                { t: "2+ jaar security", d: "Security analyst bij Enreach. Dagelijks bezig met pentesting, vulnerability assessment en hardening.", a: "#16A34A" },
                 { t: "Gebouwd door een hacker", d: "Zenkai Scan is gebouwd met dezelfde toolset die ik gebruik op echte engagements: nmap, nikto, ZAP, feroxbuster, Shodan.", a: "#DC2626" },
-                { t: "Geen enterprise BS", d: "Geen demo aanvragen, geen verborgen kosten. Gewoon scannen. Gebouwd vanuit Amsterdam.", a: "#EA580C" },
+                { t: "Geen enterprise BS", d: "Geen demo aanvragen, geen verborgen kosten. Gewoon scannen. Gebouwd vanuit Utrecht.", a: "#EA580C" },
               ].map((item, i) => (
                 <div
                   key={item.t}
@@ -787,7 +771,7 @@ export default function HubHome() {
         </section>
 
         {/* ── BLOG ────────────────────────────────────────────────────────── */}
-        <section style={{ padding: "100px 40px", maxWidth: "1280px", margin: "0 auto" }}>
+        {POSTS.length > 0 && <section style={{ padding: "100px 40px", maxWidth: "1280px", margin: "0 auto" }}>
           <div ref={blogRef} style={{
             display: "flex", justifyContent: "space-between", alignItems: "baseline",
             paddingBottom: "20px", marginBottom: "40px",
@@ -853,7 +837,7 @@ export default function HubHome() {
               </div>
             ))}
           </div>
-        </section>
+        </section>}
 
         {/* ── CTA ─────────────────────────────────────────────────────────── */}
         <section style={{ padding: "120px 40px", background: "#0F0E0E", textAlign: "center" }}>
