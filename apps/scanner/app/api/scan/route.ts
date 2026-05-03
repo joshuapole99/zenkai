@@ -8,6 +8,7 @@ import {
   checkUrlscan,
   type CheckResult,
 } from "@/lib/checks";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const maxDuration = 60;
 
@@ -35,12 +36,13 @@ function calcScore(checks: Record<string, CheckResult>): number {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json() as { domain?: string };
+  const body = await req.json() as { domain?: string; consent?: boolean };
   if (!body.domain) {
     return new Response(JSON.stringify({ error: "Domein vereist" }), { status: 400 });
   }
 
   const domain = cleanDomain(body.domain);
+  const consent = body.consent === true;
   const collected: Record<string, CheckResult> = {};
 
   const enc = new TextEncoder();
@@ -65,6 +67,13 @@ export async function POST(req: NextRequest) {
       const g = score >= 90 ? "A" : score >= 75 ? "B" : score >= 60 ? "C" : score >= 45 ? "D" : "F";
       controller.enqueue(enc.encode(JSON.stringify({ done: true, score, grade: g }) + "\n"));
       controller.close();
+
+      await supabaseAdmin.from("scans").insert({
+        domain,
+        scan_type: "free",
+        status: "done",
+        consent,
+      });
     },
   });
 

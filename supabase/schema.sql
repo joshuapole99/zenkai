@@ -111,6 +111,34 @@ CREATE TABLE IF NOT EXISTS workout.streak_events (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ─── scan.scans — scan history + consent log ─────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.scans (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_email  TEXT,
+  domain      TEXT NOT NULL,
+  scan_type   TEXT NOT NULL DEFAULT 'free', -- free, quick, full
+  status      TEXT NOT NULL DEFAULT 'done',
+  consent     BOOLEAN NOT NULL DEFAULT false,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Migration: add consent column if scans table already exists
+-- ALTER TABLE public.scans ADD COLUMN IF NOT EXISTS consent BOOLEAN NOT NULL DEFAULT false;
+
+-- ─── Domain verifications (Starter/Pro) ──────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.domain_verifications (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_email  TEXT NOT NULL,
+  domain      TEXT NOT NULL,
+  token       TEXT NOT NULL UNIQUE,
+  verified    BOOLEAN NOT NULL DEFAULT false,
+  method      TEXT,                              -- 'dns' or 'well-known'
+  expires_at  TIMESTAMPTZ NOT NULL,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ─── Shared waitlist (existing — migrate from NeonDB) ────────────────────────
 
 CREATE TABLE IF NOT EXISTS public.waitlist_zenkai (

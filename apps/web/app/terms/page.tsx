@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Terms of Service — Zenkai",
+  title: "Algemene Voorwaarden — Zenkai",
   description: "Gebruiksvoorwaarden voor het Zenkai security platform.",
 };
 
@@ -56,73 +56,68 @@ export default function TermsPage() {
             fontSize: "clamp(2rem,5vw,3.5rem)", letterSpacing: "-0.04em",
             lineHeight: 0.95, color: "#0F0E0E", margin: "0 0 16px",
           }}>
-            Terms of Service
+            Algemene Voorwaarden
           </h1>
           <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", color: "rgba(15,14,14,0.35)" }}>
-            Laatst bijgewerkt: april 2026
+            Laatst bijgewerkt: mei 2026
           </p>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "36px" }}>
-          <Section title="1. Acceptatie van voorwaarden">
-            Door Zenkai te gebruiken ga je akkoord met deze voorwaarden. Gebruik Zenkai niet als je het niet eens bent met deze voorwaarden. Deze voorwaarden gelden voor alle gebruikers van het platform.
+          <Section title="1. Over Zenkai">
+            Zenkai (<strong>scan.zenkai.nl</strong> en <strong>zenkai.nl</strong>) is een geautomatiseerd beveiligingsplatform aangeboden door Joshua Pole, gevestigd in Nederland. Zenkai biedt geautomatiseerde beveiligingsscans van domeinen en bijbehorende PDF rapporten.
           </Section>
 
-          <Section title="2. Beschrijving van de dienst">
-            Zenkai (<strong>zenkai.nl</strong>) is een security platform dat geautomatiseerde domein security audits uitvoert via <strong>scan.zenkai.nl</strong>. De scanner analyseert domeinen op kwetsbaarheden, misconfiguraties en security risico&apos;s en genereert rapporten voor de gebruiker.
-          </Section>
-
-          <Section title="3. Toegestaan gebruik — BELANGRIJK">
-            <strong>Je mag Zenkai Scanner uitsluitend gebruiken op:</strong>
-            <ul style={{ paddingLeft: "20px", margin: "8px 0 12px" }}>
-              {[
-                "Domeinen die je zelf eigenaar van bent.",
-                "Domeinen waarvoor je expliciete schriftelijke toestemming hebt van de eigenaar.",
-                "Domeinen die specifiek zijn aangewezen als testomgeving (bijv. pentest engagement scope).",
-              ].map((item) => (
-                <li key={item} style={{ marginBottom: "8px" }}>{item}</li>
-              ))}
-            </ul>
-            <strong>Het is verboden om Zenkai te gebruiken voor:</strong>
+          <Section title="2. Toestemming voor gebruik">
+            Door gebruik te maken van Zenkai bevestigt u dat:
             <ul style={{ paddingLeft: "20px", margin: "8px 0 0" }}>
-              {[
-                "Het scannen van domeinen zonder toestemming van de eigenaar.",
-                "Aanvallen op systemen of het verstoren van diensten.",
-                "Illegale activiteiten of het omzeilen van beveiligingsmaatregelen.",
-                "Misbruik van gevonden kwetsbaarheden voor ongeautoriseerde toegang.",
-              ].map((item) => (
-                <li key={item} style={{ marginBottom: "8px" }}>{item}</li>
-              ))}
+              <li style={{ marginBottom: "8px" }}>U de rechtmatige eigenaar bent van het domein dat u scant, of</li>
+              <li>U aantoonbare schriftelijke toestemming heeft van de eigenaar om een beveiligingsscan uit te voeren</li>
+            </ul>
+            <p style={{ marginTop: "12px" }}>
+              Het scannen van domeinen zonder toestemming is verboden en strafbaar onder de Wet Computercriminaliteit (artikel 138ab Wetboek van Strafrecht). Zenkai is niet aansprakelijk voor misbruik van het platform door gebruikers.
+            </p>
+          </Section>
+
+          <Section title="3. Wat Zenkai doet en niet doet">
+            Zenkai voert geautomatiseerde scans uit. Dit is geen handmatige penetratietest. De resultaten zijn indicatief en vormen geen volledig beveiligingsadvies. Zenkai garandeert niet dat alle kwetsbaarheden worden gevonden.
+          </Section>
+
+          <Section title="4. Abonnementen en betalingen">
+            <ul style={{ paddingLeft: "20px", margin: "8px 0 0" }}>
+              <li style={{ marginBottom: "8px" }}>Abonnementen worden maandelijks gefactureerd via Lemon Squeezy</li>
+              <li style={{ marginBottom: "8px" }}>Opzegging is mogelijk via uw account dashboard</li>
+              <li style={{ marginBottom: "8px" }}>Bij opzegging blijft uw abonnement actief tot het einde van de betaalperiode</li>
+              <li>Restitutie wordt niet verleend tenzij wettelijk verplicht</li>
             </ul>
           </Section>
 
-          <Section title="4. Verantwoordelijkheid gebruiker">
-            Jij bent volledig verantwoordelijk voor het rechtmatig gebruik van de scanner. Zenkai is niet aansprakelijk voor schade voortvloeiend uit ongeautoriseerd gebruik. Bij vermoeden van misbruik behoudt Zenkai het recht accounts onmiddellijk te blokkeren en aangifte te doen.
+          <Section title="5. Aansprakelijkheidsbeperking">
+            Zenkai is niet aansprakelijk voor schade die voortvloeit uit het gebruik van de scanresultaten. De gebruiker is zelf verantwoordelijk voor het nemen van beveiligingsmaatregelen op basis van de rapportage.
           </Section>
 
-          <Section title="5. Abonnementen en betaling">
-            Betaling verloopt via Lemon Squeezy. Abonnementen worden maandelijks verlengd tenzij je opzegt. Opzeggen kan op elk moment via je accountinstellingen, waarna het abonnement loopt tot het einde van de betaalperiode. Restitutie is mogelijk binnen 14 dagen na aankoop als de scanner niet naar behoren werkt.
+          <Section title="6. Fair use">
+            Het is niet toegestaan Zenkai te gebruiken voor:
+            <ul style={{ paddingLeft: "20px", margin: "8px 0 0" }}>
+              <li style={{ marginBottom: "8px" }}>Het scannen van domeinen zonder toestemming</li>
+              <li style={{ marginBottom: "8px" }}>Geautomatiseerd of bulk scannen via scripts of bots</li>
+              <li>Het doorverkopen van scanresultaten zonder schriftelijke toestemming van Zenkai</li>
+            </ul>
           </Section>
 
-          <Section title="6. Beschikbaarheid">
-            We streven naar maximale uptime maar bieden geen garantie. Gepland onderhoud wordt zo mogelijk vooraf gecommuniceerd via hi@zenkai.nl. Bij storingen van de VPS-backend kunnen scans tijdelijk niet beschikbaar zijn.
+          <Section title="7. Wijzigingen">
+            Zenkai behoudt het recht deze voorwaarden te wijzigen. Wijzigingen worden minimaal 14 dagen van tevoren gecommuniceerd via email.
           </Section>
 
-          <Section title="7. Intellectueel eigendom">
-            Alle code, rapporten en content op Zenkai zijn eigendom van Joshua Pole / Zenkai. Rapporten die je ontvangt via de scanner mag je gebruiken voor eigen beveiligingsdoeleinden. Doorverkoop of publicatie van rapporten zonder toestemming is niet toegestaan.
+          <Section title="8. Contact">
+            Voor vragen over deze voorwaarden:{" "}
+            <a href="mailto:info@zenkai.nl" style={{ color: "#0284C7" }}>info@zenkai.nl</a>
           </Section>
+        </div>
 
-          <Section title="8. Disclaimer">
-            Zenkai Scanner is een geautomatiseerde tool en is <strong>geen vervanging voor een professionele penetratietest</strong>. De tool kan false positives en false negatives produceren. Bevindingen dienen altijd handmatig te worden geverifieerd. Zenkai is niet aansprakelijk voor schade door het handelen op basis van scanresultaten zonder verificatie.
-          </Section>
-
-          <Section title="9. Wijzigingen">
-            We behouden het recht deze voorwaarden te wijzigen. Wijzigingen worden gecommuniceerd via e-mail of via een melding op de website. Voortgezet gebruik na wijziging geldt als acceptatie.
-          </Section>
-
-          <Section title="10. Contact">
-            Vragen over deze voorwaarden? Mail naar <a href="mailto:hi@zenkai.nl" style={{ color: "#0284C7" }}>hi@zenkai.nl</a>
-          </Section>
+        <div style={{ marginTop: "64px", paddingTop: "24px", borderTop: "1px solid rgba(15,14,14,0.08)", display: "flex", gap: "24px" }}>
+          <Link href="/privacy" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.4)", textDecoration: "none" }}>Privacy</Link>
+          <Link href="/cookies" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.4)", textDecoration: "none" }}>Cookies</Link>
         </div>
       </main>
     </div>

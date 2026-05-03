@@ -410,11 +410,16 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 - [ ] Subdomains: elk ontdekt subdomain krijgt volledige poortscan + nikto + headers
 - [ ] IP ranges ondersteuning: alle subdomains/IPs in eigen subnet-tabel met reverse DNS
 
-**Pentest-as-a-Service (apart product — TODO)**
-- [ ] Handmatige pentest service op basis van OSCP kennis
-- [ ] Mooi rapport template (PDF) met executive summary + technische bevindingen
-- [ ] Research: is dit legaal in NL met alleen OSCP (zonder CREST/RE&D certificering)?
-- [ ] Pricing model: per domein / per dag / per rapport
+**Pentest-as-a-Service (apart product — Toekomst)**
+- Scope: webapplicaties only
+- Pricing: €1000–€1500 per pentest (vaste prijs, niet per uur)
+- Benodigdheden vóór lancering:
+  - [ ] Rules of Engagement (RoE) template opstellen
+  - [ ] Scope document template
+  - [ ] Contactformulier op zenkai.nl
+  - [ ] Getekend RoE verplicht voordat pentest start (juridische bescherming)
+- Rapport: PDF met executive summary + technische bevindingen + CVSS scores
+- Research: wetgeving NL — mag met OSCP zonder CREST/RE&D-certificering, mits getekend scope document aanwezig
 
 ---
 

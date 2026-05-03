@@ -79,7 +79,15 @@ Uit Phase 7 backlog, hoge waarde voor Pro/Enterprise conversie:
 
 ### 💡 Toekomst (na Enterprise)
 
-- Pentest-as-a-Service — handmatige pentest op basis van OSCP, apart product
+- **Pentest-as-a-Service** — handmatige pentest, apart product
+  - Scope: webapplicaties only
+  - Pricing: €1000–€1500 per pentest
+  - Benodigdheden:
+    - Rules of Engagement template
+    - Scope document
+    - Contactformulier op zenkai.nl
+  - Juridisch: getekend document verplicht voor aanvang; geen pentest zonder handtekening
+  - Status: backlog — eerst Enterprise traction nodig
 - Scheduled scans (automatisch wekelijks/maandelijks)
 - Slack/email alerting bij nieuwe bevindingen
 - Multi-domain monitoring dashboard

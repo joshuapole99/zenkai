@@ -42,11 +42,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Body
-  const body = await req.json() as { domain?: string; language?: string };
+  const body = await req.json() as { domain?: string; language?: string; consent?: boolean };
   if (!body.domain) return json({ error: "Domein vereist" }, 400);
 
   const domain   = cleanDomain(body.domain);
   const language = body.language === "en" ? "en" : "nl";
+  const consent  = body.consent === true;
 
   let upstream: Response;
   try {
@@ -70,6 +71,7 @@ export async function POST(req: NextRequest) {
     domain,
     scan_type: "full",
     status: "done",
+    consent,
   });
 
   return new Response(upstream.body, {

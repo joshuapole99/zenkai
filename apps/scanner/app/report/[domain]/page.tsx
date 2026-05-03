@@ -52,6 +52,32 @@ function severityLabel(finding: Finding): string {
   return "";
 }
 
+type Verdict = "EXPLOITED" | "BLOCKED" | "POTENTIAL";
+
+function verdictFor(finding: Finding, domain: string): { verdict: Verdict; color: string } {
+  const desc = ((finding.description ?? "") + " " + (finding.details ?? "") + " " + (finding.evidence ?? "")).toLowerCase();
+  const sev   = (finding.severity ?? finding.risk ?? finding.level ?? "").toLowerCase();
+  const stat  = (finding.status ?? "").toLowerCase();
+  const isSSTI = desc.includes("ssti") || desc.includes("server-side template");
+  const isCloudflare = desc.includes("cloudflare") || domain.toLowerCase().includes("cloudflare");
+
+  if (isSSTI && isCloudflare) {
+    return { verdict: "BLOCKED", color: "#16A34A" };
+  }
+  if (stat === "blocked" || stat === "protected") {
+    return { verdict: "BLOCKED", color: "#16A34A" };
+  }
+  if ((sev.includes("high") || sev.includes("critical") || stat === "fail" || stat === "failed") && !finding.passed) {
+    return { verdict: "EXPLOITED", color: "#DC2626" };
+  }
+  return { verdict: "POTENTIAL", color: "#D97706" };
+}
+
+function downgradeSeverityIfBlocked(finding: Finding, verdict: Verdict): Finding {
+  if (verdict !== "BLOCKED") return finding;
+  return { ...finding, severity: "Info", risk: "Info", level: "Info" };
+}
+
 export default async function ReportPage({
   params,
 }: {
@@ -208,7 +234,9 @@ export default async function ReportPage({
                 </span>
               </div>
 
-              {findings.map((f, i) => {
+              {findings.map((rawF, i) => {
+                const { verdict, color: verdictColor } = verdictFor(rawF, domain);
+                const f = downgradeSeverityIfBlocked(rawF, verdict);
                 const label = severityLabel(f);
                 const color = severityColor(f);
                 const module = f.module ?? f.category ?? "";
@@ -266,19 +294,30 @@ export default async function ReportPage({
                       )}
                     </div>
 
-                    {label && (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px", flexShrink: 0 }}>
+                      {label && (
+                        <span style={{
+                          fontFamily: "'IBM Plex Mono', monospace", fontSize: "9px",
+                          fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase",
+                          color,
+                          border: `1px solid ${color}`,
+                          padding: "3px 10px",
+                          whiteSpace: "nowrap",
+                        }}>
+                          {label}
+                        </span>
+                      )}
                       <span style={{
                         fontFamily: "'IBM Plex Mono', monospace", fontSize: "9px",
-                        fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase",
-                        color,
-                        border: `1px solid ${color}`,
+                        fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
+                        color: verdictColor,
+                        background: `${verdictColor}14`,
                         padding: "3px 10px",
                         whiteSpace: "nowrap",
-                        flexShrink: 0,
                       }}>
-                        {label}
+                        {verdict}
                       </span>
-                    )}
+                    </div>
                   </div>
                 );
               })}

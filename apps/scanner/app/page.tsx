@@ -230,7 +230,7 @@ export default function ScanLanding() {
                 Modules — Quick Scan
               </span>
               <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.3)" }}>
-                09 modules · VPS
+                09 modules · Starter+
               </span>
             </div>
             <div className="sk-check-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1px", background: "rgba(15,14,14,0.08)" }}>

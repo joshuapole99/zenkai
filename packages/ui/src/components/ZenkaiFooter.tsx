@@ -28,6 +28,7 @@ export function ZenkaiFooter() {
               { label: "Prijzen", href: "https://zenkai.nl/#pricing" },
               { label: "Privacy", href: "https://zenkai.nl/privacy" },
               { label: "Terms",   href: "https://zenkai.nl/terms" },
+              { label: "Cookies", href: "https://zenkai.nl/cookies" },
             ].map(l => (
               <a key={l.label} href={l.href} style={{
                 fontSize: "11px",

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ZenkaiNav, ZenkaiFooter } from "@zenkai/ui";
+import { ZenkaiNav, ZenkaiFooter, CookieBanner } from "@zenkai/ui";
 import { getServerClient } from "@/lib/supabase-server";
 import "./globals.css";
 
@@ -23,6 +23,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ZenkaiNav currentApp="scan" showDashboard={!!user} />
         <main style={{ flex: 1 }}>{children}</main>
         <ZenkaiFooter />
+        <CookieBanner />
       </body>
     </html>
   );

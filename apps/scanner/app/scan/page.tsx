@@ -86,6 +86,22 @@ const SEV_COLOR: Record<Sev, string> = {
   High: "#DC2626", Medium: "#D97706", Low: "#16A34A", Info: "rgba(15,14,14,0.4)",
 };
 
+type Verdict = "EXPLOITED" | "BLOCKED" | "POTENTIAL";
+const VERDICT_COLOR: Record<Verdict, string> = {
+  EXPLOITED: "#DC2626",
+  BLOCKED:   "#16A34A",
+  POTENTIAL: "#D97706",
+};
+
+function getVerdict(f: Finding, scannedDomain: string): Verdict {
+  const desc = (f.description + " " + f.recommendation).toLowerCase();
+  const isSSTI = desc.includes("ssti") || desc.includes("template injection");
+  const isCloudflare = desc.includes("cloudflare") || scannedDomain.toLowerCase().includes("cloudflare");
+  if (isSSTI && isCloudflare) return "BLOCKED";
+  if (f.severity === "High") return "EXPLOITED";
+  return "POTENTIAL";
+}
+
 const GRADE_COLOR: Record<string, string> = {
   A: "#16A34A", B: "#0284C7", C: "#D97706", D: "#EA580C", F: "#DC2626",
 };
@@ -125,6 +141,7 @@ export default function ScanPage() {
   const [errorType, setErrorType]     = useState<null | "auth" | "upgrade" | "limit">(null);
   const [scannedDomain, setScannedDomain] = useState("");
   const [scanDone, setScanDone]       = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
   const [reportEmail, setReportEmail] = useState("");
   const [reportSending, setReportSending] = useState(false);
   const [reportSent, setReportSent]   = useState(false);
@@ -154,7 +171,7 @@ export default function ScanPage() {
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: d, language }),
+        body: JSON.stringify({ domain: d, language, consent: true }),
       });
 
       if (res.status === 401) {
@@ -308,8 +325,8 @@ export default function ScanPage() {
           <div style={{ display: "flex", gap: "8px", marginBottom: "28px" }}>
             {[
               { key: "free",  label: "Gratis scan",   desc: "6 checks · serverless" },
-              { key: "quick", label: "Quick scan",     desc: "9 modules · VPS" },
-              { key: "full",  label: "Full scan",      desc: "13 modules · VPS · Pro" },
+              { key: "quick", label: "Quick scan",     desc: "9 modules · Starter+" },
+              { key: "full",  label: "Full scan",      desc: "13 modules · Pro" },
             ].map((m) => (
               <button
                 key={m.key}
@@ -356,7 +373,7 @@ export default function ScanPage() {
 
           {mode === "quick" && (
             <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "#0284C7", marginBottom: "20px", padding: "10px 14px", border: "1px solid rgba(2,132,199,0.2)", background: "rgba(2,132,199,0.04)" }}>
-              ⚡ Quick scan draait op de Zenkai VPS — geen setup nodig.
+              ⚡ Quick scan — 9 modules, geen setup nodig.
             </p>
           )}
           {mode === "full" && (
@@ -366,34 +383,48 @@ export default function ScanPage() {
           )}
 
           {/* ── Input form ── */}
-          <form onSubmit={runScan} style={{ display: "flex", gap: "0", marginBottom: "48px", maxWidth: "560px" }}>
-            <input
-              type="text"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              placeholder="example.com"
-              disabled={scanning}
-              style={{
-                flex: 1, padding: "14px 16px",
-                border: "1px solid rgba(15,14,14,0.18)", borderRight: "none",
-                background: "#fff", color: "#0F0E0E",
-                fontFamily: "'IBM Plex Mono',monospace", fontSize: "15px",
-                outline: "none",
-              }}
-            />
-            <button
-              type="submit"
-              disabled={scanning || !domain.trim()}
-              style={{
-                padding: "14px 28px",
-                background: scanning ? "rgba(2,132,199,0.6)" : "#0284C7",
-                color: "#fff", border: "none", cursor: scanning ? "not-allowed" : "pointer",
-                fontFamily: "'IBM Plex Mono',monospace", fontSize: "13px", fontWeight: 600,
-                letterSpacing: "0.06em", whiteSpace: "nowrap",
-              }}
-            >
-              {scanning ? "Scanning..." : "SCAN →"}
-            </button>
+          <form onSubmit={runScan} style={{ marginBottom: "48px", maxWidth: "560px" }}>
+            <div style={{ display: "flex", gap: "0", marginBottom: "12px" }}>
+              <input
+                type="text"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                placeholder="example.com"
+                disabled={scanning}
+                style={{
+                  flex: 1, padding: "14px 16px",
+                  border: "1px solid rgba(15,14,14,0.18)", borderRight: "none",
+                  background: "#fff", color: "#0F0E0E",
+                  fontFamily: "'IBM Plex Mono',monospace", fontSize: "15px",
+                  outline: "none",
+                }}
+              />
+              <button
+                type="submit"
+                disabled={scanning || !domain.trim() || !consentChecked}
+                style={{
+                  padding: "14px 28px",
+                  background: scanning ? "rgba(2,132,199,0.6)" : (!domain.trim() || !consentChecked) ? "rgba(2,132,199,0.35)" : "#0284C7",
+                  color: "#fff", border: "none", cursor: (scanning || !domain.trim() || !consentChecked) ? "not-allowed" : "pointer",
+                  fontFamily: "'IBM Plex Mono',monospace", fontSize: "13px", fontWeight: 600,
+                  letterSpacing: "0.06em", whiteSpace: "nowrap",
+                }}
+              >
+                {scanning ? "Scanning..." : "SCAN →"}
+              </button>
+            </div>
+            <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={consentChecked}
+                onChange={(e) => setConsentChecked(e.target.checked)}
+                disabled={scanning}
+                style={{ marginTop: "2px", width: "14px", height: "14px", flexShrink: 0, accentColor: "#0284C7", cursor: scanning ? "not-allowed" : "pointer" }}
+              />
+              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.5)", lineHeight: 1.6 }}>
+                Ik bevestig dat ik eigenaar ben van dit domein of schriftelijke toestemming heb van de eigenaar om een beveiligingsscan uit te voeren.
+              </span>
+            </label>
           </form>
 
           {errorType === "auth" && (
@@ -487,6 +518,23 @@ export default function ScanPage() {
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ── Free scan upgrade trigger ── */}
+          {scanDone && mode === "free" && (
+            <div style={{ marginBottom: "24px", padding: "20px 24px", border: "1px solid rgba(2,132,199,0.25)", background: "rgba(2,132,199,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+              <div>
+                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "13px", fontWeight: 600, color: "#0284C7", margin: "0 0 4px" }}>
+                  Wil je een volledig PDF rapport?
+                </p>
+                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.5)", margin: 0 }}>
+                  Upgrade naar Starter vanaf €19/mnd — 9 scan modules + PDF per email.
+                </p>
+              </div>
+              <a href="/#pricing" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", fontWeight: 600, color: "#fff", background: "#0284C7", padding: "9px 18px", textDecoration: "none", whiteSpace: "nowrap" }}>
+                Upgrade naar Starter →
+              </a>
             </div>
           )}
 
@@ -595,9 +643,19 @@ export default function ScanPage() {
                                   <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, margin: 0, color: "#0F0E0E" }}>
                                     {f.title}
                                   </p>
-                                  <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", fontWeight: 600, color: SEV_COLOR[f.severity], letterSpacing: "0.1em", flexShrink: 0 }}>
-                                    {f.severity.toUpperCase()}
-                                  </span>
+                                  <div style={{ display: "flex", gap: "6px", flexShrink: 0, alignItems: "center" }}>
+                                    <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", fontWeight: 600, color: SEV_COLOR[f.severity], letterSpacing: "0.1em" }}>
+                                      {f.severity.toUpperCase()}
+                                    </span>
+                                    {(() => {
+                                      const v = getVerdict(f, scannedDomain);
+                                      return (
+                                        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "9px", fontWeight: 700, color: VERDICT_COLOR[v], background: `${VERDICT_COLOR[v]}18`, padding: "2px 8px", letterSpacing: "0.08em" }}>
+                                          {v}
+                                        </span>
+                                      );
+                                    })()}
+                                  </div>
                                 </div>
                                 <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.5)", margin: "0 0 6px", lineHeight: 1.6 }}>
                                   {f.description}
