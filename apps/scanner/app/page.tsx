@@ -67,7 +67,7 @@ const PRICING = [
     price: "€49",
     period: "/mnd",
     desc: "Voor security professionals.",
-    features: ["Onbeperkt scans", "Full Scan — 11 modules", "JSON output + API", "Shodan, feroxbuster, SSLyze", "Prioriteit support"],
+    features: ["Onbeperkt scans", "Full Scan — 16 modules", "JSON output + API", "Shodan, feroxbuster, SSLyze", "Prioriteit support"],
     cta: "Kies Pro",
     href: "https://zenkai-security.lemonsqueezy.com/checkout/buy/bb6a90f2-1fb9-41ff-9048-c0a694c13ab8",
     lemon: true,
@@ -150,7 +150,7 @@ export default function ScanLanding() {
                 Vul een domeinnaam in. Ontvang binnen minuten een professioneel beveiligingsrapport — inclusief risk score, bevindingen en aanbevelingen.
               </p>
               <p style={{ fontSize: "15px", color: "rgba(15,14,14,0.38)", lineHeight: 1.7, marginBottom: "36px" }}>
-                Gebouwd door een OSCP-gecertificeerde analyst. 9 modules bij Quick Scan, 11 bij Full Scan. PDF per email inbegrepen.
+                Gebouwd door een OSCP-gecertificeerde analyst. 9 modules bij Quick Scan, 16 bij Full Scan. PDF per email inbegrepen.
               </p>
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                 <a href="/scan" style={{
@@ -159,7 +159,7 @@ export default function ScanLanding() {
                   letterSpacing: "0.05em", textDecoration: "none", textTransform: "uppercase",
                   display: "inline-block",
                 }}>
-                  Start gratis scan →
+                  Start met scannen →
                 </a>
                 <a href="#pricing" style={{
                   padding: "14px 28px", border: "1px solid rgba(15,14,14,0.15)",
@@ -173,7 +173,7 @@ export default function ScanLanding() {
               <div style={{ display: "flex", gap: "0", marginTop: "48px", paddingTop: "28px", borderTop: "1px solid rgba(15,14,14,0.08)" }}>
                 {[
                   { v: "9", l: "Quick modules" },
-                  { v: "11", l: "Full modules" },
+                  { v: "16", l: "Full modules" },
                   { v: "PDF", l: "Per email" },
                   { v: "OSCP", l: "Gebouwd door" },
                 ].map((s, i) => (

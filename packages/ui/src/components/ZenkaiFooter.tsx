@@ -45,7 +45,7 @@ export function ZenkaiFooter() {
           </nav>
         </div>
 
-        <div style={{ paddingTop: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+        <div style={{ paddingTop: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
           <span style={{ fontSize: "11px", color: "rgba(245,243,236,0.18)", letterSpacing: "0.04em" }}>
             © 2026 ZENKAI SECURITY PLATFORM — JOSHUA POLE
           </span>
