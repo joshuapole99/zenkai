@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { getBrowserClient } from "@/lib/supabase-browser";
 
 function FontLoader() {
   useEffect(() => {
@@ -141,6 +142,7 @@ export default function ScanPage() {
   const [errorType, setErrorType]     = useState<null | "auth" | "upgrade" | "limit">(null);
   const [scannedDomain, setScannedDomain] = useState("");
   const [scanDone, setScanDone]       = useState(false);
+  const [loggedIn, setLoggedIn]             = useState<boolean | null>(null);
   const [consentChecked, setConsentChecked] = useState(false);
   const [reportEmail, setReportEmail] = useState("");
   const [reportSending, setReportSending] = useState(false);
@@ -148,6 +150,12 @@ export default function ScanPage() {
   const [reportError, setReportError] = useState("");
 
   const CHECKS = mode === "full" ? FULL_CHECKS : mode === "quick" ? QUICK_CHECKS : FREE_CHECKS;
+
+  useEffect(() => {
+    getBrowserClient().auth.getSession().then(({ data }) => {
+      setLoggedIn(!!data.session);
+    });
+  }, []);
 
   async function runScan(e: React.FormEvent) {
     e.preventDefault();
@@ -310,6 +318,23 @@ export default function ScanPage() {
 
       <div style={{ minHeight: "100vh", background: "#ffffff", color: "#0F0E0E", paddingTop: "40px" }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 24px 80px" }}>
+
+          {/* ── Auth banner ── */}
+          {loggedIn === false && (
+            <div style={{ marginBottom: "28px", padding: "16px 20px", border: "1px solid rgba(2,132,199,0.25)", background: "rgba(2,132,199,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+              <div>
+                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "13px", fontWeight: 600, color: "#0284C7", margin: "0 0 4px" }}>
+                  Log in om te scannen
+                </p>
+                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "11px", color: "rgba(15,14,14,0.5)", margin: 0 }}>
+                  Quick en Full scan vereisen een account. Gratis scan werkt zonder account.
+                </p>
+              </div>
+              <a href="/login" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: "12px", fontWeight: 600, color: "#fff", background: "#0284C7", padding: "9px 18px", textDecoration: "none", whiteSpace: "nowrap" }}>
+                Inloggen →
+              </a>
+            </div>
+          )}
 
           {/* ── Heading ── */}
           <div style={{ marginBottom: "32px" }}>
