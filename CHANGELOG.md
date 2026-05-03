@@ -1,5 +1,42 @@
 # Zenkai Platform — Changelog
 
+## [Unreleased] — 3 mei 2026
+
+### Scanner (scan.zenkai.nl)
+- **feat:** Auth banner direct zichtbaar op `/scan` voor niet-ingelogde gebruikers — geen klik vereist
+- **feat:** Verplichte consent checkbox boven scan knop — disabled totdat aangevinkt; `consent` boolean gelogd in Supabase `scans` tabel
+- **feat:** Domein verificatie — `/api/verify-domain/generate` + `/api/verify-domain/check`; DNS TXT (`_zenkai-verify.<domain>`) en `/.well-known/zenkai-verify` methoden; tokens verlopen na 1 uur; alleen Starter/Pro
+- **feat:** Verdict badges per finding in scan UI en rapport — `EXPLOITED` / `BLOCKED` / `POTENTIAL`; SSTI + Cloudflare auto-detectie → `BLOCKED` + severity downgrade naar Info
+- **feat:** Upgrade trigger na gratis scan — "Wil je een volledig PDF rapport? Upgrade naar Starter vanaf €19/mnd"
+- **feat:** `/dashboard/verify` pagina met verificatie UI
+- **fix:** Alle "VPS" vermeldingen verwijderd uit scan UI (mode labels, info banner)
+- **fix:** Module-aantallen gecorrigeerd — `11 → 16` bij Full Scan (hero, stats, pricing)
+- **fix:** Hero CTA tekst → "Start met scannen →"
+- **fix:** Enterprise contact email → `info@zenkai.nl` op pricing pagina
+- **fix:** `consent` boolean toegevoegd aan quick-scan en full-scan Supabase insert
+
+### Web (zenkai.nl)
+- **feat:** `/cookies` pagina aangemaakt (cookietabel, Supabase auth cookies)
+- **feat:** CookieBanner component — verschijnt bij eerste bezoek, accepteer knop, opgeslagen in localStorage
+- **feat:** `/terms` bijgewerkt naar officiële Algemene Voorwaarden (AVG-conform, mei 2026)
+- **feat:** `/privacy` bijgewerkt naar officieel Privacybeleid (AVG-conform, 10 secties, mei 2026)
+- **feat:** Pricing CTA's gekoppeld aan Lemon Squeezy checkout — Starter + Pro directe betaallinks
+- **fix:** Pricing features bijgewerkt per plan — correcte modules, aantallen en beschrijvingen
+- **fix:** About sectie — `5+ jaar → 2+ jaar`, `Amsterdam → Utrecht`
+- **fix:** Placeholder blog posts verwijderd; Writing-sectie verborgen bij lege array
+- **fix:** `hi@zenkai.nl → info@zenkai.nl` in footer (zenkai.nl + scan.zenkai.nl)
+
+### Shared (packages/ui)
+- **feat:** `CookieBanner` component toegevoegd aan `@zenkai/ui` exports
+- **feat:** `ZenkaiFooter` — Cookies link toegevoegd aan nav
+- **fix:** `ZenkaiFooter` — onderste rij omgezet naar column layout; naam en email staan nu apart
+
+### Database (supabase/schema.sql)
+- **feat:** `public.scans` tabel gedocumenteerd met `consent` kolom
+- **feat:** `public.domain_verifications` tabel toegevoegd voor domein verificatie flow
+
+---
+
 ## [Unreleased] — 30 april 2026
 
 ### Scanner — Full Scan (VPS)

@@ -22,7 +22,7 @@
 ### Pages — TODO
 - [ ] **Blog** — security artikelen, tool writeups, hacking tips (SEO + autoriteit opbouwen)
 - [ ] **Homepage** — geen leugens/misleidende claims; vervang placeholders met echte features + echte screenshots
-- [ ] **Pricing** — afmaken: per plan tabel, features, CTA naar checkout/scan
+- [x] **Pricing** — afmaken: per plan tabel, features, CTA naar checkout/scan
 - [ ] **Store** — losse scan pakketten, rapport credits, eventueel merchandise
 - [ ] **About** — afmaken: missie, OSCP achtergrond, waarom Zenkai, contact
 
