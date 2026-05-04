@@ -387,6 +387,14 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 - [ ] Elke finding krijgt: uitleg wat het is + aanbeveling/recommendation voor de klant
 - [ ] Security headers uitleg — wat doet elke header (HSTS, CSP, X-Frame, etc.)
 
+**Secret scanning (gebruikersfeedback — 4 mei 2026)**
+- [ ] Client-side secret detection — scan JavaScript bestanden op exposed API keys, tokens en credentials
+  - Checks: AWS keys (`AKIA...`), Stripe keys (`sk_live_...`), Google API keys, GitHub tokens, hardcoded wachtwoorden, generic high-entropy strings
+  - Aanpak: feroxbuster/gobuster ontdekt `.js` bestanden → download + regex scan op bekende key-patronen (gebruik trufflehog of zelf regex)
+  - Tools: `trufflehog` (filesystem mode op gedownloade JS) of custom regex engine
+  - Plan: Starter+ (vereist JS download + analyse, te zwaar voor Free serverless)
+  - Output: per gevonden secret → bestandsnaam, regel, type, gemaskerde waarde (eerste/laatste 4 chars)
+
 **Tool verbeteringen**
 - [ ] feroxbuster/gobuster: herken Cloudflare CDN paden (`/cdn-cgi/`) → filter of markeer als "CDN intern, geen risico"
 - [ ] SQLMap: scan alle input velden (forms/POST) via .req file, niet alleen URL params
