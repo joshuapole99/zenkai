@@ -2,6 +2,7 @@ from jinja2 import Template
 from weasyprint import HTML
 import json, sys, os, re
 from datetime import datetime
+from classification import classify_finding, calculate_risk_score, deduplicate_findings
 
 if len(sys.argv) < 2:
     print("Usage: python render.py target.com [nl|en]")
@@ -41,17 +42,26 @@ if "modules" in raw:
         for fi in m.get("findings", []):
             fi["module"] = m["module"]
             all_findings.append(fi)
+    # Reclassify and deduplicate all findings before scoring
+    all_findings = [classify_finding(fi) for fi in all_findings]
+    all_findings = deduplicate_findings(all_findings)
+
     high   = sum(1 for fi in all_findings if fi.get("severity") == "High")
     medium = sum(1 for fi in all_findings if fi.get("severity") == "Medium")
     low    = sum(1 for fi in all_findings if fi.get("severity") == "Low")
-    scores = [m["score"] for m in modules if isinstance(m.get("score"), (int, float))]
-    risk_score = round((sum(scores) / len(scores)) / 10) if scores else 5
+    info   = sum(1 for fi in all_findings if fi.get("severity") == "Info")
+
+    risk_pts, risk_label = calculate_risk_score(all_findings)
+    # risk_score kept as 0-10 for gauge (divide by 10)
+    risk_score = round(risk_pts / 10)
+
     data = {
         "domain":       raw.get("domain", target),
         "findings":     all_findings,
         "fingerprints": [],
         "risk_score":   risk_score,
-        "summary":      {"high": high, "medium": medium, "low": low, "info": 0, "total": len(all_findings)},
+        "risk_label":   risk_label,
+        "summary":      {"high": high, "medium": medium, "low": low, "info": info, "total": len(all_findings)},
         "date":         datetime.now().strftime("%d %B %Y"),
         "scan_type":    scan_type,
         "modules":      modules,
@@ -60,14 +70,22 @@ else:
     data = raw
     data.setdefault("fingerprints", [])
     data.setdefault("findings", [])
-    data.setdefault("risk_score", 0)
-    data.setdefault("summary", {})
-    data["summary"].setdefault("high",   0)
-    data["summary"].setdefault("medium", 0)
-    data["summary"].setdefault("low",    0)
-    data["summary"].setdefault("info",   0)
-    data["summary"].setdefault("total",  len(data["findings"]))
     data.setdefault("date", datetime.now().strftime("%d %B %Y"))
+
+    # Reclassify and deduplicate legacy format findings
+    data["findings"] = [classify_finding(f) for f in data["findings"]]
+    data["findings"] = deduplicate_findings(data["findings"])
+
+    risk_pts, risk_label = calculate_risk_score(data["findings"])
+    data["risk_score"] = round(risk_pts / 10)
+    data["risk_label"] = risk_label
+
+    data.setdefault("summary", {})
+    data["summary"]["high"]   = sum(1 for f in data["findings"] if f.get("severity") == "High")
+    data["summary"]["medium"] = sum(1 for f in data["findings"] if f.get("severity") == "Medium")
+    data["summary"]["low"]    = sum(1 for f in data["findings"] if f.get("severity") == "Low")
+    data["summary"]["info"]   = sum(1 for f in data["findings"] if f.get("severity") == "Info")
+    data["summary"]["total"]  = len(data["findings"])
 
 # ── NL / EN labels ────────────────────────────────────────────────────────────
 LABELS = {
