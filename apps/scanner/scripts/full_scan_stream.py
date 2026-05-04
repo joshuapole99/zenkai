@@ -8,6 +8,7 @@ Format: {"module":"...","status":"pass|warn|fail","score":int,"summary":"...","d
 """
 import json, subprocess, sys, re, os, requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from classification import classify_finding
 
 WORDLIST_COMMON   = "/usr/share/wordlists/dirb/common.txt"
 WORDLIST_RAFT_LG  = "/usr/share/seclists/Discovery/Web-Content/raft-large-words.txt"
@@ -30,9 +31,10 @@ def run(cmd, timeout=30):
 
 
 def emit(module, status, score, summary, details=None, findings=None):
+    classified = [classify_finding(f) for f in (findings or [])]
     obj = {
         "module": module, "status": status, "score": score,
-        "summary": summary, "details": details or [], "findings": findings or []
+        "summary": summary, "details": details or [], "findings": classified
     }
     print(json.dumps(obj), flush=True)
     collected.append(obj)

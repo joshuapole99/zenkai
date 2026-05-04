@@ -6,6 +6,7 @@ Format: {"module":"nmap","status":"pass|warn|fail","score":int,"summary":"...","
 """
 import json, subprocess, sys, re, os, requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from classification import classify_finding
 
 WORDLIST      = "/usr/share/wordlists/dirb/common.txt"
 URLSCAN_KEY   = os.environ.get("URLSCAN_API_KEY", "")
@@ -23,13 +24,11 @@ def run(cmd, timeout=30):
 
 
 def emit(module, status, score, summary, details=None, findings=None):
+    classified = [classify_finding(f) for f in (findings or [])]
     obj = {"module": module, "status": status, "score": score,
-           "summary": summary, "details": details or [], "findings": findings or []}
+           "summary": summary, "details": details or [], "findings": classified}
     collected.append(obj)
-    print(json.dumps({
-        "module": module, "status": status, "score": score,
-        "summary": summary, "details": details or [], "findings": findings or []
-    }), flush=True)
+    print(json.dumps(obj), flush=True)
 
 
 # ── modules ───────────────────────────────────────────────────────────────────
