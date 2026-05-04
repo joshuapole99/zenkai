@@ -152,10 +152,9 @@ export default function ScanPage() {
   const CHECKS = mode === "full" ? FULL_CHECKS : mode === "quick" ? QUICK_CHECKS : FREE_CHECKS;
 
   useEffect(() => {
+    fetch("/api/auth/me").then(r => r.json()).then(({ loggedIn }) => setLoggedIn(loggedIn));
+    // Keep in sync when user logs in/out in this tab
     const sb = getBrowserClient();
-    sb.auth.getSession().then(({ data }) => {
-      setLoggedIn(!!data.session);
-    });
     const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
       setLoggedIn(!!session);
     });
