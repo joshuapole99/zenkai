@@ -1,5 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { supabaseAdmin } from "./supabase";
+import type { NextRequest } from "next/server";
+
+/** Resolves the user from Authorization header (Bearer token) or session cookie. */
+export async function getUserFromRequest(req: NextRequest) {
+  const auth = req.headers.get("authorization");
+  if (auth?.startsWith("Bearer ")) {
+    const token = auth.slice(7);
+    const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+    return user;
+  }
+  const sb = await getServerClient();
+  const { data: { user } } = await sb.auth.getUser();
+  return user;
+}
 
 export async function getServerClient() {
   const cookieStore = await cookies();

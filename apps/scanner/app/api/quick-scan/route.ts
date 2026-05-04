@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getServerClient, PLAN_LIMITS } from "@/lib/supabase-server";
+import { getUserFromRequest, PLAN_LIMITS } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
 
 export const maxDuration = 120;
@@ -19,9 +19,8 @@ function json(body: object, status: number) {
 }
 
 export async function POST(req: NextRequest) {
-  // Auth
-  const sb = await getServerClient();
-  const { data: { user } } = await sb.auth.getUser();
+  // Auth — check Bearer token first, then cookie
+  const user = await getUserFromRequest(req);
   if (!user) return json({ error: "Niet ingelogd" }, 401);
 
   // Plan lookup — keyed by email to match webhook upsert

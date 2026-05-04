@@ -179,9 +179,13 @@ export default function ScanClient({ initialLoggedIn }: { initialLoggedIn?: bool
 
     try {
       const endpoint = mode === "full" ? "/api/full-scan" : mode === "quick" ? "/api/quick-scan" : "/api/scan";
+      const { data: { session } } = await getBrowserClient().auth.getSession();
       const res = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token ? { "Authorization": `Bearer ${session.access_token}` } : {}),
+        },
         body: JSON.stringify({ domain: d, language, consent: true }),
       });
 
