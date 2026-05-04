@@ -5,15 +5,18 @@ import type { NextRequest } from "next/server";
 
 /** Resolves the user from Authorization header (Bearer token) or session cookie. */
 export async function getUserFromRequest(req: NextRequest) {
+  // Try Bearer token first
   const auth = req.headers.get("authorization");
   if (auth?.startsWith("Bearer ")) {
     const token = auth.slice(7);
     const { data: { user } } = await supabaseAdmin.auth.getUser(token);
-    return user;
+    if (user) return user;
+    // Fall through to cookie auth if token validation failed
   }
+  // Cookie-based session (no network call needed for non-expired tokens)
   const sb = await getServerClient();
-  const { data: { user } } = await sb.auth.getUser();
-  return user;
+  const { data: { session } } = await sb.auth.getSession();
+  return session?.user ?? null;
 }
 
 export async function getServerClient() {
