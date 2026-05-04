@@ -152,9 +152,14 @@ export default function ScanPage() {
   const CHECKS = mode === "full" ? FULL_CHECKS : mode === "quick" ? QUICK_CHECKS : FREE_CHECKS;
 
   useEffect(() => {
-    getBrowserClient().auth.getSession().then(({ data }) => {
+    const sb = getBrowserClient();
+    sb.auth.getSession().then(({ data }) => {
       setLoggedIn(!!data.session);
     });
+    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
+      setLoggedIn(!!session);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   async function runScan(e: React.FormEvent) {
