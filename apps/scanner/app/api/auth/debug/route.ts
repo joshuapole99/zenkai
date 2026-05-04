@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getServerClient } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
 
-export async function GET(req: NextRequest) {
+async function handle(req: NextRequest) {
   const cookieStore = await cookies();
   const allCookies = cookieStore.getAll();
   const supabaseCookies = allCookies.filter(c => c.name.includes("sb-") || c.name.includes("supabase"));
@@ -34,3 +34,6 @@ export async function GET(req: NextRequest) {
     bearerError,
   });
 }
+
+export const GET  = handle;
+export const POST = handle;
