@@ -21,7 +21,20 @@ function json(body: object, status: number) {
 export async function POST(req: NextRequest) {
   // Auth — check Bearer token first, then cookie
   const user = await getUserFromRequest(req);
-  if (!user) return json({ error: "Niet ingelogd" }, 401);
+  if (!user) {
+    const { getServerClient } = await import("@/lib/supabase-server");
+    const sb = await getServerClient();
+    const { data: { session }, error } = await sb.auth.getSession();
+    return json({
+      error: "Niet ingelogd",
+      debug: {
+        cookieCount: req.cookies.getAll().length,
+        supabaseCookies: req.cookies.getAll().filter(c => c.name.includes("sb-")).map(c => c.name),
+        session: session?.user?.email ?? null,
+        sessionError: error?.message ?? null,
+      }
+    }, 401);
+  }
 
   // Plan lookup — keyed by email to match webhook upsert
   const { data: row } = await supabaseAdmin
