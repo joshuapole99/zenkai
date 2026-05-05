@@ -152,10 +152,12 @@ export default function ScanClient({ initialLoggedIn }: { initialLoggedIn?: bool
   const CHECKS = mode === "full" ? FULL_CHECKS : mode === "quick" ? QUICK_CHECKS : FREE_CHECKS;
 
   useEffect(() => {
-    // Keep in sync when user logs in/out in this tab
     const sb = getBrowserClient();
-    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
-      setLoggedIn(!!session);
+    const { data: { subscription } } = sb.auth.onAuthStateChange((event, session) => {
+      // INITIAL_SESSION fires on mount — don't let it override server-passed initialLoggedIn
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+        setLoggedIn(!!session);
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
