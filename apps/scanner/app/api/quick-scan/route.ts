@@ -46,18 +46,20 @@ export async function POST(req: NextRequest) {
     }, 429);
   }
 
-  // Increment count (upsert so first-scan for free user creates the row)
-  await supabaseAdmin
-    .from("users")
-    .upsert(
-      {
-        email: user.email,
-        plan: plan,
+  // Increment count — update existing row (preserves plan) or insert new free row
+  if (row) {
+    await supabaseAdmin
+      .from("users")
+      .update({
         scan_count_month: count + 1,
         ...(newMonth ? { scan_reset_at: now.toISOString() } : {}),
-      },
-      { onConflict: "email" }
-    );
+      })
+      .eq("email", user.email!);
+  } else {
+    await supabaseAdmin
+      .from("users")
+      .insert({ email: user.email!, plan: "free", scan_count_month: 1 });
+  }
 
   // Body
   const body = await req.json() as { domain?: string; language?: string; consent?: boolean };

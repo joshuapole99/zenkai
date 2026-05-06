@@ -13,10 +13,10 @@ export async function getUserFromRequest(req: NextRequest) {
     if (user) return user;
     // Fall through to cookie auth if token validation failed
   }
-  // Cookie-based session (no network call needed for non-expired tokens)
+  // Cookie-based session — getUser() validates server-side (same as dashboard)
   const sb = await getServerClient();
-  const { data: { session } } = await sb.auth.getSession();
-  return session?.user ?? null;
+  const { data: { user } } = await sb.auth.getUser();
+  return user;
 }
 
 export async function getServerClient() {
