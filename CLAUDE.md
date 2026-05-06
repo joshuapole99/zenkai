@@ -30,21 +30,32 @@ Stack: Next.js + Tailwind + Supabase + Vercel + Lemon Squeezy + Resend
 
 Scanner backend:
 * Kali VM (local): 192.168.178.36:5000
-* VPS (production): 185.137.122.205:5000
-* Flask API with /scan, /quick-scan, /report/{domain} endpoints
+* VPS (production): 185.137.122.205:5000 — root@185.137.122.205
+* Flask API at /root/zenkai/api.py — started via /root/zenkai/start_api.sh
 * Tools: nmap, nikto, gobuster, sslyze, whatweb, ffuf, wfuzz, WPScan, SQLMap, ZAP
+
+VPS API key (CRITICAL):
+* Flask reads: ZENKAI_API_KEY (set in /root/zenkai/start_api.sh)
+* Vercel must have: SCANNER_API_KEY = same value as ZENKAI_API_KEY
+* MISMATCH = all paid scans return 401 silently — free scan is unaffected (runs locally)
+* Free scan (/api/scan) uses local Next.js checks — does NOT call Flask
+* Quick/Full scan call Flask — they WILL fail if the key is wrong
+* To restart Flask: ssh root@185.137.122.205 "pkill -f api.py; cd /root/zenkai && nohup bash start_api.sh > /var/log/zenkai-api.log 2>&1 &"
+* To verify key match: GET https://scan.zenkai.nl/api/auth/scan-debug (rebuild endpoint if needed)
 
 ========================
 
 ## CURRENT PRIORITIES (in order)
 
-1. Lemon Squeezy webhook → Supabase plan enforcement → Flask API plan checks
-2. User dashboard — scan history + report downloads
-3. Known bugs:
-   - Timezone display (shows Sat when it's Fri) — CRITICAL
-   - Async job queue stabiliteit
+1. Timezone display (shows Sat when it's Fri) — CRITICAL bug
+2. Async job queue stabiliteit
+3. Phase 7 reporting improvements (see BACKLOG.md)
 
-After those: PDF reporting improvements (Phase 7 in BACKLOG.md)
+Done:
+* Lemon Squeezy webhook → Supabase plan enforcement ✓
+* User dashboard — scan history + report downloads ✓
+* Auth (Bearer + cookie fallback, getUser not getSession) ✓
+* PDF rapport per email ✓
 
 ========================
 

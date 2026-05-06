@@ -310,14 +310,22 @@ Goal: full attack surface mapping + controlled vulnerability testing.
 ---
 
 ### Phase 6 — Infrastructure
-- [ ] Deploy tool stack op Ubuntu VPS (nmap, ZAP, sqlmap, playwright)
+- [x] Deploy tool stack op Ubuntu VPS (nmap, ZAP, sqlmap, playwright)
 - [ ] Async job queue (scan runs isolated per job)
 - [ ] Module isolation (subprocess per tool)
-- [ ] Plan-based limiet enforcement in API
+- [x] Plan-based limiet enforcement in API (Vercel + Supabase users table)
 - [ ] GitHub CI/CD naar VPS
 - [ ] SaaS-ready rate limiting & queue management
-- [ ] Lemon Squeezy abonnement koppeling per plan
-- [ ] Gebruiker dashboard — scan geschiedenis, rapport downloads
+- [x] Lemon Squeezy webhook → plan sync naar Supabase users table
+- [x] Gebruiker dashboard — scan geschiedenis, rapport downloads
+- [x] Auth — email/password login, password reset, Bearer + cookie fallback
+- [x] PDF rapport per email (Resend + WeasyPrint)
+
+⚠️ DEPLOYMENT GOTCHA — SCANNER_API_KEY:
+Flask op VPS leest ZENKAI_API_KEY uit start_api.sh.
+Vercel's SCANNER_API_KEY MOET exact dezelfde waarde hebben.
+Mismatch → alle paid scans (quick/full) geven silent 401. Free scan is niet aangedaan (draait lokaal).
+Bij twijfel: check /root/zenkai/start_api.sh op VPS.
 
 ---
 

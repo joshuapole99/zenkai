@@ -1,5 +1,21 @@
 # Zenkai Platform — Changelog
 
+## [Unreleased] — 6 mei 2026
+
+### Scanner (scan.zenkai.nl)
+
+**Bug fixes**
+- **fix (critical):** Paid scans (quick/full) gaven silent 401 — oorzaak: `SCANNER_API_KEY` in Vercel matcht niet met `ZENKAI_API_KEY` in `/root/zenkai/start_api.sh` op VPS. Flask `/health` heeft geen auth → health check groen maar scans faalden. Fix: keys gesynchroniseerd.
+- **fix:** Twee Flask processen draaiden tegelijk (één met key, één zonder) na handmatig herstarten — veroorzaakte non-deterministische auth failures.
+- **fix:** `getUserFromRequest` gebruikte `getSession()` als cookie-fallback in route handlers. `getSession()` leest JWT lokaal en kan silent null teruggeven. Teruggedraaid naar `getUser()` (network-validated, identiek aan dashboard aanpak).
+- **fix:** `quick-scan` upsert overschreef `plan` naar `"free"` wanneer een paid user nog geen rij in `public.users` had. Fix: bestaande rijen → `update` (plan onaangeroerd); nieuwe rijen → `insert` met `plan: "free"`.
+- **fix:** `onAuthStateChange` INITIAL_SESSION event overschreef server-side `initialLoggedIn=true` → auth banner zichtbaar voor correct ingelogde gebruikers. Fix: alleen SIGNED_IN / SIGNED_OUT / TOKEN_REFRESHED / USER_UPDATED updaten client-side state.
+
+**Infra regel toegevoegd** (zie ook CLAUDE.md + BACKLOG.md):
+`SCANNER_API_KEY` (Vercel) moet altijd exact gelijk zijn aan `ZENKAI_API_KEY` in `start_api.sh`. Mismatch → alleen betaalde scans falen, gratis scan is niet aangedaan.
+
+---
+
 ## [Unreleased] — 3 mei 2026
 
 ### Scanner (scan.zenkai.nl)
