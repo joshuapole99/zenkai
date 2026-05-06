@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { ZenkaiLogo } from "@/components/ZenkaiLogo";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -71,23 +71,6 @@ const faqs = [
 export default function TienduizendEuroSparen() {
   return (
     <main className="min-h-screen">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-border px-6 py-4 flex items-center justify-between max-w-5xl mx-auto w-full backdrop-blur-md bg-background/80">
-        <Link href="/">
-          <Image src="/logo.png" alt="Financios" width={140} height={36} priority />
-        </Link>
-        <div className="flex items-center gap-6">
-          <Link href="/blog" className="text-sm text-muted hover:text-foreground transition-colors">
-            Blog
-          </Link>
-          <Link
-            href="/scan?doelNaam=Sparen&doel=10000&maanden=24"
-            className="text-sm text-muted hover:text-foreground transition-colors"
-          >
-            Start scan →
-          </Link>
-        </div>
-      </nav>
 
       <div className="max-w-2xl mx-auto px-4 py-12">
         <Link href="/blog" className="text-xs text-muted hover:text-accent transition-colors inline-flex items-center gap-1 mb-8">
